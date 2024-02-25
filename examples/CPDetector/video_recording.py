@@ -12,7 +12,7 @@ def run():
     device = cs.device
     pipeline = cs.pipeline
     stereo = cs.stereo
-    depthWeight = cs.depthWeight
+    #depthWeight = cs.depthWeight
     rgbWeight = cs.rgbWeight
 
     def updateBlendWeights(percent_rgb):

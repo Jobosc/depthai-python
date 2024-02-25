@@ -46,8 +46,8 @@ class CameraSettings:
 
         # Define sources and outputs
         camRgb = self._pipeline.create(dai.node.Camera)
-        left = self._pipeline.create(dai.node.MonoCamera)
-        right = self._pipeline.create(dai.node.MonoCamera)
+        monoLeft = self._pipeline.create(dai.node.MonoCamera)
+        monoRight = self._pipeline.create(dai.node.MonoCamera)
         stereo = self._pipeline.create(dai.node.StereoDepth)
 
         rgbOut = self._pipeline.create(dai.node.XLinkOut)
@@ -71,12 +71,12 @@ class CameraSettings:
                 camRgb.initialControl.setManualFocus(lensPosition)
         except:
             raise
-        left.setResolution(self.monoResolution)
-        left.setCamera("left")
-        left.setFps(self.fps)
-        right.setResolution(self.monoResolution)
-        right.setCamera("right")
-        right.setFps(self.fps)
+        monoLeft.setResolution(self.monoResolution)
+        monoLeft.setCamera("left")
+        monoLeft.setFps(self.fps)
+        monoRight.setResolution(self.monoResolution)
+        monoRight.setCamera("right")
+        monoRight.setFps(self.fps)
 
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         # LR-check is required for depth alignment
@@ -85,8 +85,8 @@ class CameraSettings:
 
         # Linking
         camRgb.video.link(rgbOut.input)
-        left.out.link(stereo.left)
-        right.out.link(stereo.right)
+        monoLeft.out.link(stereo.left)
+        monoRight.out.link(stereo.right)
         stereo.disparity.link(disparityOut.input)
 
         camRgb.setMeshSource(dai.CameraProperties.WarpMeshSource.CALIBRATION)
