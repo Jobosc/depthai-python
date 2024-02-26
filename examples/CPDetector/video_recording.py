@@ -45,9 +45,9 @@ def run():
         while True:
             latestPacket = {}
             latestPacket["rgb"] = None
-            latestPacket["disp"] = None
+            latestPacket["disparity"] = None
 
-            queueEvents = device.getQueueEvents(("rgb", "disp"))
+            queueEvents = device.getQueueEvents(("rgb", "disparity"))
             for queueName in queueEvents:
                 packets = device.getOutputQueue(queueName).tryGetAll()
                 if len(packets) > 0:
@@ -57,8 +57,8 @@ def run():
                 frameRgb = latestPacket["rgb"].getCvFrame()
                 cv2.imshow(rgbWindowName, frameRgb)
 
-            if latestPacket["disp"] is not None:
-                frameDisp = latestPacket["disp"].getFrame()
+            if latestPacket["disparity"] is not None:
+                frameDisp = latestPacket["disparity"].getFrame()
                 maxDisparity = stereo.initialConfig.getMaxDisparity()
                 # Optional, extend range 0..95 -> 0..255, for a better visualisation
                 if 1: frameDisp = (frameDisp * 255. / maxDisparity).astype(np.uint8)

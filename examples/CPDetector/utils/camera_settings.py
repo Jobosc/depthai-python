@@ -44,26 +44,35 @@ class CameraSettings:
         # Create pipeline
         queueNames = []
 
-        # Define sources and outputs
-        camRgb = self._pipeline.create(dai.node.Camera)
+        ## Define sources and outputs
+        # Displaying channels
+        camRgb = self._pipeline.create(dai.node.ColorCamera)
         monoLeft = self._pipeline.create(dai.node.MonoCamera)
         monoRight = self._pipeline.create(dai.node.MonoCamera)
         stereo = self._pipeline.create(dai.node.StereoDepth)
 
+        # Video saving channels (MJPEG, H264 or H265)
+        rgbEncoder = self._pipeline.create(dai.node.VideoEncoder)
+        disparityEncoder = self._pipeline.create(dai.node.VideoEncoder)
+
+        # The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi)
         rgbOut = self._pipeline.create(dai.node.XLinkOut)
         disparityOut = self._pipeline.create(dai.node.XLinkOut)
 
+        # Set stream and queue names
         rgbOut.setStreamName("rgb")
+        disparityOut.setStreamName("disparity")
         queueNames.append("rgb")
-        disparityOut.setStreamName("disp")
-        queueNames.append("disp")
+        queueNames.append("disparity")
 
-        camRgb.setBoardSocket(self.rgbCamSocket)
-        camRgb.setSize(self.video_width, self.video_height)
+        # Set resolutions and FPS
+        camRgb.setBoardSocket(dai.CameraBoardSocket.CAM_A)
+        camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_720_P)
         camRgb.setFps(self.fps)
-
+        """
         # For now, RGB needs fixed focus to properly align with depth.
         # This value was used during calibration
+        
         try:
             calibData = self._device.readCalibration2()
             lensPosition = calibData.getLensPosition(self.rgbCamSocket)
@@ -71,17 +80,24 @@ class CameraSettings:
                 camRgb.initialControl.setManualFocus(lensPosition)
         except:
             raise
-        monoLeft.setResolution(self.monoResolution)
+        """
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
         monoLeft.setCamera("left")
         monoLeft.setFps(self.fps)
-        monoRight.setResolution(self.monoResolution)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
         monoRight.setCamera("right")
         monoRight.setFps(self.fps)
 
+        # Setting to 26fps will trigger error
+        rgbEncoder.setDefaultProfilePreset(25, dai.VideoEncoderProperties.Profile.H265_MAIN)
+        # TODO: Not sure if needed
+        # disparityEncoder.setDefaultProfilePreset(25, dai.VideoEncoderProperties.Profile.H264_MAIN)
+        
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+        
         # LR-check is required for depth alignment
         stereo.setLeftRightCheck(True)
-        stereo.setDepthAlign(self.rgbCamSocket)
+        stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
 
         # Linking
         camRgb.video.link(rgbOut.input)
@@ -89,7 +105,15 @@ class CameraSettings:
         monoRight.out.link(stereo.right)
         stereo.disparity.link(disparityOut.input)
 
-        camRgb.setMeshSource(dai.CameraProperties.WarpMeshSource.CALIBRATION)
+        camRgb.video.link(rgbEncoder.input)
+        # TODO: Not sure if correct
+        # disparityOut.out.link(disparityEncoder.input)
+
+        rgbEncoder.bitstream.link(rgbOut.input)
+        disparityEncoder.bitstream.link(disparityOut.input)
+
+        # TODO: Check if this is needed in ColorCamera
+        #camRgb.setMeshSource(dai.CameraProperties.WarpMeshSource.CALIBRATION)
         if self.alpha is not None:
             camRgb.setCalibrationAlpha(self.alpha)
             stereo.setAlphaScaling(self.alpha)
