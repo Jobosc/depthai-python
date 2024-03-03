@@ -16,9 +16,10 @@ class CameraSettings:
         self.video_width = env_parser.video_width
         self.video_height = env_parser.video_height
         self.alpha = cmd_parser.alpha
+        self.resolution = dai.ColorCameraProperties.SensorResolution.THE_800_P # Resolution is set as close as possible to Yolov8 input size (YOLOv8x-pose-p6: size=1280)
 
         # The disparity is computed at this resolution, then upscaled to RGB resolution
-        self.monoResolution = dai.MonoCameraProperties.SensorResolution.THE_720_P
+        self.monoResolution = dai.MonoCameraProperties.SensorResolution.THE_800_P
 
         # Properties
         self.rgbCamSocket = dai.CameraBoardSocket.CAM_A
@@ -67,24 +68,13 @@ class CameraSettings:
 
         # Set resolutions and FPS
         camRgb.setBoardSocket(dai.CameraBoardSocket.CAM_A)
-        camRgb.setResolution(dai.ColorCameraProperties.SensorResolution.THE_720_P)
+        camRgb.setResolution(self.resolution)
         camRgb.setFps(self.fps)
-        """
-        # For now, RGB needs fixed focus to properly align with depth.
-        # This value was used during calibration
         
-        try:
-            calibData = self._device.readCalibration2()
-            lensPosition = calibData.getLensPosition(self.rgbCamSocket)
-            if lensPosition:
-                camRgb.initialControl.setManualFocus(lensPosition)
-        except:
-            raise
-        """
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
+        monoLeft.setResolution(self.monoResolution)
         monoLeft.setCamera("left")
         monoLeft.setFps(self.fps)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
+        monoRight.setResolution(self.monoResolution)
         monoRight.setCamera("right")
         monoRight.setFps(self.fps)
 

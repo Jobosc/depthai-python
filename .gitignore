@@ -45,3 +45,7 @@ venv.bak/
 
 # PyCharm
 .idea/
+
+# Data
+*.h265
+*.h264
