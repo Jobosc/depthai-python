@@ -14,25 +14,29 @@ class RGBSettings:
 
     def setup_pipeline(self):
         ## Define sources and outputs
+        # Sources
         camRgb = self._pipeline.create(dai.node.ColorCamera)    # Display video
         rgbEncoder = self._pipeline.create(dai.node.VideoEncoder)   # Encode video (MJPEG, H264 or H265)
+        # Outputs (The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi))
+        rgbOut = self._pipeline.create(dai.node.XLinkOut)
+        rgbOutEncode = self._pipeline.create(dai.node.XLinkOut)
 
         # Script node
         script = self._pipeline.create(dai.node.Script)
         script.setScriptPath(self._script)
         camRgb.still.link(script.inputs['frames'])
-
-        # The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi)
-        rgbOut = self._pipeline.create(dai.node.XLinkOut)
-        rgbOutEncode = self._pipeline.create(dai.node.XLinkOut)
-
+        
         # Set stream/queue names
         rgbOut.setStreamName("rgb")
         rgbOutEncode.setStreamName("rgbEncode")
         
-        # Set resolution and FPS
-        camRgb.setResolution(self._resolution)
-        camRgb.setFps(self._fps)
+        # Set Properties (e.g.: resolution, FPS,...)
+        camRgb.setIspScale(1,2)     # Sets the image to half the size
+        camRgb.setResolution(self._resolution)      # TODO: this could be messing with my output
+        camRgb.setFps(self._fps)                    # TODO: this could be messing with my output
+        camRgb.setInterleaved(False)                # TODO: this could be messing with my output
+        camRgb.setColorOrder(dai.ColorCameraProperties.ColorOrder.RGB)  # TODO: this could be messing with my output
+
         rgbEncoder.setDefaultProfilePreset(self._fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
 
         # Linking

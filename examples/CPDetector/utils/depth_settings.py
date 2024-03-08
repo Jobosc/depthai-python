@@ -11,6 +11,13 @@ class DepthSettings:
         self._pipeline = pipeline
         self._stereo = None
 
+        # Closer-in minimum depth, disparity range is doubled (from 95 to 190):
+        self._extended_disparity = False
+        # Better accuracy for longer distance, fractional disparity 32-levels:
+        self._subpixel = False
+        # Better handling for occlusions:
+        self._lr_check = True
+
     @property
     def pipeline(self):
         return self._pipeline
@@ -20,22 +27,21 @@ class DepthSettings:
         return self._stereo
 
     def setup_pipeline(self):
-        ## Define sources and outputs
-        # Displaying channels
+        # Define sources and outputs
+        ## Sources
         monoLeft = self._pipeline.create(dai.node.MonoCamera)
         monoRight = self._pipeline.create(dai.node.MonoCamera)
-        stereo = self._pipeline.create(dai.node.StereoDepth)
-
-        # Video saving channels (MJPEG, H264 or H265)
-        disparityEncoder = self._pipeline.create(dai.node.VideoEncoder)
-
-        # The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi)
+        stereo = self._pipeline.create(dai.node.StereoDepth) # Displaying channel
+        disparityEncoder = self._pipeline.create(dai.node.VideoEncoder) # Encoding channel (MJPEG, H264 or H265)
+        # Outputs (The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi))
         disparityOut = self._pipeline.create(dai.node.XLinkOut)
-
-        # Set stream and queue names
-        disparityOut.setStreamName("disparity")
+        disparityOutEncode = self._pipeline.create(dai.node.XLinkOut)
         
-        # Set resolutions and FPS and select cameras
+        # Set stream/queue names
+        disparityOut.setStreamName("disparity")
+        disparityOutEncode.setStreamName("disparityEncode")
+        
+        # Set Properties (e.g.: resolution, FPS,...)
         monoLeft.setResolution(self.resolution)
         monoLeft.setCamera("left")
         monoLeft.setFps(self.fps)
@@ -43,22 +49,28 @@ class DepthSettings:
         monoRight.setCamera("right")
         monoRight.setFps(self.fps)
 
-        # Setting to 26fps will trigger error
-        disparityEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H264_MAIN)
+        # Create a node that will produce the depth map (using disparity output as it's easier to visualize depth this way)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
+        # Options: MEDIAN_OFF, KERNEL_3x3, KERNEL_5x5, KERNEL_7x7 (default)
+        stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
+        stereo.setLeftRightCheck(self._lr_check)
+        stereo.setExtendedDisparity(self._extended_disparity)
+        stereo.setSubpixel(self._subpixel)
+
+        disparityEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H264_HIGH)
         
-        # LR-check is required for depth alignment
-        stereo.setLeftRightCheck(True)
-        stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+        #stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
 
         # Linking
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
         stereo.disparity.link(disparityOut.input)
-        disparityEncoder.bitstream.link(disparityOut.input)
+
+        #TODO: Missing link between Encoder and images
+        disparityEncoder.bitstream.link(disparityOutEncode.input)
 
         # AlphaScaling is used after undistortion of image
         #if self.alpha is not None:
         #    stereo.setAlphaScaling(self.alpha)
-       # 
+        
         self._stereo = stereo
