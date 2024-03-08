@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 
+"""
+Video recording script is based on the following scripts:
+- VideoEncoder/encoding_max_limit
+- StereoDepth/rgb_depth_aligned
+"""
+
 import cv2
 import numpy as np
 from utils.camera_settings import CameraSettings

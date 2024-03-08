@@ -6,7 +6,6 @@ class ENVParser:
     def __init__(self):
         load_dotenv(dotenv_path="examples/CPDetector/.env")
         self._rgb_weight = os.getenv("RGB_WEIGHT")
-        self._depth_weight = os.getenv("DEPTH_WEIGHT")
         self._fps = os.getenv("FPS")
         self._video_width = os.getenv("VIDEO_WIDTH")
         self._video_height = os.getenv("VIDEO_HEIGHT")
@@ -16,20 +15,8 @@ class ENVParser:
         return float(self._rgb_weight)
     
     @property
-    def depth_weight(self):
-        return float(self._depth_weight)
-    
-    @property
     def fps(self):
         return int(self._fps)
-    
-    @property
-    def video_width(self):
-        return int(self._video_width)
-    
-    @property
-    def video_height(self):
-        return int(self._video_height)
 
 class CMDParser:
     def __init__(self):
