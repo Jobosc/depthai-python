@@ -3,13 +3,13 @@
 import cv2
 import numpy as np
 from utils.camera_settings import CameraSettings
+import depthai as dai
 
 def run():
     # Prepare camera
     cs = CameraSettings()
     cs.setup_pipeline()
 
-    device = cs.device
     pipeline = cs.pipeline
     stereo = cs.stereo
     #depthWeight = cs.depthWeight
@@ -27,42 +27,34 @@ def run():
         depthWeight = 1.0 - rgbWeight
 
     # Connect to device and start pipeline
-    with device:
-        ## For displaying videos
-        device.startPipeline(pipeline)
+    with dai.Device(pipeline) as device:
 
         frameRgb = None
         frameDisp = None
         
         # Configure windows; trackbar adjusts blending ratio of rgb/depth
-        rgbWindowName = "rgb"
-        depthWindowName = "depth"
         blendedWindowName = "rgb-depth"
-        cv2.namedWindow(rgbWindowName)
-        cv2.namedWindow(depthWindowName)
         cv2.namedWindow(blendedWindowName)
         cv2.createTrackbar('RGB Weight %', blendedWindowName, int(rgbWeight*100), 100, updateBlendWeights)
 
         ## For storing videos in files
-        rgbQueue = device.getOutputQueue('rgb', maxSize=30, blocking=True)
-        #disparityQueue = device.getOutputQueue('disparity', maxSize=30, blocking=True)
+        rgbQueue = device.getOutputQueue('rgbEncode', maxSize=30, blocking=True)
+        disparityQueue = device.getOutputQueue('disparity', maxSize=30, blocking=True)
 
         # Processing loop
         with open('color.h265', 'wb') as fileColorH265, open('disparity.h264', 'wb') as fileDisparityH264:
             print("Press Ctrl+C to stop encoding...")
             while True:
-                """
                 ## Store videos
                 try:
                     # Empty each queue
-                    while disparityQueue.has():
-                        disparityQueue.get().getData().tofile(fileMono1H264)
+                    #while disparityQueue.has():
+                    #    disparityQueue.get().getData().tofile(fileMono1H264)
 
                     while rgbQueue.has():
                         rgbQueue.get().getData().tofile(fileColorH265)
                 except KeyboardInterrupt:
-                    brea
-                """
+                    break
                 
                 ## Display videos
                 latestPacket = {}
@@ -77,7 +69,7 @@ def run():
 
                 if latestPacket["rgb"] is not None:
                     frameRgb = latestPacket["rgb"].getCvFrame()
-                    cv2.imshow(rgbWindowName, frameRgb)
+                    cv2.imshow("rgb", frameRgb)
 
                 if latestPacket["disparity"] is not None:
                     frameDisp = latestPacket["disparity"].getFrame()
@@ -87,7 +79,8 @@ def run():
                     # Optional, apply false colorization
                     if 1: frameDisp = cv2.applyColorMap(frameDisp, cv2.COLORMAP_HOT)
                     frameDisp = np.ascontiguousarray(frameDisp)
-                    cv2.imshow(depthWindowName, frameDisp)
+                    cv2.imshow("depth", frameDisp)
+
                 """
                 # Blend when both received
                 if frameRgb is not None and frameDisp is not None:
@@ -100,7 +93,6 @@ def run():
                     frameDisp = None
                 """
 
-                
                 if cv2.waitKey(1) == ord('q'):
                     break
 

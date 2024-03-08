@@ -21,21 +21,13 @@ class CameraSettings:
         # The disparity is computed at this resolution, then upscaled to RGB resolution
         self.monoResolution = dai.MonoCameraProperties.SensorResolution.THE_800_P
 
-        # Properties
-        self.rgbCamSocket = dai.CameraBoardSocket.CAM_A
-
         # Pipeline Parameters
         self._pipeline = dai.Pipeline()
-        self._device = dai.Device()
         self._stereo = None
     
     @property
     def pipeline(self):
         return self._pipeline
-    
-    @property
-    def device(self):
-        return self._device
     
     @property
     def stereo(self):
@@ -56,21 +48,43 @@ class CameraSettings:
         rgbEncoder = self._pipeline.create(dai.node.VideoEncoder)
         disparityEncoder = self._pipeline.create(dai.node.VideoEncoder)
 
+        # Script node
+        script = self._pipeline.create(dai.node.Script)
+        script.setScript("""
+            ctrl = CameraControl()
+            ctrl.setCaptureStill(True)
+            # Initially send still event
+            node.io['ctrl'].send(ctrl)
+
+            normal = True
+            while True:
+                frame = node.io['frames'].get()
+                if normal:
+                    ctrl.setAutoExposureCompensation(0)
+                    node.io['rgb'].send(frame)
+                    normal = False
+                else:
+                    ctrl.setAutoExposureCompensation(0)
+                    node.io['rgbEncode'].send(frame)
+                    normal = True
+                node.io['ctrl'].send(ctrl)
+        """)
+        camRgb.still.link(script.inputs['frames'])
+
         # The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi)
         rgbOut = self._pipeline.create(dai.node.XLinkOut)
+        rgbOutEncode = self._pipeline.create(dai.node.XLinkOut)
         disparityOut = self._pipeline.create(dai.node.XLinkOut)
 
         # Set stream and queue names
         rgbOut.setStreamName("rgb")
+        rgbOutEncode.setStreamName("rgbEncode")
         disparityOut.setStreamName("disparity")
-        queueNames.append("rgb")
         queueNames.append("disparity")
-
-        # Set resolutions and FPS
-        camRgb.setBoardSocket(dai.CameraBoardSocket.CAM_A)
+        
+        # Set resolutions and FPS and select cameras
         camRgb.setResolution(self.resolution)
         camRgb.setFps(self.fps)
-        
         monoLeft.setResolution(self.monoResolution)
         monoLeft.setCamera("left")
         monoLeft.setFps(self.fps)
@@ -79,10 +93,8 @@ class CameraSettings:
         monoRight.setFps(self.fps)
 
         # Setting to 26fps will trigger error
-        rgbEncoder.setDefaultProfilePreset(25, dai.VideoEncoderProperties.Profile.H265_MAIN)
-        # TODO: Not sure if needed
-        # disparityEncoder.setDefaultProfilePreset(25, dai.VideoEncoderProperties.Profile.H264_MAIN)
-        
+        rgbEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H265_MAIN)
+        disparityEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H264_MAIN)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         
         # LR-check is required for depth alignment
@@ -90,22 +102,23 @@ class CameraSettings:
         stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
 
         # Linking
-        camRgb.video.link(rgbOut.input)
+        script.outputs['rgb'].link(rgbOut.input)
+        script.outputs['rgbEncode'].link(rgbOutEncode.input)
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
         stereo.disparity.link(disparityOut.input)
 
-        camRgb.video.link(rgbEncoder.input)
-        # TODO: Not sure if correct
-        # disparityOut.out.link(disparityEncoder.input)
+        script.outputs['ctrl'].link(camRgb.inputControl)
 
-        rgbEncoder.bitstream.link(rgbOut.input)
+        rgbEncoder.bitstream.link(rgbOutEncode.input)
         disparityEncoder.bitstream.link(disparityOut.input)
 
-        # TODO: Check if this is needed in ColorCamera
+        # TODO: After purchase of the OAK-D W I need to check if I need to unwarp
         #camRgb.setMeshSource(dai.CameraProperties.WarpMeshSource.CALIBRATION)
+        
+        # AlphaScaling is used after undistortion of image
         if self.alpha is not None:
-            camRgb.setCalibrationAlpha(self.alpha)
+            #camRgb.setCalibrationAlpha(self.alpha)
             stereo.setAlphaScaling(self.alpha)
         
         self._stereo = stereo
