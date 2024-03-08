@@ -1,5 +1,6 @@
 import depthai as dai
 from utils.parser import ENVParser, CMDParser
+import os
 
 
 class CameraSettings:
@@ -9,12 +10,9 @@ class CameraSettings:
 
         # Weights to use when blending depth/rgb image (should equal 1.0)
         self.rgbWeight = env_parser.rgb_weight
-        self.depthWeight = env_parser.depth_weight
 
         # Camera parameters
         self.fps = env_parser.fps
-        self.video_width = env_parser.video_width
-        self.video_height = env_parser.video_height
         self.alpha = cmd_parser.alpha
         self.resolution = dai.ColorCameraProperties.SensorResolution.THE_800_P # Resolution is set as close as possible to Yolov8 input size (YOLOv8x-pose-p6: size=1280)
 
@@ -24,6 +22,9 @@ class CameraSettings:
         # Pipeline Parameters
         self._pipeline = dai.Pipeline()
         self._stereo = None
+
+        # Scripts
+        self._scripts_folder = f"{os.getcwd()}/examples/CPDetector/scripts"
     
     @property
     def pipeline(self):
@@ -50,25 +51,8 @@ class CameraSettings:
 
         # Script node
         script = self._pipeline.create(dai.node.Script)
-        script.setScript("""
-            ctrl = CameraControl()
-            ctrl.setCaptureStill(True)
-            # Initially send still event
-            node.io['ctrl'].send(ctrl)
-
-            normal = True
-            while True:
-                frame = node.io['frames'].get()
-                if normal:
-                    ctrl.setAutoExposureCompensation(0)
-                    node.io['rgb'].send(frame)
-                    normal = False
-                else:
-                    ctrl.setAutoExposureCompensation(0)
-                    node.io['rgbEncode'].send(frame)
-                    normal = True
-                node.io['ctrl'].send(ctrl)
-        """)
+        script.setScriptPath(f"{self._scripts_folder}/forward_frames.py")
+        
         camRgb.still.link(script.inputs['frames'])
 
         # The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi)
