@@ -49,3 +49,4 @@ venv.bak/
 # Data
 *.h265
 *.h264
+*.mp4

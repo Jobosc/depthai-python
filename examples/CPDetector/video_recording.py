@@ -15,12 +15,12 @@ from utils.camera_settings import CameraSettings
 import depthai as dai
 from utils.parser import ENVParser
 
-def run():
+def run(save_data):
     env_parser = ENVParser()
 
     # Prepare camera
     cs = CameraSettings()
-    cs.setup_pipeline()
+    cs.setup_pipeline(save_data)
 
     pipeline = cs.pipeline
     #depthWeight = cs.depthWeight
@@ -59,19 +59,24 @@ def run():
 
         ## Queues for storing videos in files
         rgbQueue = device.getOutputQueue('rgbEncode', maxSize=30, blocking=True)
-        disparityQueue = device.getOutputQueue('disparityEncode', maxSize=30, blocking=True)
+        
         ## Queues for displaying videos on screen
-        disparityQueueDisplay = device.getOutputQueue(name="disparity", maxSize=4, blocking=False)
+        #
         rgbQueueDisplay = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
         
+        if save_data:
+            disparityQueue = device.getOutputQueue('disparity', maxSize=30, blocking=True)
+        else:
+            disparityQueue = device.getOutputQueue(name="disparity", maxSize=4, blocking=False)
+
         # Processing loop
         with open('color.h265', 'wb') as fileColorH265, open('disparity.h264', 'wb') as fileDisparityH264:
-            print("Press Ctrl+C to stop encoding...")
+            print("Press 'q' to stop encoding...")
             while True:
                 ## Store videos
                 try:
                     # Empty each queue
-                    while disparityQueue.has():
+                    while disparityQueue.has() and save_data:
                         disparityQueue.get().getData().tofile(fileDisparityH264)
 
                     while rgbQueue.has():
@@ -83,17 +88,18 @@ def run():
                 if frame is not None:
                     frameRgb = frame.getCvFrame()
                     cv2.imshow("rgb", frameRgb)
-
-                frame = disparityQueueDisplay.get()
-                if frame is not None:
-                    frameDisp = frame.getFrame()
-                    maxDisparity = cs.maxDisparity
-                    # Optional, extend range 0..95 -> 0..255, for a better visualisation
-                    frameDisp = (frameDisp * 255. / maxDisparity).astype(np.uint8)
-                    # Optional, apply false colorization
-                    frameDisp = cv2.applyColorMap(frameDisp, cv2.COLORMAP_HOT)
-                    frameDisp = np.ascontiguousarray(frameDisp)
-                    cv2.imshow("depth", frameDisp)
+                
+                if not save_data:
+                    frame = disparityQueue.get()
+                    if frame is not None:
+                        frameDisp = frame.getFrame()
+                        maxDisparity = cs.maxDisparity
+                        # Optional, extend range 0..95 -> 0..255, for a better visualisation
+                        frameDisp = (frameDisp * 255. / maxDisparity).astype(np.uint8)
+                        # Optional, apply false colorization
+                        frameDisp = cv2.applyColorMap(frameDisp, cv2.COLORMAP_HOT)
+                        frameDisp = np.ascontiguousarray(frameDisp)
+                        cv2.imshow("depth", frameDisp)
 
                 """
                 # Blend when both received
@@ -116,4 +122,5 @@ def run():
         print(cmd.format("color.h265", "color.mp4"))
 
 if __name__ == "__main__":
-    run()
+    save_data = True    # Saves color and depth information
+    run(save_data)

@@ -26,7 +26,7 @@ class DepthSettings:
     def stereo(self):
         return self._stereo
 
-    def setup_pipeline(self):
+    def setup_pipeline(self, save_data: bool):
         # Define sources and outputs
         ## Sources
         monoLeft = self._pipeline.create(dai.node.MonoCamera)
@@ -35,11 +35,9 @@ class DepthSettings:
         disparityEncoder = self._pipeline.create(dai.node.VideoEncoder) # Encoding channel (MJPEG, H264 or H265)
         # Outputs (The XlinkOut node sends the video data to the host via XLink (e.g.: Raspi))
         disparityOut = self._pipeline.create(dai.node.XLinkOut)
-        disparityOutEncode = self._pipeline.create(dai.node.XLinkOut)
         
         # Set stream/queue names
         disparityOut.setStreamName("disparity")
-        disparityOutEncode.setStreamName("disparityEncode")
         
         # Set Properties (e.g.: resolution, FPS,...)
         monoLeft.setResolution(self.resolution)
@@ -57,18 +55,18 @@ class DepthSettings:
         stereo.setExtendedDisparity(self._extended_disparity)
         stereo.setSubpixel(self._subpixel)
 
-        disparityEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H264_HIGH)
-        
-        #stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A)
+        disparityEncoder.setDefaultProfilePreset(self.fps, dai.VideoEncoderProperties.Profile.H264_MAIN)
 
         # Linking
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
-        stereo.disparity.link(disparityOut.input)
 
-        #TODO: Missing link between Encoder and images
-        disparityEncoder.bitstream.link(disparityOutEncode.input)
-
+        if save_data:
+            stereo.disparity.link(disparityEncoder.input)
+            disparityEncoder.bitstream.link(disparityOut.input)
+        else:
+            stereo.disparity.link(disparityOut.input)
+        
         # AlphaScaling is used after undistortion of image
         #if self.alpha is not None:
         #    stereo.setAlphaScaling(self.alpha)

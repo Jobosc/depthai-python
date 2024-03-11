@@ -24,7 +24,7 @@ class CameraSettings:
     def maxDisparity(self):
         return self._stereo.initialConfig.getMaxDisparity()
 
-    def setup_pipeline(self):
+    def setup_pipeline(self, save_data: bool):
         ## Create pipelines
         # Setup RGB Pipeline
         rgb = rgbSettings(self._pipeline, self.fps)
@@ -32,6 +32,6 @@ class CameraSettings:
         self._pipeline = rgb.pipeline
         # Setup Depth Pipeline
         depth = depthSettings(self._pipeline, self.fps)
-        depth.setup_pipeline()
+        depth.setup_pipeline(save_data)
         self._pipeline = depth.pipeline
         self._stereo = depth.stereo
