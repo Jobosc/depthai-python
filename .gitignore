@@ -50,3 +50,4 @@ venv.bak/
 *.h265
 *.h264
 *.mp4
+*.json
