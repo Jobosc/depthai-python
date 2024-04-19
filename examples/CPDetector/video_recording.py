@@ -2,21 +2,50 @@
 
 from depthai_sdk import OakCamera, RecordType
 import depthai as dai
-from typing import Dict
 
+def set_ir_parameters(stereo: OakCamera.stereo, dot_projector_brightness, flood_brightness):
+    stereo.set_ir(dot_projector_brightness, flood_brightness)
 
 def run():
     with OakCamera() as oak:
-        color = oak.camera(source=dai.CameraBoardSocket.CAM_A, resolution=dai.ColorCameraProperties.SensorResolution.THE_800_P, fps=20, encode=dai.VideoEncoderProperties.Profile.H265_MAIN, name="color")
-        left = oak.camera('left')
-        right = oak.camera('right')
-        stereo = oak.stereo(left=left, right=right, resolution=dai.ColorCameraProperties.SensorResolution.THE_800_P, fps=20, encode=dai.VideoEncoderProperties.Profile.H265_MAIN, name="color")
-        stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+        # Parameters
+        encode = dai.VideoEncoderProperties.Profile.H265_MAIN
+        resolution = "800p"
+        fps = 20
+        dot_projector_brightness = 200
+        flood_brightness = 100
+
+        # Define cameras
+        color = oak.camera(source=dai.CameraBoardSocket.CAM_A, resolution=resolution, fps=fps, encode=encode, name="color")
+        stereo = oak.stereo(resolution=resolution, fps=fps, encode=encode, name="stereo")
+        
+        # Set IR brightness
+        #stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+        stereo.set_ir(dot_projector_brightness, flood_brightness)
         
         # Synchronize & save all (encoded) streams
-        oak.record([color.out.encoded, stereo.out.encoded], './', RecordType.VIDEO)
-        oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=2/3)
-        oak.start(blocking=True)
+        oak.record([color.out.encoded, stereo.out.encoded], './VideoRecordings/', RecordType.VIDEO)
+        oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1/2)
+        oak.start(blocking=False)   # TODO: This needs to be unblocked to run the below code. Check if I actually need it.
+
+        # Debug mode
+        while oak.running():
+            key = oak.poll()
+            if key == ord('w'):
+                dot_projector_brightness = dot_projector_brightness + 100 if dot_projector_brightness + 100 <= 800 else 800
+                set_ir_parameters(stereo, dot_projector_brightness, flood_brightness)
+            elif key == ord('s'):
+                dot_projector_brightness = dot_projector_brightness - 100 if dot_projector_brightness - 100 >= 0 else 0
+                set_ir_parameters(stereo, dot_projector_brightness, flood_brightness)
+            elif key == ord('a'):
+                flood_brightness = flood_brightness + 100 if flood_brightness + 100 <= 800 else 800
+                set_ir_parameters(stereo, dot_projector_brightness, flood_brightness)
+            elif key == ord('d'):
+                flood_brightness = flood_brightness - 100 if flood_brightness - 100 <= 0 else 0
+                set_ir_parameters(stereo, dot_projector_brightness, flood_brightness)
+
+            elif key == ord('e'): # Switch to auto exposure
+                stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
 
 
 if __name__ == "__main__":
