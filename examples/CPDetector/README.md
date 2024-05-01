@@ -7,3 +7,8 @@ Install the pre-configured RPi OS image from https://drive.google.com/drive/fold
 
 All required packages are already installed on those images.
 - Update depthai to the latest version `python -m pip install depthai -U`
+- Install further requirements for frontend:
+    - `pip install fastapi`
+    - `pip install "uvicorn[standard]"`
+    - `pip install --upgrade wheel`
+    - `pip install shiny`

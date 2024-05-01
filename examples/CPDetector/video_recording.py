@@ -2,6 +2,7 @@
 
 from depthai_sdk import OakCamera, RecordType
 import depthai as dai
+import datetime
 
 def set_ir_parameters(stereo: OakCamera.stereo, dot_projector_brightness, flood_brightness):
     stereo.set_ir(dot_projector_brightness, flood_brightness)
@@ -11,9 +12,13 @@ def run():
         # Parameters
         encode = dai.VideoEncoderProperties.Profile.H265_MAIN
         resolution = "800p"
-        fps = 20
+        fps = 60
         dot_projector_brightness = 200
         flood_brightness = 100
+
+        # Folder parameters
+        day = datetime.datetime.now().strftime("%Y%m%d")
+        # NOTE: Are more parameters needed?
 
         # Define cameras
         color = oak.camera(source=dai.CameraBoardSocket.CAM_A, resolution=resolution, fps=fps, encode=encode, name="color")
@@ -24,9 +29,9 @@ def run():
         stereo.set_ir(dot_projector_brightness, flood_brightness)
         
         # Synchronize & save all (encoded) streams
-        oak.record([color.out.encoded, stereo.out.encoded], './VideoRecordings/', RecordType.VIDEO)
+        oak.record([color.out.encoded, stereo.out.encoded], f"./VideoRecordings/{day}/", RecordType.VIDEO)
         oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1/2)
-        oak.start(blocking=False)   # TODO: This needs to be unblocked to run the below code. Check if I actually need it.
+        oak.start(blocking=False)   # This needs to be unblocked to run the below code. Check if I actually need it.
 
         # Debug mode
         while oak.running():
