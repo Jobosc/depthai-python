@@ -10,5 +10,5 @@ All required packages are already installed on those images.
 - Install further requirements for frontend:
     - `pip install fastapi`
     - `pip install "uvicorn[standard]"`
-    - `pip install --upgrade wheel`
     - `pip install shiny`
+    - `pip install depthai-sdk`
