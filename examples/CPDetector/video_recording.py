@@ -21,16 +21,17 @@ def run():
         # NOTE: Are more parameters needed?
 
         # Define cameras
-        color = oak.camera(source=dai.CameraBoardSocket.CAM_A, resolution=resolution, fps=fps, encode=encode, name="color")
-        stereo = oak.stereo(resolution=resolution, fps=fps, encode=encode, name="stereo")
+        color = oak.camera(source=dai.CameraBoardSocket.CAM_A, resolution=resolution, fps=fps, encode=encode)
+        stereo = oak.stereo(resolution=resolution, fps=fps, encode=encode)
         
         # Set IR brightness
         #stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
         stereo.set_ir(dot_projector_brightness, flood_brightness)
         
         # Synchronize & save all (encoded) streams
-        oak.record([color.out.encoded, stereo.out.encoded], f"./VideoRecordings/{day}/", RecordType.VIDEO)
+        oak.record([color.out.encoded], f"./VideoRecordings/{day}/", RecordType.VIDEO) #TODO: Add: , stereo.out.encoded....back into the list to store the depth
         oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1/2)
+        #oak.show_graph()
         oak.start(blocking=False)   # This needs to be unblocked to run the below code. Check if I actually need it.
 
         # Debug mode
