@@ -10,6 +10,7 @@ Install the following plugins:
 - Python
 - Save Typing
 - Shiny
+- Black Formatter
 
 ## Project setup
 The project lies in the **luxonis** folder on the Desktop.
@@ -17,8 +18,4 @@ Make sure to load the whole folder into VSCode.
 The virtual envrionment is also contained in that folder named: **enDepthAI** 
 
 Additional packages need to be installed:
-- `python -m pip install depthai -U` (Not sure yet it necessary: Update depthai to the latest version)
-- `pip install depthai-sdk`
-- `pip install fastapi` (API)
-- `pip install "uvicorn[standard]"` (Backendserver)
-- `pip install shiny` (Frontend)
+- `pip install -r requirements.txt`
