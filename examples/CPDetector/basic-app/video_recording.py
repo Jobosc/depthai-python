@@ -4,6 +4,8 @@ from depthai_sdk import OakCamera, RecordType
 import depthai as dai
 import datetime
 
+global running
+
 
 def set_ir_parameters(
     stereo: OakCamera.stereo, dot_projector_brightness, flood_brightness
@@ -11,8 +13,13 @@ def set_ir_parameters(
     stereo.set_ir(dot_projector_brightness, flood_brightness)
 
 
+def stop():
+    running = False
+
+
 def run():
     with OakCamera() as oak:
+        running = True
         # Parameters
         encode = dai.VideoEncoderProperties.Profile.H265_MAIN
         resolution = "800p"
@@ -49,7 +56,7 @@ def run():
         )  # This needs to be unblocked to run the below code. Check if I actually need it.
         # oak.close()
         # Debug mode
-        while oak.running():
+        while oak.running() and running:
             key = oak.poll()
             if key == ord("w"):
                 dot_projector_brightness = (
@@ -78,6 +85,7 @@ def run():
 
             elif key == ord("e"):  # Switch to auto exposure
                 stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+    running = False
 
 
 if __name__ == "__main__":

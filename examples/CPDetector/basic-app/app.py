@@ -4,7 +4,7 @@ from shiny.express import input, render, ui
 from participant import Participant
 import faicons as fa
 import datetime
-from video_recording import run
+from video_recording import run, stop
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -12,7 +12,8 @@ ICONS = {
     "gear": fa.icon_svg("gear"),
 }
 
-camera_running = reactive.value(True)
+global camera_running
+camera_running = reactive.value(False)
 
 ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
@@ -86,7 +87,17 @@ ui.input_slider("n", "N", 0, 100, 20)
 
 # Action Button
 ui.input_action_button("record_button", "Start recording")
-
+"Press 'q' to stop recording."
+"- (Show Time while running)"
+"- (Show table of sessions rcorded per participant)"
+"- (Move all videos of a session into approptiate folder after all is over)"
+"- (Update the amount of participants recorded for the day)"
+"- (Display total amount of paricipants recorded so far on top)"
+"- (Add debug page)"
+"- (Check if it is possible to show 'Stop recording' button)"
+"- (Add possibility of deleting sessions and people from recorded data)"
+"- (Add debug mode on second page, for settings)"
+"- (Add switch to switch between normal video and depth camera)"
 # with ui.card():
 #    ui.markdown(result)
 
@@ -126,4 +137,3 @@ def reset_metadata():
 @reactive.event(input.record_button)
 def start_recording():
     run()
-    ui.update_action_button("record_button", label=f"Stop recording")
