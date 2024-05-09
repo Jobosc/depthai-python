@@ -2,6 +2,8 @@ import datetime
 import os
 from dotenv import load_dotenv
 import shutil
+from participant import Participant
+import json
 
 load_dotenv(
     "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
@@ -46,7 +48,16 @@ def get_amount_of_sessions_recorded_in_total():
     return len(sessions)
 
 
-def move_data_from_temp_to_main_storage(folder_name: str):
+def get_amount_of_files_to_move():
+    all_files = []
+    for _, _, files in os.walk(os.path.join(temp_path, day)):
+        for file in files:
+            all_files.append(file)
+
+    return len(all_files)
+
+
+def move_data_from_temp_to_main_storage(folder_name: str, participant: Participant):
 
     for root, dirs, files in os.walk(os.path.join(temp_path, day)):
         # Copy files
@@ -61,11 +72,17 @@ def move_data_from_temp_to_main_storage(folder_name: str):
 
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
             os.remove(os.path.join(root, file))
+            yield True
+    store_participant_metadata(
+        os.path.join(main_path, temp_path, day, folder_name), participant
+    )
 
     # Delete folders
-    try:
-        folder_path = os.path.join(temp_path, day)
-        shutil.rmtree(folder_path)
-        print("Folder and its content removed")
-    except:
-        print("Folder not deleted")
+    folder_path = os.path.join(temp_path, day)
+    shutil.rmtree(folder_path)
+
+
+def store_participant_metadata(path: str, metadata: Participant):
+    save_file = open(os.path.join(path, "metadata.json"), "w")
+    json.dump(vars(metadata), fp=save_file)
+    save_file.close()

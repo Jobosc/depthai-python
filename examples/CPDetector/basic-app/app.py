@@ -23,7 +23,7 @@ sessions_all = reactive.value(funcs.get_amount_of_sessions_recorded_in_total())
 days_all = reactive.value(f"Days recorded: {funcs.get_amount_of_days_recorded()}")
 
 
-ui.page_opts(title="Gait Recording", fillable=True)
+# ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
 #                     Sidebar
 #######################################################
@@ -57,16 +57,14 @@ with ui.sidebar(id="sidebar"):
 
             @render.express
             def metadata_output():
-                result = ""
                 if input.name() != "":
-                    result = result + f"Name: {input.name()}" + "\n"
+                    ui.markdown(f"Name: {input.name()}")
                 if input.subjects() != "":
-                    result = result + f"Subjects: {input.subjects()} \n"
+                    ui.markdown(f"Subjects: {input.subjects()}")
                 if input.grade() != "":
-                    result = result + f"Grade: {input.grade()}\n"
+                    ui.markdown(f"Grade: {input.grade()}")
                 if input.gender() != "":
-                    result = result + f"Gender: {input.gender()}"
-                result
+                    ui.markdown(f"Gender: {input.gender()}")
 
 
 #######################################################
@@ -119,7 +117,6 @@ ui.input_action_button("record_button", "Start recording")
 "- (Add possibility of deleting sessions and people from recorded data)"
 "- (Add debug mode on second page, for settings)"
 "- (Add switch to switch between normal video and depth camera)"
-"- (Save metadata into a JSON or similar)"
 # with ui.card():
 #    ui.markdown(result)
 
@@ -135,14 +132,26 @@ def my_slider(id):
 
 @render.text
 @reactive.event(input.save_button)
-def store_metadata():
-    test = Participant(
+async def store_metadata():
+    person = Participant(
         name=input.name(),
         subjects=input.subjects(),
         grade=input.grade(),
         gender=input.gender(),
     )
-    funcs.move_data_from_temp_to_main_storage(folder_name=input.name())
+
+    amount_of_files = funcs.get_amount_of_files_to_move()
+    i = 0
+
+    with ui.Progress(min=1, max=amount_of_files) as p:
+        p.set(message="Moving files in progress", detail="This may take a while...")
+
+        for _ in funcs.move_data_from_temp_to_main_storage(
+            folder_name=input.name(), participant=person
+        ):
+            i += 1
+            p.set(i, message="Moving files")
+            await asyncio.sleep(0.1)
 
     # Update UI
     users_all.set(funcs.get_amount_of_people_recorded_in_total())
@@ -151,6 +160,8 @@ def store_metadata():
     days_all.set(f"Days recorded: {funcs.get_amount_of_days_recorded()}")
 
     reset_user()
+
+    return "Done computing!"
 
 
 @reactive.effect
@@ -161,7 +172,7 @@ def reset_metadata():
 
 @reactive.effect
 @reactive.event(input.record_button)
-async def start_recording():
+def start_recording():
     run()
 
 
