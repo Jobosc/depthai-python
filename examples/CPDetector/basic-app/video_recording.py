@@ -1,16 +1,16 @@
-#!/usr/bin/env python3
-
 from depthai_sdk import OakCamera, RecordType
 import depthai as dai
 import datetime
 from dotenv import load_dotenv
 import os
+from shiny.express import ui
 
 load_dotenv(
     "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
 )
 
 source_path = os.getenv("TEMP_STORAGE")
+date_format = os.getenv("DATE_FORMAT")
 
 
 def set_ir_parameters(
@@ -19,7 +19,8 @@ def set_ir_parameters(
     stereo.set_ir(dot_projector_brightness, flood_brightness)
 
 
-def run():
+@ui.bind_task_button(button_id="record_button")
+def run() -> int:
     with OakCamera() as oak:
         # Parameters
         encode = dai.VideoEncoderProperties.Profile.H265_MAIN
@@ -29,7 +30,7 @@ def run():
         flood_brightness = 100
 
         # Folder parameters
-        day = datetime.datetime.now().strftime("%Y%m%d")
+        day = datetime.datetime.now().strftime(date_format)
         # NOTE: Are more parameters needed?
 
         # Define cameras
@@ -88,6 +89,8 @@ def run():
 
             elif key == ord("e"):  # Switch to auto exposure
                 stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+
+        return 1
 
 
 if __name__ == "__main__":

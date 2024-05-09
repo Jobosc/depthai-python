@@ -11,33 +11,34 @@ load_dotenv(
 
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
+date_format = os.getenv("DATE_FORMAT")
 day = datetime.datetime.now().strftime("%Y%m%d")
 
 
-def get_amount_of_days_recorded():
-    if os.path.exists(os.path.join(main_path)):
-        return len(os.listdir(os.path.join(main_path)))
-    else:
-        return 0
+def get_recorded_days():
+    result = []
+    if os.path.exists(os.path.join(main_path, temp_path)):
+        result = os.listdir(os.path.join(main_path, temp_path))
+    return result
 
 
-def get_amount_of_people_recorded_today():
+def get_recorded_people_today():
+    result = []
     if os.path.exists(os.path.join(main_path, temp_path, day)):
-        return len(os.listdir(os.path.join(main_path, temp_path, day)))
-    else:
-        return 0
+        result = os.listdir(os.path.join(main_path, temp_path, day))
+    return result
 
 
-def get_amount_of_people_recorded_in_total():
+def get_recorded_people_in_total():
     all_people = []
     recordings_path = os.path.join(main_path, temp_path)
 
     for directory in os.listdir(recordings_path):
         all_people.extend(os.listdir(os.path.join(recordings_path, directory)))
-    return len(all_people)
+    return all_people
 
 
-def get_amount_of_sessions_recorded_in_total():
+def get_all_recorded_sessions_so_far():
     sessions = []
     recordings_path = os.path.join(main_path, temp_path)
 
@@ -45,16 +46,16 @@ def get_amount_of_sessions_recorded_in_total():
         people_paths = os.path.join(recordings_path, date_dir)
         for person_dir in os.listdir(people_paths):
             sessions.extend(os.listdir(os.path.join(people_paths, person_dir)))
-    return len(sessions)
+    return sessions
 
 
-def get_amount_of_files_to_move():
+def get_files_to_move():
     all_files = []
     for _, _, files in os.walk(os.path.join(temp_path, day)):
         for file in files:
             all_files.append(file)
 
-    return len(all_files)
+    return all_files
 
 
 def move_data_from_temp_to_main_storage(folder_name: str, participant: Participant):
@@ -86,3 +87,14 @@ def store_participant_metadata(path: str, metadata: Participant):
     save_file = open(os.path.join(path, "metadata.json"), "w")
     json.dump(vars(metadata), fp=save_file)
     save_file.close()
+
+
+def create_date_selection() -> dict:
+    dates = get_recorded_days()
+
+    dict_dates = dict()
+    for date in dates:
+        real_date = datetime.datetime.strptime(date, date_format)
+        dict_dates[real_date.strftime("%Y-%m-%d")] = date
+
+    return dict_dates
