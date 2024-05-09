@@ -6,15 +6,22 @@ import faicons as fa
 import datetime
 from video_recording import run
 import functions as funcs
+import asyncio
+
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
     "calendar": fa.icon_svg("calendar"),
     "gear": fa.icon_svg("gear"),
+    "film": fa.icon_svg("film"),
+    "person-walking": fa.icon_svg("person-walking"),
 }
 
-global camera_running
-camera_running = reactive.value(False)
+users_all = reactive.value(funcs.get_amount_of_people_recorded_in_total())
+users_today = reactive.value(f"Today: {funcs.get_amount_of_people_recorded_today()}")
+sessions_all = reactive.value(funcs.get_amount_of_sessions_recorded_in_total())
+days_all = reactive.value(f"Days recorded: {funcs.get_amount_of_days_recorded()}")
+
 
 ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
@@ -70,12 +77,27 @@ ui.panel_title("Videos")
 
 with ui.layout_columns(fill=False):
 
-    with ui.value_box(showcase=ICONS["user"]):
-        "Recorded users (?)"
+    with ui.value_box(showcase=ICONS["person-walking"]):
+        "Recorded users"
 
         @render.express
         def recorded_user():
-            pass
+            str(users_all.get())
+
+        @render.express
+        def recorded_user_today():
+            str(users_today.get())
+
+    with ui.value_box(showcase=ICONS["film"]):
+        "Recorded sessions"
+
+        @render.express
+        def recorded_session():
+            str(sessions_all.get())
+
+        @render.express
+        def recorded_days():
+            str(days_all.get())
 
     with ui.value_box(showcase=ICONS["calendar"]):
         "Date"
@@ -93,9 +115,6 @@ ui.input_action_button("record_button", "Start recording")
 
 "- (Show Time while running)"
 "- (Show table of sessions recorded per participant)"
-"- (Update the amount of participants recorded for the day)"
-"- (Display total amount of paricipants recorded so far on top)"
-"- (Add debug page)"
 "- (Check if it is possible to show 'Stop recording' button)"
 "- (Add possibility of deleting sessions and people from recorded data)"
 "- (Add debug mode on second page, for settings)"
@@ -125,18 +144,35 @@ def store_metadata():
     )
     funcs.move_data_from_temp_to_main_storage(folder_name=input.name())
 
+    # Update UI
+    users_all.set(funcs.get_amount_of_people_recorded_in_total())
+    users_today.set(f"Today: {funcs.get_amount_of_people_recorded_today()}")
+    sessions_all.set(funcs.get_amount_of_sessions_recorded_in_total())
+    days_all.set(f"Days recorded: {funcs.get_amount_of_days_recorded()}")
+
+    reset_user()
+
 
 @reactive.effect
 @reactive.event(input.reset_button)
 def reset_metadata():
+    reset_user()
+
+
+@reactive.effect
+@reactive.event(input.record_button)
+async def start_recording():
+    run()
+
+
+#######################################################
+#                    Functions
+#######################################################
+
+
+def reset_user():
     ui.update_text("name", value=f"")
     ui.update_text("subjects", value=f"")
     ui.update_text("grade", value=f"")
     ui.update_text("gender", value=f"")
     ui.update_text("comments", value=f"")
-
-
-@reactive.effect
-@reactive.event(input.record_button)
-def start_recording():
-    run()

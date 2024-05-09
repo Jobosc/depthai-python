@@ -13,11 +13,37 @@ day = datetime.datetime.now().strftime("%Y%m%d")
 
 
 def get_amount_of_days_recorded():
-    return len(os.listdir(temp_path))
+    if os.path.exists(os.path.join(main_path)):
+        return len(os.listdir(os.path.join(main_path)))
+    else:
+        return 0
 
 
-def get_amount_of_sessions_recorded_today():
-    return len(os.listdir(f"{temp_path}/{day}/"))
+def get_amount_of_people_recorded_today():
+    if os.path.exists(os.path.join(main_path, temp_path, day)):
+        return len(os.listdir(os.path.join(main_path, temp_path, day)))
+    else:
+        return 0
+
+
+def get_amount_of_people_recorded_in_total():
+    all_people = []
+    recordings_path = os.path.join(main_path, temp_path)
+
+    for directory in os.listdir(recordings_path):
+        all_people.extend(os.listdir(os.path.join(recordings_path, directory)))
+    return len(all_people)
+
+
+def get_amount_of_sessions_recorded_in_total():
+    sessions = []
+    recordings_path = os.path.join(main_path, temp_path)
+
+    for date_dir in os.listdir(recordings_path):
+        people_paths = os.path.join(recordings_path, date_dir)
+        for person_dir in os.listdir(people_paths):
+            sessions.extend(os.listdir(os.path.join(people_paths, person_dir)))
+    return len(sessions)
 
 
 def move_data_from_temp_to_main_storage(folder_name: str):
