@@ -4,7 +4,8 @@ from shiny.express import input, render, ui
 from participant import Participant
 import faicons as fa
 import datetime
-from video_recording import run, stop
+from video_recording import run
+import functions as funcs
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -88,9 +89,10 @@ ui.input_slider("n", "N", 0, 100, 20)
 # Action Button
 ui.input_action_button("record_button", "Start recording")
 "Press 'q' to stop recording."
+
+
 "- (Show Time while running)"
-"- (Show table of sessions rcorded per participant)"
-"- (Move all videos of a session into approptiate folder after all is over)"
+"- (Show table of sessions recorded per participant)"
 "- (Update the amount of participants recorded for the day)"
 "- (Display total amount of paricipants recorded so far on top)"
 "- (Add debug page)"
@@ -98,6 +100,7 @@ ui.input_action_button("record_button", "Start recording")
 "- (Add possibility of deleting sessions and people from recorded data)"
 "- (Add debug mode on second page, for settings)"
 "- (Add switch to switch between normal video and depth camera)"
+"- (Save metadata into a JSON or similar)"
 # with ui.card():
 #    ui.markdown(result)
 
@@ -120,7 +123,7 @@ def store_metadata():
         grade=input.grade(),
         gender=input.gender(),
     )
-    return f"{input.save_button()}"
+    funcs.move_data_from_temp_to_main_storage(folder_name=input.name())
 
 
 @reactive.effect

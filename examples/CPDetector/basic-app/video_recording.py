@@ -3,8 +3,14 @@
 from depthai_sdk import OakCamera, RecordType
 import depthai as dai
 import datetime
+from dotenv import load_dotenv
+import os
 
-global running
+load_dotenv(
+    "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
+)
+
+source_path = os.getenv("TEMP_STORAGE")
 
 
 def set_ir_parameters(
@@ -13,13 +19,8 @@ def set_ir_parameters(
     stereo.set_ir(dot_projector_brightness, flood_brightness)
 
 
-def stop():
-    running = False
-
-
 def run():
     with OakCamera() as oak:
-        running = True
         # Parameters
         encode = dai.VideoEncoderProperties.Profile.H265_MAIN
         resolution = "800p"
@@ -46,7 +47,9 @@ def run():
 
         # Synchronize & save all (encoded) streams
         oak.record(
-            [color.out.encoded], f"./VideoRecordings/{day}/", RecordType.VIDEO
+            [color.out.encoded],
+            os.path.join(source_path, day),
+            RecordType.VIDEO,
         )  # TODO: Add: , stereo.out.encoded....back into the list to store the depth
         oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1 / 2)
         # oak.show_graph()
@@ -56,7 +59,7 @@ def run():
         )  # This needs to be unblocked to run the below code. Check if I actually need it.
         # oak.close()
         # Debug mode
-        while oak.running() and running:
+        while oak.running():
             key = oak.poll()
             if key == ord("w"):
                 dot_projector_brightness = (
@@ -85,7 +88,6 @@ def run():
 
             elif key == ord("e"):  # Switch to auto exposure
                 stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
-    running = False
 
 
 if __name__ == "__main__":
