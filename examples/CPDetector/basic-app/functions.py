@@ -22,10 +22,10 @@ def get_recorded_days():
     return result
 
 
-def get_recorded_people_today():
+def get_recorded_people_for_a_specific_day(required_day: str = day):
     result = []
-    if os.path.exists(os.path.join(main_path, temp_path, day)):
-        result = os.listdir(os.path.join(main_path, temp_path, day))
+    if os.path.exists(os.path.join(main_path, temp_path, required_day)):
+        result = os.listdir(os.path.join(main_path, temp_path, required_day))
     return result
 
 
@@ -95,6 +95,20 @@ def create_date_selection() -> dict:
     dict_dates = dict()
     for date in dates:
         real_date = datetime.datetime.strptime(date, date_format)
-        dict_dates[real_date.strftime("%Y-%m-%d")] = date
+        dict_dates[date] = real_date.strftime("%Y-%m-%d")
 
     return dict_dates
+
+
+def delete_person_on_day_folder(day: str, person: str) -> bool:
+    try:
+        folder = os.path.join(main_path, temp_path, day, person)
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                os.remove(os.path.join(root, file))
+
+        # Delete folders
+        shutil.rmtree(folder)
+        return True
+    except:
+        return False

@@ -1,5 +1,5 @@
 from shiny import reactive
-from shiny.express import input, render, ui
+from shiny.express import input, render, ui, expressify
 
 from participant import Participant
 import faicons as fa
@@ -21,12 +21,17 @@ ICONS = {
     "person-walking": fa.icon_svg("person-walking"),
 }
 
+# Variables to display stored data
 users_all = reactive.value(len(funcs.get_recorded_people_in_total()))
-users_today = reactive.value(f"Today: {len(funcs.get_recorded_people_today())}")
+users_today = reactive.value(
+    f"Today: {len(funcs.get_recorded_people_for_a_specific_day())}"
+)
 sessions_all = reactive.value(len(funcs.get_all_recorded_sessions_so_far()))
 days_all = reactive.value(f"Days recorded: {len(funcs.get_recorded_days())}")
-selection_dates = reactive.value(funcs.create_date_selection())
+#
+session_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
+
 
 # ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
@@ -73,7 +78,7 @@ with ui.sidebar(id="sidebar"):
 
 ui.panel_title("Videos")
 
-# Top Cards
+# Top Cards section
 with ui.layout_columns(fill=False):
 
     with ui.value_box(showcase=ICONS["person-walking"]):
@@ -108,20 +113,95 @@ with ui.layout_columns(fill=False):
             return datetime.datetime.now().strftime("%H:%M:%S")
 
 
-# Action Button
+# Action Buttons section
 with ui.layout_columns(fill=False):
+    # Start recording
     ui.input_task_button(
         "record_button",
         "Start recording",
         label_busy="Recording...",
         class_="btn-success",
+        icon="▶️",
     )
 
+    # Display sessions
     ui.input_action_button("show_sessions", "Display sessions", class_="btn-secondary")
-ui.p("Press 'q' to stop recording.")
+
+
+@render.code
+def action():
+    return "Press 'q' to stop recording."
+
+
+# Recorded Sessions section
+@render.ui
+@reactive.event(input.show_sessions)
+def display_recorded_session_title():
+    if not session_view_state.get():
+        return [ui.markdown("##### Recorded Sessions")]
+
+
+with ui.layout_columns(fill=False):
+    # Date Selector
+    @render.ui
+    @reactive.event(input.show_sessions)
+    def update_date_selector():
+        if session_view_state.get():
+            session_view_state.set(False)
+            ui.update_action_button("show_sessions", label="Display sessions")
+            return None
+        else:
+            session_view_state.set(True)
+            ui.update_action_button("show_sessions", label="Hide sessions")
+            dates = {"": "Select..."}
+            dates.update(funcs.create_date_selection())
+            return [
+                ui.br(),
+                ui.input_select("date_selector", "Choose a Date:", dates, width="100%"),
+            ]
+
+    # People Selector
+    @render.ui
+    @reactive.event(input.date_selector)
+    def update_people_selector():
+        if input.date_selector.get() != "":
+            return [
+                ui.br(),
+                ui.input_selectize(
+                    "people_selector",
+                    "Choose Datasets:",
+                    funcs.get_recorded_people_for_a_specific_day(
+                        input.date_selector.get()
+                    ),
+                    multiple=True,
+                    width="100%",
+                ),
+            ]
+
+
+# Buttons for Dataset adaptation
+@render.ui
+@reactive.event(input.people_selector)
+def display_buttons():
+    buttons = []
+    datasets = input.people_selector.get()
+    if datasets:
+        if len(datasets) == 1:  # Only show Edit button if only one is selected
+            buttons.append(
+                ui.input_action_button(
+                    "edit_dataset", "Edit", class_="btn-outline-secondary", width="45%"
+                )
+            )
+        buttons.append(
+            ui.input_action_button(
+                "delete_dataset", "Delete", class_="btn-outline-danger", width="45%"
+            ),
+        )
+        return buttons
+
 
 # TODO: Check if it works
-with ui.panel_conditional("input.name || input.subjects"):
+with ui.panel_conditional("input.name"):
 
     @render.text
     def time_recorder():
@@ -130,39 +210,14 @@ with ui.panel_conditional("input.name || input.subjects"):
         return time_delta
 
 
-# Recorded Sessions
-with ui.panel_conditional("input.name || input.subjects"):
-    ui.markdown("#### Recorded Sessions")
-    ui.br()
-
-    ui.input_select("date", "Choose a Date:", [])
-
-    @render.text
-    def value():
-        return "You choose: " + str(input.date())
-
-
-with ui.panel_conditional("input.name || input.subjects"):
-
-    def my_accordion(**kwargs):
-        with ui.accordion(**kwargs):
-            for letter in "ABCDE":
-                with ui.accordion_panel(f"Section {letter}"):
-                    f"Some narrative for section {letter}"
-
-    my_accordion(multiple=False, id="acc_single")
-    ui.br()
-
-
 "- (Show Time while running)"
-"- (Show table of sessions recorded per participant)"
 "- (Check if it is possible to show 'Stop recording' button)"
-"- (Add possibility of deleting sessions and people from recorded data)"
 "- (Add debug mode on second page, for settings)"
 "- (Add switch to switch between normal video and depth camera)"
 "- (Prevent code from starting if external hard drive is not connected)"
 "- (Only save document if all metadata is filled, without comments)"
 "- (Display free storage of the hard drive)"
+"- (If dataset wasn't copied to external drive yet I need to get notified.)"
 
 
 #######################################################
@@ -194,12 +249,7 @@ async def store_metadata():
             p.set(i, message="Moving files")
             await asyncio.sleep(0.1)
 
-    # Update UI
-    users_all.set(len(funcs.get_recorded_people_in_total()))
-    users_today.set(f"Today: {len(funcs.get_recorded_people_today())}")
-    sessions_all.set(len(funcs.get_all_recorded_sessions_so_far()))
-    days_all.set(f"Days recorded: {len(funcs.get_recorded_days())}")
-
+    update_ui()
     reset_user()
 
     return "Done computing!"
@@ -219,9 +269,27 @@ def start_recording():
 
 
 @reactive.effect
-@reactive.event(input.show_sessions)
-def handle_cancel():
-    run.cancel()
+@reactive.event(input.delete_dataset)
+def delete_dataset():
+    for person in input.people_selector.get():
+        state = funcs.delete_person_on_day_folder(
+            day=input.date_selector.get(), person=person
+        )
+
+        if state:
+            ui.notification_show(
+                f"Dataset deletion of '{person}' was succesful.",
+                duration=None,
+                type="message",
+            )
+        else:
+            ui.notification_show(
+                f"Deleting the dataset of '{person}', failed!",
+                duration=None,
+                type="error",
+            )
+
+    update_ui()
 
 
 #######################################################
@@ -235,6 +303,13 @@ def reset_user():
     ui.update_text("grade", value=f"")
     ui.update_text("gender", value=f"")
     ui.update_text("comments", value=f"")
+
+
+def update_ui():
+    users_all.set(len(funcs.get_recorded_people_in_total()))
+    users_today.set(f"Today: {len(funcs.get_recorded_people_for_a_specific_day())}")
+    sessions_all.set(len(funcs.get_all_recorded_sessions_so_far()))
+    days_all.set(f"Days recorded: {len(funcs.get_recorded_days())}")
 
 
 # def my_slider(id):
