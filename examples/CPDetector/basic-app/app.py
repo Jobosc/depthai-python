@@ -23,6 +23,8 @@ ICONS = {
     "person-walking": fa.icon_svg("person-walking"),
 }
 
+temp_path = os.getenv("TEMP_STORAGE")
+main_path = os.getenv("MAIN_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
 
 # Variables to display stored data
@@ -35,6 +37,7 @@ days_all = reactive.value(f"Days recorded: {len(funcs.get_recorded_days())}")
 unsaved_days = reactive.value(funcs.create_date_selection_for_unsaved_sessions())
 #
 session_view_state = reactive.value(False)
+save_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
 
 
@@ -75,7 +78,17 @@ with ui.sidebar(id="sidebar"):
             ),
 
     # Action Button
-    ui.input_task_button("save_button", "Save", label_busy="Saving Session...")
+    @render.express
+    def save_button_choice():
+        if not save_view_state.get():
+            ui.input_task_button("save_button", "Save", label_busy="Saving Session...")
+        else:
+            ui.input_action_button(
+                "edit_metadata_button",
+                "Save changes",
+                label_busy="Saving Session...",
+                class_="btn-warning",
+            )
 
     with ui.panel_conditional(
         "input.name || input.subjects || input.grade || input.gender"
@@ -162,14 +175,14 @@ def action():
 @render.ui
 @reactive.event(input.show_sessions)
 def display_recorded_session_title():
-    if not session_view_state.get() and not input.rb_unsaved_days.is_set():
-        return [ui.markdown("##### Recorded Sessions")]
-    else:
+    if input.rb_unsaved_days.is_set():
         ui.notification_show(
             f"You need to complete the session from a previous day before you can start editing sessions!",
             duration=None,
             type="warning",
         )
+    if not session_view_state.get():
+        return [ui.markdown("##### Recorded Sessions")]
 
 
 with ui.layout_columns(fill=False):
@@ -196,9 +209,9 @@ with ui.layout_columns(fill=False):
 
     # People Selector
     @render.ui
-    @reactive.event(input.date_selector)
+    @reactive.event(input.date_selector, input.show_sessions)
     def update_people_selector():
-        if not input.rb_unsaved_days.is_set():
+        if not input.rb_unsaved_days.is_set() and session_view_state.get():
             if input.date_selector.get() != "":
                 return [
                     ui.br(),
@@ -216,11 +229,11 @@ with ui.layout_columns(fill=False):
 
 # Buttons for Dataset adaptation
 @render.ui
-@reactive.event(input.people_selector)
+@reactive.event(input.people_selector, input.show_sessions)
 def display_buttons():
     buttons = []
     datasets = input.people_selector.get()
-    if datasets:
+    if datasets and session_view_state.get():
         if len(datasets) == 1:  # Only show Edit button if only one is selected
             buttons.append(
                 ui.input_action_button(
@@ -235,23 +248,11 @@ def display_buttons():
         return buttons
 
 
-# TODO: Check if it works
-with ui.panel_conditional("input.name"):
-
-    @render.text
-    def time_recorder():
-        reactive.invalidate_later(1)
-        time_delta = datetime.datetime.now() - start_time.get()
-        return time_delta
-
-
-"- (Show Time while running)"
 "- (Check if it is possible to show 'Stop recording' button)"
 "- (Add debug mode on second page, for settings)"
 "- (Add switch to switch between normal video and depth camera)"
 "- (Prevent code from starting if external hard drive is not connected)"
 "- (Display free storage of the hard drive)"
-"- (Edit metadata of session - Existing button needs to get a function)"
 
 #######################################################
 #                    Events
@@ -427,6 +428,34 @@ def edit_metadata():
     ui.update_text("grade", value=person.grade)
     ui.update_text("gender", value=person.gender)
     ui.update_text("comments", value="")
+    ui.update_radio_buttons("rb_unsaved_days", selected=None)
+
+    save_view_state.set(True)
+
+
+@reactive.effect
+@reactive.event(input.edit_metadata_button)
+def edit_metadata():
+    person = Participant(
+        name=input.name(),
+        subjects=input.subjects(),
+        grade=input.grade(),
+        gender=input.gender(),
+    )
+
+    path = os.path.join(
+        main_path, temp_path, input.date_selector(), input.people_selector()[0]
+    )
+
+    funcs.store_participant_metadata(path=path, metadata=person)
+    reset_user()
+
+    ui.notification_show(
+        f"Metadata has been edited and saved.",
+        duration=None,
+        type="default",
+    )
+    save_view_state.set(False)
 
 
 #######################################################

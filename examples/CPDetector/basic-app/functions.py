@@ -76,7 +76,7 @@ def move_data_from_temp_to_main_storage(
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
             os.remove(os.path.join(root, file))
             yield True
-    __store_participant_metadata(
+    store_participant_metadata(
         os.path.join(main_path, temp_path, day, folder_name), participant
     )
 
@@ -93,7 +93,8 @@ def create_date_selection_for_saved_sessions() -> dict:
 
 def create_date_selection_for_unsaved_sessions() -> dict:
     dates = __get_unsaved_local_session_days()
-    dates.remove(today)
+    if today in dates:
+        dates.remove(today)
 
     return __create_date_dictionary(dates=dates)
 
@@ -145,7 +146,7 @@ def __create_date_dictionary(dates: list):
     return dict_dates
 
 
-def __store_participant_metadata(path: str, metadata: Participant):
+def store_participant_metadata(path: str, metadata: Participant):
     save_file = open(os.path.join(path, "metadata.json"), "w")
     json.dump(vars(metadata), fp=save_file)
     save_file.close()
