@@ -1,5 +1,5 @@
 from shiny import reactive
-from shiny.express import input, render, ui, expressify
+from shiny.express import input, render, ui
 
 from participant import Participant
 import faicons as fa
@@ -8,10 +8,12 @@ from video_recording import run
 import functions as funcs
 import asyncio
 from dotenv import load_dotenv
+import os
 
 load_dotenv(
     "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
 )
+
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -21,6 +23,8 @@ ICONS = {
     "person-walking": fa.icon_svg("person-walking"),
 }
 
+date_format = os.getenv("DATE_FORMAT")
+
 # Variables to display stored data
 users_all = reactive.value(len(funcs.get_recorded_people_in_total()))
 users_today = reactive.value(
@@ -28,6 +32,7 @@ users_today = reactive.value(
 )
 sessions_all = reactive.value(len(funcs.get_all_recorded_sessions_so_far()))
 days_all = reactive.value(f"Days recorded: {len(funcs.get_recorded_days())}")
+unsaved_days = reactive.value(funcs.create_date_selection_for_unsaved_sessions())
 #
 session_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
@@ -48,13 +53,33 @@ with ui.sidebar(id="sidebar"):
 
     ui.input_text_area("comments", ui.markdown("Comments"), autoresize=True)
 
+    ui.p("Welche Daten müssen wir aufzeichnen und welche sind optional?").add_style(
+        style="color:red;"
+    )
+
+    with ui.panel_conditional(
+        "input.name || input.subjects || input.grade || input.gender"
+    ):
+        ui.input_action_button("reset_button", "Reset", class_="btn-outline-danger")
+
+    @render.express
+    def forgotten_session_days():
+        if unsaved_days.get():
+            ui.input_radio_buttons(
+                "rb_unsaved_days",
+                "There are unsaved local sessions that need to be stored first:",
+                unsaved_days.get(),
+            )
+            ui.input_action_button(
+                "delete_date_sessions", "Delete Sessions", class_="btn-outline-danger"
+            ),
+
     # Action Button
     ui.input_task_button("save_button", "Save", label_busy="Saving Session...")
 
     with ui.panel_conditional(
         "input.name || input.subjects || input.grade || input.gender"
     ):
-        ui.input_action_button("reset_button", "Reset", class_="btn-outline-danger")
 
         with ui.value_box(showcase=ICONS["user"]):
             ui.p("")
@@ -137,8 +162,14 @@ def action():
 @render.ui
 @reactive.event(input.show_sessions)
 def display_recorded_session_title():
-    if not session_view_state.get():
+    if not session_view_state.get() and not input.rb_unsaved_days.is_set():
         return [ui.markdown("##### Recorded Sessions")]
+    else:
+        ui.notification_show(
+            f"You need to complete the session from a previous day before you can start editing sessions!",
+            duration=None,
+            type="warning",
+        )
 
 
 with ui.layout_columns(fill=False):
@@ -146,37 +177,41 @@ with ui.layout_columns(fill=False):
     @render.ui
     @reactive.event(input.show_sessions)
     def update_date_selector():
-        if session_view_state.get():
-            session_view_state.set(False)
-            ui.update_action_button("show_sessions", label="Display sessions")
-            return None
-        else:
-            session_view_state.set(True)
-            ui.update_action_button("show_sessions", label="Hide sessions")
-            dates = {"": "Select..."}
-            dates.update(funcs.create_date_selection())
-            return [
-                ui.br(),
-                ui.input_select("date_selector", "Choose a Date:", dates, width="100%"),
-            ]
+        if not input.rb_unsaved_days.is_set():
+            if session_view_state.get():
+                session_view_state.set(False)
+                ui.update_action_button("show_sessions", label="Display sessions")
+                return None
+            else:
+                session_view_state.set(True)
+                ui.update_action_button("show_sessions", label="Hide sessions")
+                dates = {"": "Select..."}
+                dates.update(funcs.create_date_selection_for_saved_sessions())
+                return [
+                    ui.br(),
+                    ui.input_select(
+                        "date_selector", "Choose a Date:", dates, width="100%"
+                    ),
+                ]
 
     # People Selector
     @render.ui
     @reactive.event(input.date_selector)
     def update_people_selector():
-        if input.date_selector.get() != "":
-            return [
-                ui.br(),
-                ui.input_selectize(
-                    "people_selector",
-                    "Choose Datasets:",
-                    funcs.get_recorded_people_for_a_specific_day(
-                        input.date_selector.get()
+        if not input.rb_unsaved_days.is_set():
+            if input.date_selector.get() != "":
+                return [
+                    ui.br(),
+                    ui.input_selectize(
+                        "people_selector",
+                        "Choose Datasets:",
+                        funcs.get_recorded_people_for_a_specific_day(
+                            input.date_selector.get()
+                        ),
+                        multiple=True,
+                        width="100%",
                     ),
-                    multiple=True,
-                    width="100%",
-                ),
-            ]
+                ]
 
 
 # Buttons for Dataset adaptation
@@ -215,20 +250,73 @@ with ui.panel_conditional("input.name"):
 "- (Add debug mode on second page, for settings)"
 "- (Add switch to switch between normal video and depth camera)"
 "- (Prevent code from starting if external hard drive is not connected)"
-"- (Only save document if all metadata is filled, without comments)"
 "- (Display free storage of the hard drive)"
-"- (If dataset wasn't copied to external drive yet I need to get notified.)"
-
+"- (Edit metadata of session - Existing button needs to get a function)"
 
 #######################################################
 #                    Events
 #######################################################
 
 
-@render.text
+# Modal button effects
+@reactive.effect
+@reactive.event(input.delete_date_sessions)
+def initiate_session_deletion():
+    day = ""
+    if input.rb_unsaved_days.is_set():
+        date = datetime.datetime.strptime(
+            input.rb_unsaved_days(), date_format
+        ).strftime("%Y-%m-%d")
+        day = f", from {date}"
+
+    notification = ui.modal(
+        ui.markdown(f"**Do you really want to delete the recorded sessions{day}?**"),
+        ui.input_action_button("delete_yes", "Yes", class_="btn-danger"),
+        ui.input_action_button("delete_no", "No", class_="btn-secondary"),
+        easy_close=False,
+        footer=None,
+    )
+    ui.modal_show(notification)
+
+
+@reactive.effect
+@reactive.event(input.delete_yes, input.delete_no)
+def modal_remover_delete():
+    ui.modal_remove()
+
+
+@reactive.effect
 @reactive.event(input.save_button)
+def initiate_save():
+    day = ""
+    if input.rb_unsaved_days.is_set():
+        date = datetime.datetime.strptime(
+            input.rb_unsaved_days(), date_format
+        ).strftime("%Y-%m-%d")
+        day = f", from {date}"
+
+    notification = ui.modal(
+        ui.markdown(f"**Do you really want to save the recorded sessions{day}?**"),
+        ui.input_action_button("save_yes", "✔ Yes", class_="btn-success"),
+        ui.input_action_button("save_no", "✘ No", class_="btn-danger"),
+        easy_close=False,
+        footer=None,
+    )
+    ui.modal_show(notification)
+
+
+@reactive.effect
+@reactive.event(input.save_yes, input.save_no)
+def modal_remover():
+    ui.modal_remove()
+
+
+# Button effects
+@render.text
+@reactive.event(input.save_yes)
 async def store_metadata():
     i = 0
+    day = datetime.datetime.now().strftime(date_format)
 
     person = Participant(
         name=input.name(),
@@ -238,12 +326,14 @@ async def store_metadata():
     )
 
     amount_of_files = len(funcs.get_files_to_move())
+    if input.rb_unsaved_days.is_set():
+        day = input.rb_unsaved_days()
 
     with ui.Progress(min=1, max=amount_of_files) as p:
         p.set(message="Moving files in progress", detail="This may take a while...")
 
         for _ in funcs.move_data_from_temp_to_main_storage(
-            folder_name=input.name(), participant=person
+            folder_name=input.name(), participant=person, day=day
         ):
             i += 1
             p.set(i, message="Moving files")
@@ -252,7 +342,31 @@ async def store_metadata():
     update_ui()
     reset_user()
 
-    return "Done computing!"
+
+@render.text
+@reactive.event(input.delete_yes)
+def delete_session_for_specific_day():
+    state = funcs.delete_session_on_date_folder(day=input.rb_unsaved_days())
+    day = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
+        "%Y-%m-%d"
+    )
+
+    if state:
+        ui.notification_show(
+            f"Dataset deletion from '{day}' was successful.",
+            duration=None,
+            type="default",
+        )
+    else:
+        ui.notification_show(
+            f"Deleting the dataset from '{day}', failed!",
+            duration=None,
+            type="error",
+        )
+    print("Test")
+    print(input.rb_unsaved_days())
+
+    update_ui()
 
 
 @reactive.effect
@@ -264,8 +378,16 @@ def reset_metadata():
 @reactive.effect
 @reactive.event(input.record_button)
 def start_recording():
-    start_time.set(datetime.datetime.now())
-    run()
+    if input.rb_unsaved_days.is_set():
+        ui.notification_show(
+            f"You need to complete the session from a previous day before you can start recording again!",
+            duration=None,
+            type="warning",
+        )
+    else:
+        start_time.set(datetime.datetime.now())
+        run()
+        update_ui()
 
 
 @reactive.effect
@@ -292,6 +414,21 @@ def delete_dataset():
     update_ui()
 
 
+@reactive.effect
+@reactive.event(input.edit_dataset)
+def edit_metadata():
+    metadata = funcs.read_participant_metadata(
+        date=input.date_selector(), person=input.people_selector()[0]
+    )
+    person = Participant(**metadata)
+
+    ui.update_text("name", value=person.name)
+    ui.update_text("subjects", value=person.subjects)
+    ui.update_text("grade", value=person.grade)
+    ui.update_text("gender", value=person.gender)
+    ui.update_text("comments", value="")
+
+
 #######################################################
 #                    Functions
 #######################################################
@@ -310,6 +447,7 @@ def update_ui():
     users_today.set(f"Today: {len(funcs.get_recorded_people_for_a_specific_day())}")
     sessions_all.set(len(funcs.get_all_recorded_sessions_so_far()))
     days_all.set(f"Days recorded: {len(funcs.get_recorded_days())}")
+    unsaved_days.set(funcs.create_date_selection_for_unsaved_sessions())
 
 
 # def my_slider(id):

@@ -12,7 +12,7 @@ load_dotenv(
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
-day = datetime.datetime.now().strftime("%Y%m%d")
+today = datetime.datetime.now().strftime(date_format)
 
 
 def get_recorded_days():
@@ -22,7 +22,7 @@ def get_recorded_days():
     return result
 
 
-def get_recorded_people_for_a_specific_day(required_day: str = day):
+def get_recorded_people_for_a_specific_day(required_day: str = today):
     result = []
     if os.path.exists(os.path.join(main_path, temp_path, required_day)):
         result = os.listdir(os.path.join(main_path, temp_path, required_day))
@@ -51,14 +51,16 @@ def get_all_recorded_sessions_so_far():
 
 def get_files_to_move():
     all_files = []
-    for _, _, files in os.walk(os.path.join(temp_path, day)):
+    for _, _, files in os.walk(os.path.join(temp_path, today)):
         for file in files:
             all_files.append(file)
 
     return all_files
 
 
-def move_data_from_temp_to_main_storage(folder_name: str, participant: Participant):
+def move_data_from_temp_to_main_storage(
+    folder_name: str, participant: Participant, day: str = today
+):
 
     for root, dirs, files in os.walk(os.path.join(temp_path, day)):
         # Copy files
@@ -74,7 +76,7 @@ def move_data_from_temp_to_main_storage(folder_name: str, participant: Participa
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
             os.remove(os.path.join(root, file))
             yield True
-    store_participant_metadata(
+    __store_participant_metadata(
         os.path.join(main_path, temp_path, day, folder_name), participant
     )
 
@@ -83,21 +85,17 @@ def move_data_from_temp_to_main_storage(folder_name: str, participant: Participa
     shutil.rmtree(folder_path)
 
 
-def store_participant_metadata(path: str, metadata: Participant):
-    save_file = open(os.path.join(path, "metadata.json"), "w")
-    json.dump(vars(metadata), fp=save_file)
-    save_file.close()
-
-
-def create_date_selection() -> dict:
+def create_date_selection_for_saved_sessions() -> dict:
     dates = get_recorded_days()
 
-    dict_dates = dict()
-    for date in dates:
-        real_date = datetime.datetime.strptime(date, date_format)
-        dict_dates[date] = real_date.strftime("%Y-%m-%d")
+    return __create_date_dictionary(dates=dates)
 
-    return dict_dates
+
+def create_date_selection_for_unsaved_sessions() -> dict:
+    dates = __get_unsaved_local_session_days()
+    dates.remove(today)
+
+    return __create_date_dictionary(dates=dates)
 
 
 def delete_person_on_day_folder(day: str, person: str) -> bool:
@@ -112,3 +110,49 @@ def delete_person_on_day_folder(day: str, person: str) -> bool:
         return True
     except:
         return False
+
+
+def delete_session_on_date_folder(day: str) -> bool:
+    try:
+        folder = os.path.join(temp_path, day)
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                os.remove(os.path.join(root, file))
+
+        # Delete folders
+        shutil.rmtree(folder)
+        return True
+    except:
+        return False
+
+
+def read_participant_metadata(date: str, person: str):
+    load_file = open(
+        os.path.join(main_path, temp_path, date, person, "metadata.json"), "r"
+    )
+    data = json.load(fp=load_file)
+    load_file.close()
+
+    return data
+
+
+def __create_date_dictionary(dates: list):
+    dict_dates = dict()
+    for date in dates:
+        real_date = datetime.datetime.strptime(date, date_format)
+        dict_dates[date] = real_date.strftime("%Y-%m-%d")
+
+    return dict_dates
+
+
+def __store_participant_metadata(path: str, metadata: Participant):
+    save_file = open(os.path.join(path, "metadata.json"), "w")
+    json.dump(vars(metadata), fp=save_file)
+    save_file.close()
+
+
+def __get_unsaved_local_session_days():
+    result = []
+    if os.path.exists(os.path.join(temp_path)):
+        result = os.listdir(temp_path)
+    return result
