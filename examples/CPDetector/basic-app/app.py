@@ -1,19 +1,17 @@
+import asyncio
+import datetime
+import os
+
+import faicons as fa
+from dotenv import load_dotenv
 from shiny import reactive
 from shiny.express import input, render, ui
 
-from participant import Participant
-import faicons as fa
-import datetime
-from video_recording import run
 import functions as funcs
-import asyncio
-from dotenv import load_dotenv
-import os
+from participant import Participant
+from video_recording import run
 
-load_dotenv(
-    "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
-)
-
+load_dotenv("./.env")
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -40,7 +38,6 @@ session_view_state = reactive.value(False)
 save_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
 
-
 # ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
 #                     Sidebar
@@ -61,9 +58,10 @@ with ui.sidebar(id="sidebar"):
     )
 
     with ui.panel_conditional(
-        "input.name || input.subjects || input.grade || input.gender"
+            "input.name || input.subjects || input.grade || input.gender"
     ):
         ui.input_action_button("reset_button", "Reset", class_="btn-outline-danger")
+
 
     @render.express
     def forgotten_session_days():
@@ -76,6 +74,7 @@ with ui.sidebar(id="sidebar"):
             ui.input_action_button(
                 "delete_date_sessions", "Delete Sessions", class_="btn-outline-danger"
             ),
+
 
     # Action Button
     @render.express
@@ -90,13 +89,15 @@ with ui.sidebar(id="sidebar"):
                 class_="btn-warning",
             )
 
+
     with ui.panel_conditional(
-        "input.name || input.subjects || input.grade || input.gender"
+            "input.name || input.subjects || input.grade || input.gender"
     ):
 
         with ui.value_box(showcase=ICONS["user"]):
             ui.p("")
             ui.p("Metadata")
+
 
             @render.express
             def metadata_output():
@@ -109,7 +110,6 @@ with ui.sidebar(id="sidebar"):
                 if input.gender() != "":
                     ui.markdown(f"Gender: {input.gender()}")
 
-
 #######################################################
 #                   Main View
 #######################################################
@@ -118,13 +118,14 @@ ui.panel_title("Videos")
 
 # Top Cards section
 with ui.layout_columns(fill=False):
-
     with ui.value_box(showcase=ICONS["person-walking"]):
         ui.p("Recorded users")
+
 
         @render.express
         def recorded_user():
             str(users_all.get())
+
 
         @render.express
         def recorded_user_today():
@@ -133,9 +134,11 @@ with ui.layout_columns(fill=False):
     with ui.value_box(showcase=ICONS["film"]):
         ui.p("Recorded sessions")
 
+
         @render.express
         def recorded_session():
             str(sessions_all.get())
+
 
         @render.express
         def recorded_days():
@@ -145,11 +148,11 @@ with ui.layout_columns(fill=False):
         ui.p("Date")
         datetime.datetime.now().strftime("%d-%m-%Y")
 
+
         @render.text
         def current_time():
             reactive.invalidate_later(1)
             return datetime.datetime.now().strftime("%H:%M:%S")
-
 
 # Action Buttons section
 with ui.layout_columns(fill=False):
@@ -207,6 +210,7 @@ with ui.layout_columns(fill=False):
                     ),
                 ]
 
+
     # People Selector
     @render.ui
     @reactive.event(input.date_selector, input.show_sessions)
@@ -253,6 +257,8 @@ def display_buttons():
 "- (Add switch to switch between normal video and depth camera)"
 "- (Prevent code from starting if external hard drive is not connected)"
 "- (Display free storage of the hard drive)"
+"- (Add status leds for connected connected camera and connected hard drive"
+
 
 #######################################################
 #                    Events
@@ -334,7 +340,7 @@ async def store_metadata():
         p.set(message="Moving files in progress", detail="This may take a while...")
 
         for _ in funcs.move_data_from_temp_to_main_storage(
-            folder_name=input.name(), participant=person, day=day
+                folder_name=input.name(), participant=person, day=day
         ):
             i += 1
             p.set(i, message="Moving files")
@@ -477,7 +483,6 @@ def update_ui():
     sessions_all.set(len(funcs.get_all_recorded_sessions_so_far()))
     days_all.set(f"Days recorded: {len(funcs.get_recorded_days())}")
     unsaved_days.set(funcs.create_date_selection_for_unsaved_sessions())
-
 
 # def my_slider(id):
 #    return ui.input_slider(id, "N", 0, 100, 20)

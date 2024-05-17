@@ -5,9 +5,7 @@ import shutil
 from participant import Participant
 import json
 
-load_dotenv(
-    "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
-)
+load_dotenv("./.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
