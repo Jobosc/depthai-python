@@ -6,14 +6,14 @@ from depthai_sdk import OakCamera, RecordType
 from dotenv import load_dotenv
 from shiny.express import ui
 
-load_dotenv("./.env")
+load_dotenv("./depthai-python/examples/CPDetector/basic-app/.env")
 
 source_path = os.getenv("TEMP_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
 
 
 def set_ir_parameters(
-        stereo: OakCamera.stereo, dot_projector_brightness, flood_brightness
+    stereo: OakCamera.stereo, dot_projector_brightness, flood_brightness
 ):
     stereo.set_ir(dot_projector_brightness, flood_brightness)
 

@@ -5,7 +5,7 @@ import shutil
 from participant import Participant
 import json
 
-load_dotenv("./.env")
+load_dotenv("./depthai-python/examples/CPDetector/basic-app/.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")

@@ -48,20 +48,12 @@ with ui.sidebar(id="sidebar"):
     ui.input_dark_mode(id="mode")
 
     # Input fields
-    for attrs in vars(Participant()):
-        ui.input_text(attrs, label=f"Enter {attrs}")
+    ui.input_text("id", label=f"Enter ID")
 
     ui.input_text_area("comments", ui.markdown("Comments"), autoresize=True)
 
-    ui.p("Welche Daten müssen wir aufzeichnen und welche sind optional?").add_style(
-        style="color:red;"
-    )
-
-    with ui.panel_conditional(
-            "input.name || input.subjects || input.grade || input.gender"
-    ):
+    with ui.panel_conditional("input.id"):
         ui.input_action_button("reset_button", "Reset", class_="btn-outline-danger")
-
 
     @render.express
     def forgotten_session_days():
@@ -74,7 +66,6 @@ with ui.sidebar(id="sidebar"):
             ui.input_action_button(
                 "delete_date_sessions", "Delete Sessions", class_="btn-outline-danger"
             ),
-
 
     # Action Button
     @render.express
@@ -89,26 +80,21 @@ with ui.sidebar(id="sidebar"):
                 class_="btn-warning",
             )
 
-
-    with ui.panel_conditional(
-            "input.name || input.subjects || input.grade || input.gender"
-    ):
+    with ui.panel_conditional("input.id"):
 
         with ui.value_box(showcase=ICONS["user"]):
             ui.p("")
-            ui.p("Metadata")
-
+            ui.p("Patient")
 
             @render.express
             def metadata_output():
-                if input.name() != "":
-                    ui.markdown(f"Name: {input.name()}")
-                if input.subjects() != "":
-                    ui.markdown(f"Subjects: {input.subjects()}")
-                if input.grade() != "":
-                    ui.markdown(f"Grade: {input.grade()}")
-                if input.gender() != "":
-                    ui.markdown(f"Gender: {input.gender()}")
+                if input.id() != "":
+                    ui.markdown(f"ID: {input.id()}")
+                if input.comments() != "":
+                    ui.br()
+                    ui.markdown("Comments:")
+                    ui.markdown(f"{input.comments()}")
+
 
 #######################################################
 #                   Main View
@@ -121,11 +107,9 @@ with ui.layout_columns(fill=False):
     with ui.value_box(showcase=ICONS["person-walking"]):
         ui.p("Recorded users")
 
-
         @render.express
         def recorded_user():
             str(users_all.get())
-
 
         @render.express
         def recorded_user_today():
@@ -134,11 +118,9 @@ with ui.layout_columns(fill=False):
     with ui.value_box(showcase=ICONS["film"]):
         ui.p("Recorded sessions")
 
-
         @render.express
         def recorded_session():
             str(sessions_all.get())
-
 
         @render.express
         def recorded_days():
@@ -148,11 +130,11 @@ with ui.layout_columns(fill=False):
         ui.p("Date")
         datetime.datetime.now().strftime("%d-%m-%Y")
 
-
         @render.text
         def current_time():
             reactive.invalidate_later(1)
             return datetime.datetime.now().strftime("%H:%M:%S")
+
 
 # Action Buttons section
 with ui.layout_columns(fill=False):
@@ -210,7 +192,6 @@ with ui.layout_columns(fill=False):
                     ),
                 ]
 
-
     # People Selector
     @render.ui
     @reactive.event(input.date_selector, input.show_sessions)
@@ -252,12 +233,13 @@ def display_buttons():
         return buttons
 
 
-"- (Check if it is possible to show 'Stop recording' button)"
-"- (Add debug mode on second page, for settings)"
-"- (Add switch to switch between normal video and depth camera)"
-"- (Prevent code from starting if external hard drive is not connected)"
-"- (Display free storage of the hard drive)"
-"- (Add status leds for connected connected camera and connected hard drive"
+# "- (Check if it is possible to show 'Stop recording' button)"
+# "- (Add debug mode on second page, for settings)"
+# "- (Add switch to switch between normal video and depth camera)"
+# "- (Prevent code from starting if external hard drive is not connected)"
+# "- (Display free storage of the hard drive)"
+# "- (Add status leds for connected connected camera and connected hard drive"
+# Find out why video recording crashes after some time
 
 
 #######################################################
@@ -325,12 +307,7 @@ async def store_metadata():
     i = 0
     day = datetime.datetime.now().strftime(date_format)
 
-    person = Participant(
-        name=input.name(),
-        subjects=input.subjects(),
-        grade=input.grade(),
-        gender=input.gender(),
-    )
+    person = Participant(id=input.id(), comments=input.comments())
 
     amount_of_files = len(funcs.get_files_to_move())
     if input.rb_unsaved_days.is_set():
@@ -340,7 +317,7 @@ async def store_metadata():
         p.set(message="Moving files in progress", detail="This may take a while...")
 
         for _ in funcs.move_data_from_temp_to_main_storage(
-                folder_name=input.name(), participant=person, day=day
+            folder_name=input.id(), participant=person, day=day
         ):
             i += 1
             p.set(i, message="Moving files")
@@ -429,11 +406,8 @@ def edit_metadata():
     )
     person = Participant(**metadata)
 
-    ui.update_text("name", value=person.name)
-    ui.update_text("subjects", value=person.subjects)
-    ui.update_text("grade", value=person.grade)
-    ui.update_text("gender", value=person.gender)
-    ui.update_text("comments", value="")
+    ui.update_text("id", value=person.id)
+    ui.update_text("comments", value=person.comments)
     ui.update_radio_buttons("rb_unsaved_days", selected=None)
 
     save_view_state.set(True)
@@ -443,10 +417,8 @@ def edit_metadata():
 @reactive.event(input.edit_metadata_button)
 def edit_metadata():
     person = Participant(
-        name=input.name(),
-        subjects=input.subjects(),
-        grade=input.grade(),
-        gender=input.gender(),
+        id=input.id(),
+        comments=input.comments(),
     )
 
     path = os.path.join(
@@ -470,10 +442,7 @@ def edit_metadata():
 
 
 def reset_user():
-    ui.update_text("name", value=f"")
-    ui.update_text("subjects", value=f"")
-    ui.update_text("grade", value=f"")
-    ui.update_text("gender", value=f"")
+    ui.update_text("id", value=f"")
     ui.update_text("comments", value=f"")
 
 
@@ -483,6 +452,7 @@ def update_ui():
     sessions_all.set(len(funcs.get_all_recorded_sessions_so_far()))
     days_all.set(f"Days recorded: {len(funcs.get_recorded_days())}")
     unsaved_days.set(funcs.create_date_selection_for_unsaved_sessions())
+
 
 # def my_slider(id):
 #    return ui.input_slider(id, "N", 0, 100, 20)

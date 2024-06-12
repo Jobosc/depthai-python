@@ -3,7 +3,5 @@ from typing import Optional
 
 
 class Participant(BaseModel):
-    name: str = None
-    subjects: str = None
-    grade: str = None
-    gender: Optional[str] = None
+    ID: str = None
+    comments: Optional[str] = None
