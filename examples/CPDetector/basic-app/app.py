@@ -21,6 +21,11 @@ ICONS = {
     "person-walking": fa.icon_svg("person-walking"),
 }
 
+STATUS = {
+    "available": fa.icon_svg(name="circle", fill="green"),
+    "missing": fa.icon_svg(name="circle", fill="red"),
+}
+
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
@@ -38,7 +43,7 @@ session_view_state = reactive.value(False)
 save_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
 
-# ui.page_opts(title="Gait Recording", fillable=True)
+ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
 #                     Sidebar
 #######################################################
@@ -100,7 +105,8 @@ with ui.sidebar(id="sidebar"):
 #                   Main View
 #######################################################
 
-ui.panel_title("Videos")
+with ui.layout_columns(fill=False):
+    ui.panel_title("Videos")
 
 # Top Cards section
 with ui.layout_columns(fill=False):
