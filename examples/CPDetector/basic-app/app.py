@@ -219,17 +219,19 @@ def display_buttons():
     buttons = []
     datasets = input.people_selector.get()
     if datasets and session_view_state.get():
+        buttons.append(
+            ui.input_action_button(
+                "delete_dataset", "Delete", class_="btn-outline-danger", width="45%"
+            ),
+        )
+
         if len(datasets) == 1:  # Only show Edit button if only one is selected
             buttons.append(
                 ui.input_action_button(
                     "edit_dataset", "Edit", class_="btn-outline-secondary", width="45%"
                 )
             )
-        buttons.append(
-            ui.input_action_button(
-                "delete_dataset", "Delete", class_="btn-outline-danger", width="45%"
-            ),
-        )
+
         return buttons
 
 

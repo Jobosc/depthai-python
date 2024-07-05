@@ -23,7 +23,7 @@ def run() -> int:
     with OakCamera() as oak:
         # Parameters
         encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-        resolution = "800p"
+        resolution = "3040p"
         fps = 60
         dot_projector_brightness = 200
         flood_brightness = 100
@@ -51,11 +51,11 @@ def run() -> int:
             os.path.join(source_path, day),
             RecordType.VIDEO,
         )  # TODO: Add: , stereo.out.encoded....back into the list to store the depth
-        oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1 / 2)
+        oak.visualize([color.out.camera], fps=True, scale=1 / 2)
         # oak.show_graph()
 
         oak.start(
-            blocking=False
+            blocking=True
         )  # This needs to be unblocked to run the below code. Check if I actually need it.
         # oak.close()
         # Debug mode

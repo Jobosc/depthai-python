@@ -31,8 +31,9 @@ def get_recorded_people_in_total():
     all_people = []
     recordings_path = os.path.join(main_path, temp_path)
 
-    for directory in os.listdir(recordings_path):
-        all_people.extend(os.listdir(os.path.join(recordings_path, directory)))
+    if os.path.exists(recordings_path):
+        for directory in os.listdir(recordings_path):
+            all_people.extend(os.listdir(os.path.join(recordings_path, directory)))
     return all_people
 
 
@@ -40,10 +41,11 @@ def get_all_recorded_sessions_so_far():
     sessions = []
     recordings_path = os.path.join(main_path, temp_path)
 
-    for date_dir in os.listdir(recordings_path):
-        people_paths = os.path.join(recordings_path, date_dir)
-        for person_dir in os.listdir(people_paths):
-            sessions.extend(os.listdir(os.path.join(people_paths, person_dir)))
+    if os.path.exists(recordings_path):
+        for date_dir in os.listdir(recordings_path):
+            people_paths = os.path.join(recordings_path, date_dir)
+            for person_dir in os.listdir(people_paths):
+                sessions.extend(os.listdir(os.path.join(people_paths, person_dir)))
     return sessions
 
 

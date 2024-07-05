@@ -3,5 +3,5 @@ from typing import Optional
 
 
 class Participant(BaseModel):
-    ID: str = None
+    id: str = None
     comments: Optional[str] = None
