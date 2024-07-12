@@ -42,6 +42,9 @@ unsaved_days = reactive.value(funcs.create_date_selection_for_unsaved_sessions()
 session_view_state = reactive.value(False)
 save_view_state = reactive.value(False)
 start_time = reactive.value(datetime.datetime.now())
+# Status LEDs
+hard_drive_connection = reactive.value(False)
+camera_connection = reactive.value(False)
 
 ui.page_opts(title="Gait Recording", fillable=True)
 #######################################################
@@ -105,8 +108,19 @@ with ui.sidebar(id="sidebar"):
 #                   Main View
 #######################################################
 
-with ui.layout_columns(fill=False):
-    ui.panel_title("Videos")
+
+@render.express
+def header():
+    with ui.layout_columns(
+        fill=False, fillable=True, col_widths={"xs": (8, 1, 1, 1, 1)}, gap="0em"
+    ):
+        ui.panel_title("Videos")
+        # reactive.invalidate_later(1)
+        STATUS["available"] if hard_drive_connection.get() else STATUS["missing"]
+        ui.markdown("Hard Drive connection")
+        STATUS["available"] if camera_connection.get() else STATUS["missing"]
+        ui.markdown("Camera connection")
+
 
 # Top Cards section
 with ui.layout_columns(fill=False):
@@ -442,6 +456,13 @@ def edit_metadata():
         type="default",
     )
     save_view_state.set(False)
+
+
+@reactive.effect
+def update_status_leds():
+    hard_drive = funcs.get_connection_states()
+    hard_drive_connection.set(hard_drive)
+    # camera_connection.set(camera)
 
 
 #######################################################

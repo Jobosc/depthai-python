@@ -1,9 +1,12 @@
 import datetime
 import os
+import time
 from dotenv import load_dotenv
 import shutil
 from participant import Participant
 import json
+import depthai as dai
+from typing import List
 
 load_dotenv("./depthai-python/examples/CPDetector/basic-app/.env")
 
@@ -157,3 +160,11 @@ def __get_unsaved_local_session_days():
     if os.path.exists(os.path.join(temp_path)):
         result = os.listdir(temp_path)
     return result
+
+
+def get_connection_states():
+    while True:
+        hard_drive = os.path.exists(os.path.join(main_path, temp_path))
+        camera = False if dai.DeviceBootloader.getAllAvailableDevices() is [] else True
+        yield False
+        time.sleep(5)
