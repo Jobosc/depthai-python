@@ -31,7 +31,7 @@ def side_view():
 
 
 def header():
-    return ui.output_ui("connection")
+    return ui.output_ui("status")
 
 
 def main_view():

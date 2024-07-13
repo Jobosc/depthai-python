@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 
 from .modules.participant import Participant
 
-load_dotenv("./depthai-python/examples/CPDetector/basic-app/.env")
+load_dotenv("./.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
@@ -154,6 +154,23 @@ def read_participant_metadata(date: str, person: str):
     return data
 
 
+def store_participant_metadata(path: str, metadata: Participant):
+    save_file = open(os.path.join(path, "metadata.json"), "w")
+    json.dump(vars(metadata), fp=save_file)
+    save_file.close()
+
+
+def get_hard_drive_space():
+    total, used, free = shutil.disk_usage(main_path)
+    return total, used, free
+
+
+def get_connection_states():
+    hard_drive = os.path.exists(os.path.join(main_path, temp_path))
+    camera = False if dai.DeviceBootloader.getAllAvailableDevices() == [] else True
+    return hard_drive, camera
+
+
 def __create_date_dictionary(dates: list):
     dict_dates = dict()
     for date in dates:
@@ -162,21 +179,9 @@ def __create_date_dictionary(dates: list):
     return dict_dates
 
 
-def store_participant_metadata(path: str, metadata: Participant):
-    save_file = open(os.path.join(path, "metadata.json"), "w")
-    json.dump(vars(metadata), fp=save_file)
-    save_file.close()
-
-
 def __get_unsaved_local_session_days():
     result = []
     if os.path.exists(os.path.join(temp_path)):
         folders = os.listdir(temp_path)
         result = [x for x in folders if os.path.isdir(os.path.join(temp_path, x))]
     return result
-
-
-def get_connection_states():
-    hard_drive = os.path.exists(os.path.join(main_path, temp_path))
-    camera = False if dai.DeviceBootloader.getAllAvailableDevices() == [] else True
-    return hard_drive, camera

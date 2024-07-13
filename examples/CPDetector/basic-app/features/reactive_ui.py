@@ -1,7 +1,7 @@
 import faicons as fa
 from shiny import render, ui, reactive
 
-from .functions import get_connection_states
+from .functions import get_connection_states, get_hard_drive_space
 from .reactive_values import unsaved_days, save_view_state
 
 STATUS = {
@@ -10,8 +10,7 @@ STATUS = {
 }
 
 
-def values(output):
-    @output
+def values():
     @render.ui
     def forgotten_session_days():
         if unsaved_days.get():
@@ -24,7 +23,6 @@ def values(output):
                 ui.input_action_button("delete_date_sessions", "Delete Sessions", class_="btn-outline-danger"),
             ]
 
-    @output
     @render.ui
     def save_button_choice():
         if not save_view_state.get():
@@ -33,15 +31,19 @@ def values(output):
             return ui.input_action_button("edit_metadata_button", "Save changes", label_busy="Saving Session...",
                                           class_="btn-warning")
 
-    @output
     @render.ui
-    def connection():
-        reactive.invalidate_later(1)
+    def status():
+        reactive.invalidate_later(5)
         connections = get_connection_states()
+        total, used, free = get_hard_drive_space()
+        divisor = 10**9
+
         return ui.layout_columns(
             ui.panel_title("Videos"),
+            ui.markdown(f"**Hard Drive:**"),
+            ui.markdown(f"{total/divisor:.2f}GB - Used: {used/divisor:.2f}GB - Free: {free/divisor:.2f}GB"),
             STATUS["available"] if connections[0] else STATUS["missing"],
             ui.markdown("Hard Drive connection"),
             STATUS["available"] if connections[1] else STATUS["missing"],
-            ui.markdown("Camera connection"), fill=False, fillable=True, col_widths={"xs": (8, 1, 1, 1, 1)}, gap="0em",
+            ui.markdown("Camera connection"), fill=False, fillable=True, col_widths={"xs": (5, 1,2, 1, 1, 1, 1)}, gap="0em",
         )
