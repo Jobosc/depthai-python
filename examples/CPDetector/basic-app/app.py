@@ -1,17 +1,18 @@
 import asyncio
 import datetime
 import os
+from time import sleep
 
 import faicons as fa
+import functions as funcs
 from dotenv import load_dotenv
+from participant import Participant
 from shiny import reactive
 from shiny.express import input, render, ui
 
-import functions as funcs
-from participant import Participant
 from video_recording import run
 
-load_dotenv("./.env")
+load_dotenv("./depthai-python/examples/CPDetector/basic-app/.env")
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -460,9 +461,14 @@ def edit_metadata():
 
 @reactive.effect
 def update_status_leds():
-    hard_drive = funcs.get_connection_states()
-    hard_drive_connection.set(hard_drive)
-    # camera_connection.set(camera)
+
+    while True:
+        #await asyncio.sleep(1)
+        hard_drive, camera = funcs.get_connection_states()
+        print(hard_drive)
+        sleep(1)
+        # hard_drive_connection.set(hard_drive)
+        # camera_connection.set(camera)
 
 
 #######################################################
