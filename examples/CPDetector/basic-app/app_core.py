@@ -23,9 +23,8 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server)
 
-# "- (Check if it is possible to show 'Stop recording' button)"
 # "- (Add debug mode on second page, for settings)"
 # "- (Add switch to switch between normal video and depth camera)"
-# "- (Prevent code from starting if external hard drive is not connected)"
+# Display average space used per session
 # Find out why video recording crashes after some time
 # UI fixes

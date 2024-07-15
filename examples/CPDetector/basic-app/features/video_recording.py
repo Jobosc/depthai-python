@@ -3,7 +3,6 @@ import os
 
 import depthai as dai
 from depthai_sdk import OakCamera, RecordType
-from shiny.express import ui
 
 from .functions import date_format, temp_path
 
@@ -14,7 +13,6 @@ def set_ir_parameters(
     stereo.set_ir(dot_projector_brightness, flood_brightness)
 
 
-@ui.bind_task_button(button_id="record_button")
 def run() -> int:
     with OakCamera() as oak:
         # Parameters
@@ -51,7 +49,7 @@ def run() -> int:
         # oak.show_graph()
 
         oak.start(
-            blocking=True
+            blocking=False
         )  # This needs to be unblocked to run the below code. Check if I actually need it.
         # oak.close()
         # Debug mode
@@ -84,6 +82,8 @@ def run() -> int:
 
             elif key == ord("e"):  # Switch to auto exposure
                 stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+
+                oak.close()  # This needs to be used as trigger to close the camera
 
         return 1
 

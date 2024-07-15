@@ -2,7 +2,7 @@ import faicons as fa
 from shiny import render, ui, reactive
 
 from .functions import get_connection_states, get_hard_drive_space
-from .reactive_values import unsaved_days, save_view_state
+from .reactive_values import unsaved_days, save_view_state, hard_drive_state, camera_state
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),
@@ -38,6 +38,9 @@ def values():
         total, used, free = get_hard_drive_space()
         divisor = 10**9
 
+        hard_drive_state.set(connections[0])
+        camera_state.set(connections[1])
+
         return ui.layout_columns(
             ui.panel_title("Videos"),
             ui.markdown(f"**Hard Drive:**"),
@@ -45,5 +48,5 @@ def values():
             STATUS["available"] if connections[0] else STATUS["missing"],
             ui.markdown("Hard Drive connection"),
             STATUS["available"] if connections[1] else STATUS["missing"],
-            ui.markdown("Camera connection"), fill=False, fillable=True, col_widths={"xs": (5, 1,2, 1, 1, 1, 1)}, gap="0em",
+            ui.markdown("Camera connection"), fill=False, fillable=True, col_widths={"xs": (5, 1, 2, 1, 1, 1, 1)}, gap="0em",
         )

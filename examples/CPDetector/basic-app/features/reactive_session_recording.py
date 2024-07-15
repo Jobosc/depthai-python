@@ -8,7 +8,7 @@ from .functions import store_participant_metadata, get_files_to_move, move_data_
     main_path, date_format
 from .modules.participant import Participant
 from .reactive_updates import update_ui
-from .reactive_values import save_view_state, start_time
+from .reactive_values import save_view_state, start_time, camera_state, hard_drive_state
 from .video_recording import run
 
 
@@ -19,6 +19,12 @@ def value(input):
         if input.unsaved_days.is_set():
             ui.notification_show(
                 f"You need to complete the session from a previous day before you can start recording again!",
+                duration=None,
+                type="warning",
+            )
+        elif camera_state.get() is False or hard_drive_state.get() is False:
+            ui.notification_show(
+                f"Please check if the camera and hard drive are connected before starting the recording!",
                 duration=None,
                 type="warning",
             )

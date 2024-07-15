@@ -161,8 +161,10 @@ def store_participant_metadata(path: str, metadata: Participant):
 
 
 def get_hard_drive_space():
-    total, used, free = shutil.disk_usage(main_path)
-    return total, used, free
+    if os.path.exists(main_path):
+        total, used, free = shutil.disk_usage(main_path)
+        return total, used, free
+    return 0, 0, 0
 
 
 def get_connection_states():

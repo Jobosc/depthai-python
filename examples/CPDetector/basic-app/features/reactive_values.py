@@ -21,3 +21,6 @@ save_view_state = reactive.Value(False)
 
 session_view_state = reactive.Value(False)
 start_time = reactive.Value(datetime.datetime.now())
+
+hard_drive_state = reactive.Value(False)
+camera_state = reactive.Value(False)
