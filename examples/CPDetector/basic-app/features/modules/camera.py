@@ -18,29 +18,23 @@ date_format = os.getenv("DATE_FORMAT")
 
 class Camera(object):
     _instance = None
-    oak = None
+    running = False
 
     def __new__(cls):
         if cls._instance is None:
             print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
-            cls.oak = OakCamera()
-            # Put any initialization here.
         return cls._instance
 
-    def run(self) -> int:
+    def run(self, block=False) -> int:
+        self.running = True
         state = LightBarrier()
-        print("Light Setup")
-        with self.oak as oak:
 
+        with OakCamera() as oak:
             # Parameters
             encode = dai.VideoEncoderProperties.Profile.H265_MAIN
             resolution = "3040p"
             fps = 60
-
-            # Folder parameters
-            day = datetime.datetime.now().strftime(date_format)
-            # NOTE: Are more parameters needed?
 
             # Define cameras
             color = oak.camera(
@@ -55,21 +49,26 @@ class Camera(object):
             stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
             # stereo.set_ir(dot_projector_brightness, flood_brightness)
 
+            # Folder parameters
+            day = datetime.datetime.now().strftime(date_format)
+
             # Synchronize & save all (encoded) streams
             oak.record(
                 [color.out.encoded],
                 os.path.join(temp_path, day),
                 RecordType.VIDEO,
             )  # TODO: Add: , stereo.out.encoded....back into the list to store the depth
+
             oak.visualize([color.out.camera], fps=True, scale=1 / 2)
             # oak.show_graph()
 
-            oak.start(blocking=False)
+            oak.start(blocking=block)
             while oak.running():
                 oak.poll()
                 if not state.activated:
                     oak.close()
 
+            self.running = False
             return 1
 
     def stop(self):

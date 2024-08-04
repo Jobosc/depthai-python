@@ -27,8 +27,8 @@ app_ui = ui.page_sidebar(
 
 def hw_button_handler():
     while True:
-        if button.activated:
-            print("Start camera")
+        if button.activated and not camera.running:
+            print("Start camera after light barrier trigger.")
             camera.run()
 
 

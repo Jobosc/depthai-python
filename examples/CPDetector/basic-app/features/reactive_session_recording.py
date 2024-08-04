@@ -38,7 +38,7 @@ def value(input):
 
             start_time.set(datetime.datetime.now())
             cam = Camera()
-            cam.run()
+            cam.run(block=True)
             update_ui()
 
     @reactive.Effect
