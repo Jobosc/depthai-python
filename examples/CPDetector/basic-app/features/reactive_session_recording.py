@@ -4,12 +4,18 @@ import os
 
 from shiny import ui, reactive
 
-from .functions import store_participant_metadata, get_files_to_move, move_data_from_temp_to_main_storage, temp_path, \
-    main_path, date_format
+from .functions import (
+    store_participant_metadata,
+    get_files_to_move,
+    move_data_from_temp_to_main_storage,
+    temp_path,
+    main_path,
+    date_format,
+)
 from .modules.participant import Participant
 from .reactive_updates import update_ui
 from .reactive_values import save_view_state, start_time, camera_state, hard_drive_state
-from .video_recording import run
+from features.modules.camera import Camera
 
 
 def value(input):
@@ -29,8 +35,10 @@ def value(input):
                 type="warning",
             )
         else:
+
             start_time.set(datetime.datetime.now())
-            run()
+            cam = Camera()
+            cam.run()
             update_ui()
 
     @reactive.Effect
@@ -72,7 +80,9 @@ def value(input):
     def initiate_save():
         day = ""
         if input.rb_unsaved_days.is_set():
-            date = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime("%Y-%m-%d")
+            date = datetime.datetime.strptime(
+                input.rb_unsaved_days(), date_format
+            ).strftime("%Y-%m-%d")
             day = f", from {date}"
         notification = ui.modal(
             ui.markdown(f"**Do you really want to save the recorded sessions{day}?**"),
@@ -99,7 +109,7 @@ def value(input):
             p.set(message="Moving files in progress", detail="This may take a while...")
 
             for _ in move_data_from_temp_to_main_storage(
-                    folder_name=input.id(), participant=person, day=day
+                folder_name=input.id(), participant=person, day=day
             ):
                 i += 1
                 p.set(i, message="Moving files")

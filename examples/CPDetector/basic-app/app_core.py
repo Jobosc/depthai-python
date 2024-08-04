@@ -8,8 +8,28 @@ import features.reactive_text as card_data
 import features.reactive_ui as missing_data
 from features.view import side_view, main_view, header
 
-app_ui = ui.page_sidebar(ui.sidebar(side_view()), header(), main_view(), title="Gait Recording",
-                         window_title="Gait Recording GUI")
+from features.modules.camera import Camera
+from features.modules.light_barrier import LightBarrier
+import threading
+
+# Light Barrier code
+camera = Camera()
+button = LightBarrier()
+
+app_ui = ui.page_sidebar(
+    ui.sidebar(side_view()),
+    header(),
+    main_view(),
+    title="Gait Recording",
+    window_title="Gait Recording GUI",
+)
+
+
+def hw_button_handler():
+    while True:
+        if button.activated:
+            print("Start camera")
+            camera.run()
 
 
 def server(input: Inputs, output: Outputs, session: Session):
@@ -20,11 +40,11 @@ def server(input: Inputs, output: Outputs, session: Session):
     session_editor.values(input, output)
     card_sidebar.value(input, output)
 
+    thread = threading.Thread(target=hw_button_handler)
+    thread.start()
+
 
 app = App(app_ui, server)
 
-# "- (Add debug mode on second page, for settings)"
-# "- (Add switch to switch between normal video and depth camera)"
 # Display average space used per session
 # Find out why video recording crashes after some time
-# UI fixes

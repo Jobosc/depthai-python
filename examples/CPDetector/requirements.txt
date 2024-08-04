@@ -2,5 +2,5 @@ depthai-sdk==1.13.1
 fastapi==0.111.0
 uvicorn==0.29.0
 shiny==0.9.0
-pynput==1.7.7
+gpiozero==2.0.1
 faicons
