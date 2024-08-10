@@ -18,7 +18,7 @@ from .reactive_values import save_view_state, start_time, camera_state, hard_dri
 from features.modules.camera import Camera
 
 
-def value(input):
+def value(input, camera):
     @reactive.Effect
     @reactive.event(input.record_button)
     def start_recording():
@@ -28,7 +28,7 @@ def value(input):
                 duration=None,
                 type="warning",
             )
-        elif camera_state.get() is False or hard_drive_state.get() is False:
+        elif camera_state.get() is False:
             ui.notification_show(
                 f"Please check if the camera and hard drive are connected before starting the recording!",
                 duration=None,
@@ -37,8 +37,7 @@ def value(input):
         else:
 
             start_time.set(datetime.datetime.now())
-            cam = Camera()
-            cam.run(block=True)
+            camera.run(block=True)
             update_ui()
 
     @reactive.Effect

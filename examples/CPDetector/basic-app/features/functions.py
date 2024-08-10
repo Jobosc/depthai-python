@@ -10,7 +10,7 @@ from .modules.participant import Participant
 from .modules.camera import Camera
 
 load_dotenv(
-    "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
+    "/home/pi/depthai-python/examples/CPDetector/basic-app/.env"
 )
 
 temp_path = os.getenv("TEMP_STORAGE")

@@ -36,7 +36,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     missing_data.values()
     card_data.values()
     modals.values(input)
-    session_recording.value(input)
+    session_recording.value(input, camera)
     session_editor.values(input, output)
     card_sidebar.value(input, output)
 

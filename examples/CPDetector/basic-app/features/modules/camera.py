@@ -1,3 +1,4 @@
+import time
 from depthai_sdk import OakCamera, RecordType
 import depthai as dai
 import datetime
@@ -6,24 +7,28 @@ import os
 from features.modules.light_barrier import LightBarrier
 
 from dotenv import load_dotenv
+import cv2
 
 load_dotenv(
-    "/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env"
+    "/home/pi/depthai-python/examples/CPDetector/basic-app/.env"
 )
 
 temp_path = os.getenv("TEMP_STORAGE")
-main_path = os.getenv("MAIN_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
 
 
 class Camera(object):
     _instance = None
     running = False
+    encode = None
+    fps = None
 
     def __new__(cls):
         if cls._instance is None:
             print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
+            cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
+            cls.fps = 30
         return cls._instance
 
     def run(self, block=False) -> int:
@@ -31,19 +36,14 @@ class Camera(object):
         state = LightBarrier()
 
         with OakCamera() as oak:
-            # Parameters
-            encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-            resolution = "3040p"
-            fps = 60
-
             # Define cameras
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
-                resolution=resolution,
-                fps=fps,
-                encode=encode,
+                resolution="3040p",
+                fps=self.fps,
+                encode=self.encode,
             )
-            stereo = oak.stereo(resolution=resolution, fps=fps, encode=encode)
+            stereo = oak.stereo(resolution="800p", fps=self.fps, encode=self.encode)
 
             # Set IR brightness
             stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
@@ -54,25 +54,24 @@ class Camera(object):
 
             # Synchronize & save all (encoded) streams
             oak.record(
-                [color.out.encoded],
+                [color.out.encoded, stereo.out.encoded],
                 os.path.join(temp_path, day),
                 RecordType.VIDEO,
-            )  # TODO: Add: , stereo.out.encoded....back into the list to store the depth
+            )
 
             oak.visualize([color.out.camera], fps=True, scale=1 / 2)
             # oak.show_graph()
 
             oak.start(blocking=block)
             while oak.running():
+                time.sleep(0.001)
                 oak.poll()
                 if not state.activated:
-                    oak.close()
+                    oak.device.close()
+                    cv2.destroyAllWindows()
 
             self.running = False
             return 1
-
-    def stop(self):
-        self.oak.close()
 
     @property
     def camera_connection(self):

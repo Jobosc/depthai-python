@@ -22,9 +22,6 @@ Install the following plugins:
    variables
 
 ### Raspberry Pi
-1. The project lies in the **luxonis** folder on the Desktop.
-   Make sure to load the whole folder into VSCode.
-   The virtual environment is also contained in that folder named: **envDepthAI**
    Additional packages need to be installed:
     - `pip install -r requirements.txt`
 
