@@ -46,5 +46,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server)
 
+# Increase FPS
+# Code needs to be restarted each time you want to switch between light barrier and manual mode
 # Display average space used per session
 # Find out why video recording crashes after some time

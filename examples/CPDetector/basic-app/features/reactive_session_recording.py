@@ -14,7 +14,7 @@ from .functions import (
 )
 from .modules.participant import Participant
 from .reactive_updates import update_ui
-from .reactive_values import save_view_state, start_time, camera_state, hard_drive_state
+from .reactive_values import save_view_state, start_time, camera_state
 from features.modules.camera import Camera
 
 
@@ -103,19 +103,27 @@ def value(input, camera):
         amount_of_files = len(get_files_to_move())
         if input.rb_unsaved_days.is_set():
             day = input.rb_unsaved_days()
+        
+        if person.id == "":
+            ui.notification_show(
+                f"You need to enter a valid ID before you can store the session!",
+                duration=None,
+                type="warning",
+            )
 
-        with ui.Progress(min=1, max=amount_of_files) as p:
-            p.set(message="Moving files in progress", detail="This may take a while...")
+        else:
+            with ui.Progress(min=1, max=amount_of_files) as p:
+                p.set(message="Moving files in progress", detail="This may take a while...")
 
-            for _ in move_data_from_temp_to_main_storage(
-                folder_name=input.id(), participant=person, day=day
-            ):
-                i += 1
-                p.set(i, message="Moving files")
-                await asyncio.sleep(0.1)
+                for _ in move_data_from_temp_to_main_storage(
+                    folder_name=input.id(), participant=person, day=day
+                ):
+                    i += 1
+                    p.set(i, message="Moving files")
+                    await asyncio.sleep(0.1)
 
-        update_ui()
-        reset_user()
+            update_ui()
+            reset_user()
 
     @reactive.Effect
     @reactive.event(input.reset_button)

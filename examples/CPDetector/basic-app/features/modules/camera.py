@@ -22,13 +22,15 @@ class Camera(object):
     running = False
     encode = None
     fps = None
+    resolution = None
 
     def __new__(cls):
         if cls._instance is None:
             print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-            cls.fps = 30
+            cls.fps = 60
+            cls.resolution = "1080p" # or "800p"
         return cls._instance
 
     def run(self, block=False) -> int:
@@ -39,11 +41,11 @@ class Camera(object):
             # Define cameras
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
-                resolution="3040p",
+                resolution=self.resolution,
                 fps=self.fps,
                 encode=self.encode,
             )
-            stereo = oak.stereo(resolution="800p", fps=self.fps, encode=self.encode)
+            stereo = oak.stereo(resolution=self.resolution, fps=self.fps, encode=self.encode)
 
             # Set IR brightness
             stereo.set_auto_ir(auto_mode=True, continuous_mode=True)

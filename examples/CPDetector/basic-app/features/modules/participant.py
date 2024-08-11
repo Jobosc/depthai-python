@@ -4,5 +4,8 @@ from pydantic import BaseModel
 
 
 class Participant(BaseModel):
-    id: str = None
+    id: str
     comments: Optional[str] = None
+
+
+
