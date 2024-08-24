@@ -6,8 +6,7 @@ from .functions import create_date_selection_for_saved_sessions, get_recorded_pe
     read_participant_metadata, delete_person_on_day_folder, delete_session_on_date_folder
 from .modules.participant import Participant
 from .reactive_updates import update_ui
-from .reactive_values import session_view_state, save_view_state
-
+from .reactive_values import session_view_state, save_view_state, record_button_state
 
 def values(input, output):
     @output

@@ -11,6 +11,7 @@ from features.view import side_view, main_view, header
 from features.modules.camera import Camera
 from features.modules.light_barrier import LightBarrier
 import threading
+from features.reactive_values import record_button_state
 
 # Light Barrier code
 camera = Camera()
@@ -27,7 +28,7 @@ app_ui = ui.page_sidebar(
 
 def hw_button_handler():
     while True:
-        if button.activated and not camera.running:
+        if button.activated and not camera.running and camera.ready:
             print("Start camera after light barrier trigger.")
             camera.run()
 

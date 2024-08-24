@@ -23,6 +23,7 @@ class Camera(object):
     encode = None
     fps = None
     resolution = None
+    _ready = False
 
     def __new__(cls):
         if cls._instance is None:
@@ -79,6 +80,13 @@ class Camera(object):
     def camera_connection(self):
         return False if dai.DeviceBootloader.getAllAvailableDevices() == [] else True
 
+    @property
+    def ready(self):
+        return self._ready
+
+    @ready.setter
+    def ready(self, value:bool):
+        self._ready = value
 
 if __name__ == "__main__":
     cam = Camera()

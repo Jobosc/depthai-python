@@ -14,12 +14,36 @@ from .functions import (
 )
 from .modules.participant import Participant
 from .reactive_updates import update_ui
-from .reactive_values import save_view_state, start_time, camera_state
+from .reactive_values import save_view_state, camera_state, record_button_state
 from features.modules.camera import Camera
 
 
-def value(input, camera):
+def value(input, camera: Camera):
     @reactive.Effect
+    @reactive.event(input.record_button)
+    def update_record_button():
+        if input.unsaved_days.is_set():
+            ui.notification_show(
+                f"You need to complete the session from a previous day before you can start recording again!",
+                duration=None,
+                type="warning",
+            )
+        elif camera_state.get() is False:
+            ui.notification_show(
+                f"Please check if the camera and hard drive are connected before starting the recording!",
+                duration=None,
+                type="warning",
+            )
+        else:
+            if record_button_state.get() is True:
+                record_button_state.set(False)
+                camera.ready = False
+                ui.update_action_button("record_button", label="Activate recording")
+            else:
+                record_button_state.set(True)
+                camera.ready = True
+                ui.update_action_button("record_button", label="Deactivate recording")
+    """@reactive.Effect
     @reactive.event(input.record_button)
     def start_recording():
         if input.unsaved_days.is_set():
@@ -35,10 +59,10 @@ def value(input, camera):
                 type="warning",
             )
         else:
-
             start_time.set(datetime.datetime.now())
             camera.run(block=True)
             update_ui()
+            pass"""
 
     @reactive.Effect
     @reactive.event(input.edit_metadata_button)

@@ -102,12 +102,12 @@ def __cards():
 def __session_buttons():
     return (
         ui.layout_columns(
-            ui.input_task_button(
+            ui.input_action_button(
                 "record_button",
-                "Start recording",
-                label_busy="Recording...",
+                "Activate recording",
+                #label_busy="Ready...",
                 class_="btn-success",
-                icon="▶️",
+                #icon="▶️",
             ),
             ui.input_action_button(
                 "show_sessions", "Display sessions", class_="btn-secondary"
