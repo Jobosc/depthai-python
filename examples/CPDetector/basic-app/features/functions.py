@@ -9,9 +9,7 @@ from dotenv import load_dotenv
 from .modules.participant import Participant
 from .modules.camera import Camera
 
-load_dotenv(
-    "/home/pi/depthai-python/examples/CPDetector/basic-app/.env"
-)
+load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 main_path = os.getenv("MAIN_STORAGE")
@@ -179,9 +177,8 @@ def get_hard_drive_space():
 
 
 def get_connection_states():
-    hard_drive = os.path.exists(os.path.join(main_path, temp_path))
     camera = Camera()
-    return hard_drive, camera.camera_connection
+    return camera.camera_connection
 
 
 def __create_date_dictionary(dates: list):

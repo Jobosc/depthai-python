@@ -9,9 +9,7 @@ from features.modules.light_barrier import LightBarrier
 from dotenv import load_dotenv
 import cv2
 
-load_dotenv(
-    "/home/pi/depthai-python/examples/CPDetector/basic-app/.env"
-)
+load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
@@ -22,16 +20,15 @@ class Camera(object):
     running = False
     encode = None
     fps = None
-    resolution = None
     _ready = False
+    _mode = False
 
     def __new__(cls):
         if cls._instance is None:
             print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-            cls.fps = 60
-            cls.resolution = "1080p" # or "800p"
+            cls.fps = 25
         return cls._instance
 
     def run(self, block=False) -> int:
@@ -40,29 +37,43 @@ class Camera(object):
 
         with OakCamera() as oak:
             # Define cameras
+            color_resolution = (
+                dai.ColorCameraProperties.SensorResolution.THE_12_MP
+                if self.mode
+                else dai.ColorCameraProperties.SensorResolution.THE_1080_P
+            )
+
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
-                resolution=self.resolution,
+                resolution=color_resolution,
                 fps=self.fps,
                 encode=self.encode,
             )
-            stereo = oak.stereo(resolution=self.resolution, fps=self.fps, encode=self.encode)
-
-            # Set IR brightness
-            stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
-            # stereo.set_ir(dot_projector_brightness, flood_brightness)
-
-            # Folder parameters
-            day = datetime.datetime.now().strftime(date_format)
 
             # Synchronize & save all (encoded) streams
-            oak.record(
-                [color.out.encoded, stereo.out.encoded],
-                os.path.join(temp_path, day),
-                RecordType.VIDEO,
-            )
+            if self.mode:
+                print("Record video without stream.")
+                # Folder parameters
+                day = datetime.datetime.now().strftime(date_format)
 
-            oak.visualize([color.out.camera], fps=True, scale=1 / 2)
+                stereo = oak.stereo(
+                    resolution=dai.ColorCameraProperties.SensorResolution.THE_800_P,
+                    fps=self.fps,
+                    encode=self.encode,
+                )
+                # Set IR brightness
+                stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
+                # stereo.set_ir(dot_projector_brightness, flood_brightness)
+
+                oak.record(
+                    [color.out.encoded, stereo.out.encoded],
+                    os.path.join(temp_path, day),
+                    RecordType.VIDEO,
+                )
+            else:
+                print("View video without recording.")
+                oak.visualize([color.out.camera], fps=True, scale=1 / 2)
+
             # oak.show_graph()
 
             oak.start(blocking=block)
@@ -85,8 +96,17 @@ class Camera(object):
         return self._ready
 
     @ready.setter
-    def ready(self, value:bool):
+    def ready(self, value: bool):
         self._ready = value
+
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, value: bool):
+        self._mode = value
+
 
 if __name__ == "__main__":
     cam = Camera()

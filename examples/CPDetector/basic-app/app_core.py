@@ -34,11 +34,11 @@ def hw_button_handler():
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    missing_data.values()
+    missing_data.values(camera)
     card_data.values()
     modals.values(input)
     session_recording.value(input, camera)
-    session_editor.values(input, output)
+    session_editor.values(input, output, camera)
     card_sidebar.value(input, output)
 
     thread = threading.Thread(target=hw_button_handler)
@@ -47,7 +47,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server)
 
-# Increase FPS
-# Code needs to be restarted each time you want to switch between light barrier and manual mode
+# Add a Switch to switch between Recording and Visualizing. And a Status Led for recording.
 # Display average space used per session
 # Find out why video recording crashes after some time

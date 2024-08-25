@@ -18,12 +18,19 @@ Install the following plugins:
 
 ## Project setup
 
-1. Copy the file in `./examples/CPDetector/basic-app/.env.temp` and create an `.env` file with all the required environment
-   variables
+1. Copy the file in `./examples/CPDetector/basic-app/.env.temp` and create an `.env` file with all the required environment variables
 
 ### Raspberry Pi
    Additional packages need to be installed:
     - `pip install -r requirements.txt`
+
+#### Create Desktop application
+   - Make file executable:
+   `chmod +x /home/pi/depthai-python/examples/CPDetector/basic-app/app_core.py`
+   - Copy **/home/pi/depthai-python/examples/CPDetector/desktop-app/GaitAnalysis** to your Desktop.
+   - Make .desktop file executable `chmod +x /home/pi/Desktop/GaitAnalysis`
+
+
 
 ### Macbook
 `curl -fL https://docs.luxonis.com/install_dependencies.sh | bash`

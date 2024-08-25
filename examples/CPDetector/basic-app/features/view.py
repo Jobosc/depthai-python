@@ -34,6 +34,34 @@ def side_view():
                     showcase=ICONS["user"],
                 ),
             ),
+            ui.tags.style(
+                """
+                    html, body {
+                        height: 100%;
+                        margin: 0;
+                    }
+                    .right-aligned {
+                        text-align: right;
+                        margin: 0;
+                    }
+                    .bottom-aligned-container {
+                        position: absolute;
+                        bottom: 0;
+                        text-align: left;
+                    }
+                """
+            ),
+            ui.div(
+                ui.layout_columns(
+                    ui.p("View", class_="right-aligned"),
+                    ui.input_switch("switch_mode", "Record", False),
+                    fill=False,
+                    fillable=True,
+                    col_widths={"xs": (3, 1)},
+                    gap="1em",
+                ),
+                class_="bottom-aligned-container",
+            ),
         ),
     )
 
@@ -105,9 +133,9 @@ def __session_buttons():
             ui.input_action_button(
                 "record_button",
                 "Activate recording",
-                #label_busy="Ready...",
+                # label_busy="Ready...",
                 class_="btn-success",
-                #icon="▶️",
+                # icon="▶️",
             ),
             ui.input_action_button(
                 "show_sessions", "Display sessions", class_="btn-secondary"

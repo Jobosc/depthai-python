@@ -2,13 +2,21 @@ import datetime
 
 from shiny import render, reactive, ui
 
-from .functions import create_date_selection_for_saved_sessions, get_recorded_people_for_a_specific_day, date_format, \
-    read_participant_metadata, delete_person_on_day_folder, delete_session_on_date_folder
+from .functions import (
+    create_date_selection_for_saved_sessions,
+    get_recorded_people_for_a_specific_day,
+    date_format,
+    read_participant_metadata,
+    delete_person_on_day_folder,
+    delete_session_on_date_folder,
+)
 from .modules.participant import Participant
 from .reactive_updates import update_ui
-from .reactive_values import session_view_state, save_view_state, record_button_state
+from .reactive_values import session_view_state, save_view_state
+from .modules.camera import Camera
 
-def values(input, output):
+
+def values(input, output, camera: Camera):
     @output
     @render.ui
     @reactive.event(input.show_sessions)
@@ -39,7 +47,9 @@ def values(input, output):
 
                 return [
                     ui.br(),
-                    ui.input_select("date_selector", "Choose a Date:", dates, width="100%"),
+                    ui.input_select(
+                        "date_selector", "Choose a Date:", dates, width="100%"
+                    ),
                 ]
 
     @output
@@ -53,7 +63,9 @@ def values(input, output):
                     ui.input_selectize(
                         "people_selector",
                         "Choose Datasets:",
-                        get_recorded_people_for_a_specific_day(input.date_selector.get()),
+                        get_recorded_people_for_a_specific_day(
+                            input.date_selector.get()
+                        ),
                         multiple=True,
                         width="100%",
                     ),
@@ -66,10 +78,23 @@ def values(input, output):
         buttons = []
         datasets = input.people_selector.get()
         if datasets and session_view_state.get():
-            buttons.append(ui.input_action_button("delete_dataset", "Delete", class_="btn-outline-danger", width="100%"))
+            buttons.append(
+                ui.input_action_button(
+                    "delete_dataset",
+                    "Delete",
+                    class_="btn-outline-danger",
+                    width="100%",
+                )
+            )
             if len(datasets) == 1:  # Only show Edit button if only one is selected
                 buttons.append(
-                    ui.input_action_button("edit_dataset", "Edit", class_="btn-outline-secondary", width="100%",))
+                    ui.input_action_button(
+                        "edit_dataset",
+                        "Edit",
+                        class_="btn-outline-secondary",
+                        width="100%",
+                    )
+                )
         return buttons
 
     @reactive.Effect
@@ -77,10 +102,14 @@ def values(input, output):
     def initiate_session_deletion():
         day = ""
         if input.rb_unsaved_days.is_set():
-            date = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime("%Y-%m-%d")
+            date = datetime.datetime.strptime(
+                input.rb_unsaved_days(), date_format
+            ).strftime("%Y-%m-%d")
             day = f", from {date}"
         notification = ui.modal(
-            ui.markdown(f"**Do you really want to delete the recorded sessions{day}?**"),
+            ui.markdown(
+                f"**Do you really want to delete the recorded sessions{day}?**"
+            ),
             ui.input_action_button("delete_yes", "Yes", class_="btn-danger"),
             ui.input_action_button("delete_no", "No", class_="btn-secondary"),
             easy_close=False,
@@ -131,7 +160,9 @@ def values(input, output):
     def delete_session_for_specific_day():
         print(input.rb_unsaved_days())
         state = delete_session_on_date_folder(day=input.rb_unsaved_days())
-        day = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime("%Y-%m-%d")
+        day = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
+            "%Y-%m-%d"
+        )
         if state:
             ui.notification_show(
                 f"Dataset deletion from '{day}' was successful.",
@@ -146,3 +177,8 @@ def values(input, output):
                 type="error",
             )
         update_ui()
+
+    @reactive.Effect
+    @reactive.event(input.switch_mode)
+    def change_pipeline_mode():
+        camera.mode = input.switch_mode()
