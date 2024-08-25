@@ -134,7 +134,7 @@ def __session_buttons():
                 "record_button",
                 "Activate recording",
                 # label_busy="Ready...",
-                class_="btn-success",
+                class_="btn-outline-success",
                 # icon="▶️",
             ),
             ui.input_action_button(

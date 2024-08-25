@@ -43,6 +43,7 @@ def value(input, camera: Camera):
                 record_button_state.set(True)
                 camera.ready = True
                 ui.update_action_button("record_button", label="Deactivate recording")
+
     """@reactive.Effect
     @reactive.event(input.record_button)
     def start_recording():
@@ -127,7 +128,7 @@ def value(input, camera: Camera):
         amount_of_files = len(get_files_to_move())
         if input.rb_unsaved_days.is_set():
             day = input.rb_unsaved_days()
-        
+
         if person.id == "":
             ui.notification_show(
                 f"You need to enter a valid ID before you can store the session!",
@@ -137,7 +138,10 @@ def value(input, camera: Camera):
 
         else:
             with ui.Progress(min=1, max=amount_of_files) as p:
-                p.set(message="Moving files in progress", detail="This may take a while...")
+                p.set(
+                    message="Moving files in progress",
+                    detail="This may take a while...",
+                )
 
                 for _ in move_data_from_temp_to_main_storage(
                     folder_name=input.id(), participant=person, day=day

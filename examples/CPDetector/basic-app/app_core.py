@@ -46,7 +46,3 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server)
-
-# Add a Switch to switch between Recording and Visualizing. And a Status Led for recording.
-# Display average space used per session
-# Find out why video recording crashes after some time
