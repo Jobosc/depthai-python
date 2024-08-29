@@ -37,17 +37,11 @@ class Camera(object):
 
         with OakCamera() as oak:
             # Define cameras
-            color_resolution = (
-                dai.ColorCameraProperties.SensorResolution.THE_12_MP
-                if self.mode
-                else dai.ColorCameraProperties.SensorResolution.THE_1080_P
-            )
-
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
-                resolution=color_resolution,
+                resolution=dai.ColorCameraProperties.SensorResolution.THE_1080_P,
                 fps=self.fps,
-                encode=self.encode,
+                encode=self.encode if self.mode else None,
             )
 
             # Synchronize & save all (encoded) streams
@@ -57,7 +51,7 @@ class Camera(object):
                 day = datetime.datetime.now().strftime(date_format)
 
                 stereo = oak.stereo(
-                    resolution=dai.ColorCameraProperties.SensorResolution.THE_800_P,
+                    resolution=dai.MonoCameraProperties.SensorResolution.THE_800_P,
                     fps=self.fps,
                     encode=self.encode,
                 )

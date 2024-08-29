@@ -46,3 +46,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server)
+
+# Increase FPS to 60Hz at least (optimal is 60Hz color and 120Hz depth)
+# Maybe show stream again during recording
