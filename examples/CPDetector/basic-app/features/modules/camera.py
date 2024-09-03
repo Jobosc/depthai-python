@@ -28,7 +28,7 @@ class Camera(object):
             print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-            cls.fps = 25
+            cls.fps = 40
         return cls._instance
 
     def run(self, block=False) -> int:
@@ -74,7 +74,7 @@ class Camera(object):
             while oak.running():
                 time.sleep(0.001)
                 oak.poll()
-                if not state.activated:
+                if not state.activated or not self.ready:
                     oak.device.close()
                     cv2.destroyAllWindows()
 

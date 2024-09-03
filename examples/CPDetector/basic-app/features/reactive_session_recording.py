@@ -28,9 +28,9 @@ def value(input, camera: Camera):
                 duration=None,
                 type="warning",
             )
-        elif camera_state.get() is False:
+        elif camera_state.get() is False and record_button_state.get() is False:
             ui.notification_show(
-                f"Please check if the camera and hard drive are connected before starting the recording!",
+                f"Please check if the camera is connected before starting the recording!",
                 duration=None,
                 type="warning",
             )
