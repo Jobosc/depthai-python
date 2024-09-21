@@ -44,20 +44,21 @@ class Camera(object):
                 encode=self.encode if self.mode else None,
             )
 
+            stereo = oak.stereo(
+                resolution=dai.MonoCameraProperties.SensorResolution.THE_800_P,
+                fps=self.fps,
+                encode=self.encode,
+            )
+            # Set IR brightness
+            # Turned off IR because of the possible marker disruptions
+            stereo.set_auto_ir(auto_mode=False, continuous_mode=False)
+            stereo.set_ir(0, 0)
+
             # Synchronize & save all (encoded) streams
             if self.mode:
                 print("Record video without stream.")
                 # Folder parameters
                 day = datetime.datetime.now().strftime(date_format)
-
-                stereo = oak.stereo(
-                    resolution=dai.MonoCameraProperties.SensorResolution.THE_800_P,
-                    fps=self.fps,
-                    encode=self.encode,
-                )
-                # Set IR brightness
-                stereo.set_auto_ir(auto_mode=True, continuous_mode=True)
-                # stereo.set_ir(dot_projector_brightness, flood_brightness)
 
                 oak.record(
                     [color.out.encoded, stereo.out.encoded],
@@ -66,7 +67,7 @@ class Camera(object):
                 )
             else:
                 print("View video without recording.")
-                oak.visualize([color.out.camera], fps=True, scale=1 / 2)
+                oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1 / 2)
 
             # oak.show_graph()
 

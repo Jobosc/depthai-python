@@ -46,3 +46,5 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server)
+
+# Check if there are files available to save before clicking save (left handside). If there aren't, a warning should appear
