@@ -14,7 +14,6 @@ load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 temp_path = os.getenv("TEMP_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
 
-
 class Camera(object):
     _instance = None
     running = False
@@ -33,6 +32,8 @@ class Camera(object):
 
     def run(self, block=False) -> int:
         self.running = True
+        #camera_led.set(STATUS["recording"])
+
         state = LightBarrier()
 
         with OakCamera() as oak:
@@ -80,6 +81,7 @@ class Camera(object):
                     cv2.destroyAllWindows()
 
             self.running = False
+            #camera_led.set(STATUS["available"])
             return 1
 
     @property

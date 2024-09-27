@@ -66,8 +66,25 @@ def side_view():
     )
 
 
+from .functions import get_hard_drive_space
+
 def header():
-    return ui.output_ui("status")
+    total, used, free = get_hard_drive_space()
+    divisor = 10**9
+
+    return ui.layout_columns(
+        ui.panel_title("Videos"),
+        ui.markdown(f"**Hard Drive:**"),
+        ui.markdown(
+            f"{total/divisor:.2f}GB - Used: {used/divisor:.2f}GB - Free: {free/divisor:.2f}GB"
+        ),
+        ui.output_ui("camera_led_update"),
+        ui.markdown("Camera availability"),
+        fill=False,
+        fillable=True,
+        col_widths={"xs": (5, 1, 3, 1, 2)},
+        gap="0em",
+    )
 
 
 def main_view():
