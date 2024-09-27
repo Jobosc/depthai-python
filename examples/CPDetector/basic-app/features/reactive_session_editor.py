@@ -1,5 +1,4 @@
 import datetime
-
 from shiny import render, reactive, ui
 
 from .functions import (
@@ -10,10 +9,10 @@ from .functions import (
     delete_person_on_day_folder,
     delete_session_on_date_folder,
 )
+from .modules.camera import Camera
 from .modules.participant import Participant
 from .reactive_updates import update_ui
 from .reactive_values import session_view_state, save_view_state
-from .modules.camera import Camera
 
 
 def values(input, output, camera: Camera):

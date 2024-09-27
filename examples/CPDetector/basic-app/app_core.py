@@ -1,17 +1,16 @@
+import threading
 from shiny import ui, App, Inputs, Outputs, Session
 
+import features.modules.camera_led as cam_led
 import features.reactive_card_sidebar as card_sidebar
 import features.reactive_modals as modals
 import features.reactive_session_editor as session_editor
 import features.reactive_session_recording as session_recording
 import features.reactive_text as card_data
 import features.reactive_ui as missing_data
-import features.modules.camera_led as cam_led
-from features.view import side_view, main_view, header
-
 from features.modules.camera import Camera
 from features.modules.light_barrier import LightBarrier
-import threading
+from features.view import side_view, main_view, header
 
 # Light Barrier code
 camera = Camera()

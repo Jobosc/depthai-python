@@ -1,6 +1,7 @@
 import faicons as fa
 from shiny import reactive
 from shiny import render
+
 from ..functions import get_connection_states
 from ..reactive_values import camera_state
 
@@ -11,6 +12,7 @@ STATUS = {
 }
 
 camera_led = reactive.Value(STATUS["available"])
+
 
 def values(camera):
     @render.ui
@@ -28,5 +30,5 @@ def values(camera):
             status = STATUS["missing"]
 
         return status
-    
-    #return camera_led_update()
+
+    # return camera_led_update()

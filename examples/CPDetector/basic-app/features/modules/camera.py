@@ -1,18 +1,17 @@
+import cv2
+import datetime
+import depthai as dai
+import os
 import time
 from depthai_sdk import OakCamera, RecordType
-import depthai as dai
-import datetime
-import os
-
-from features.modules.light_barrier import LightBarrier
-
 from dotenv import load_dotenv
-import cv2
+from features.modules.light_barrier import LightBarrier
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
+
 
 class Camera(object):
     _instance = None
@@ -32,7 +31,7 @@ class Camera(object):
 
     def run(self, block=False) -> int:
         self.running = True
-        #camera_led.set(STATUS["recording"])
+        # camera_led.set(STATUS["recording"])
 
         state = LightBarrier()
 
@@ -81,7 +80,7 @@ class Camera(object):
                     cv2.destroyAllWindows()
 
             self.running = False
-            #camera_led.set(STATUS["available"])
+            # camera_led.set(STATUS["available"])
             return 1
 
     @property

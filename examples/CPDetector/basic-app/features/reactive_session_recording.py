@@ -1,7 +1,7 @@
 import asyncio
 import datetime
 import os
-
+from features.modules.camera import Camera
 from shiny import ui, reactive
 
 from .functions import (
@@ -15,7 +15,6 @@ from .functions import (
 from .modules.participant import Participant
 from .reactive_updates import update_ui
 from .reactive_values import save_view_state, camera_state, record_button_state
-from features.modules.camera import Camera
 
 
 def value(input, camera: Camera):
@@ -123,7 +122,7 @@ def value(input, camera: Camera):
                 )
 
                 for _ in move_data_from_temp_to_main_storage(
-                    folder_name=input.id(), participant=person, day=day
+                        folder_name=input.id(), participant=person, day=day
                 ):
                     i += 1
                     p.set(i, message="Moving files")

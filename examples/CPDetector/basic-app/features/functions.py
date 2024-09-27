@@ -1,13 +1,12 @@
 import datetime
+import depthai as dai
 import json
 import os
 import shutil
-
-import depthai as dai
 from dotenv import load_dotenv
 
-from .modules.participant import Participant
 from .modules.camera import Camera
+from .modules.participant import Participant
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
@@ -78,7 +77,7 @@ def get_files_to_move():
 
 
 def move_data_from_temp_to_main_storage(
-    folder_name: str, participant: Participant, day: str = today
+        folder_name: str, participant: Participant, day: str = today
 ):
     for root, dirs, files in os.walk(os.path.join(temp_path, day)):
         # Copy files
