@@ -1,12 +1,12 @@
 from shiny import render, ui
 
-from .reactive_values import (
+from features.reactive_values import (
     unsaved_days,
     save_view_state,
 )
 
 
-def values():
+def editor():
     @render.ui
     def forgotten_session_days():
         if unsaved_days.get():

@@ -1,13 +1,14 @@
 import threading
 from shiny import ui, App, Inputs, Outputs, Session
 
-import features.modules.camera_led as cam_led
-import features.reactive_card_sidebar as card_sidebar
-import features.reactive_modals as modals
-import features.reactive_session_editor as session_editor
-import features.reactive_session_recording as session_recording
-import features.reactive_text as card_data
-import features.reactive_ui as missing_data
+import features.interface.notification_modal as modals
+import features.interface.reactive_session_editor as session_editor
+import features.interface.sidebar_buttons as missing_data
+import features.interface.sidebar_card as card_sidebar
+import features.interface.camera_led as cam_led
+import features.reactivity.metadata as metadata
+import features.reactivity.buttons as buttons
+import features.interface.text_fields as card_data
 from features.modules.camera import Camera
 from features.modules.light_barrier import LightBarrier
 from features.view import side_view, main_view, header
@@ -34,12 +35,13 @@ def hw_button_handler():
 
 def server(input: Inputs, output: Outputs, session: Session):
     cam_led.values(camera)
-    missing_data.values()
+    missing_data.editor()
     card_data.values()
-    modals.values(input)
-    session_recording.value(input, camera)
-    session_editor.values(input, output, camera)
-    card_sidebar.value(input, output)
+    modals.update(input)
+    metadata.editor(input)
+    buttons.editor(input, camera)
+    session_editor.editor(input, output, camera)
+    card_sidebar.metadata(input, output)
 
     thread = threading.Thread(target=hw_button_handler)
     thread.start()

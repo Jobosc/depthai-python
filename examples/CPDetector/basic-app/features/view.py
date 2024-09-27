@@ -1,6 +1,8 @@
 import faicons as fa
 from shiny import ui
 
+from features.functions import get_hard_drive_space
+
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
     "calendar": fa.icon_svg("calendar"),
@@ -64,9 +66,6 @@ def side_view():
             ),
         ),
     )
-
-
-from .functions import get_hard_drive_space
 
 
 def header():

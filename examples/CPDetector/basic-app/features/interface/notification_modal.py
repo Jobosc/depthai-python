@@ -1,7 +1,7 @@
 from shiny import reactive, ui
 
 
-def values(input):
+def update(input):
     @reactive.Effect
     @reactive.event(input.delete_yes, input.delete_no)
     def modal_remover():

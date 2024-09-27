@@ -1,7 +1,7 @@
 import datetime
 from shiny import render, reactive, ui
 
-from .functions import (
+from features.functions import (
     create_date_selection_for_saved_sessions,
     get_recorded_people_for_a_specific_day,
     date_format,
@@ -9,13 +9,13 @@ from .functions import (
     delete_person_on_day_folder,
     delete_session_on_date_folder,
 )
-from .modules.camera import Camera
-from .modules.participant import Participant
-from .reactive_updates import update_ui
-from .reactive_values import session_view_state, save_view_state
+from features.modules.camera import Camera
+from features.modules.participant import Participant
+from features.reactive_updates import update_ui
+from features.reactive_values import session_view_state, save_view_state
 
 
-def values(input, output, camera: Camera):
+def editor(input, output, camera: Camera):
     @output
     @render.ui
     @reactive.event(input.show_sessions)
