@@ -1,5 +1,6 @@
-from gpiozero import Button
 from time import sleep
+
+from gpiozero import Button
 
 button = Button(4, pull_up=False)
 

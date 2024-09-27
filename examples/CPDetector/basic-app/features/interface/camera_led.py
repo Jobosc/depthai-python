@@ -3,7 +3,7 @@ from shiny import reactive
 from shiny import render
 
 from ..functions import get_connection_states
-from ..reactive_values import camera_state
+from features.reactivity.reactive_values import camera_state
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),

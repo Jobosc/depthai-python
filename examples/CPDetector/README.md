@@ -24,6 +24,7 @@ Install the following plugins:
 ### Raspberry Pi
 
 Additional packages need to be installed:
+
 - `pip install -r requirements.txt`
 
 #### Create Desktop application

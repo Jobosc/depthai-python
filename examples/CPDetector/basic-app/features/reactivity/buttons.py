@@ -1,20 +1,11 @@
-import asyncio
 import datetime
-import os
-from features.modules.camera import Camera
+
 from shiny import ui, reactive
 
-from features.functions import (
-    store_participant_metadata,
-    get_files_to_move,
-    move_data_from_temp_to_main_storage,
-    temp_path,
-    main_path,
-    date_format,
-)
-from features.modules.participant import Participant
-from features.reactive_updates import update_ui
-from features.reactive_values import save_view_state, camera_state, record_button_state
+from features.functions import date_format
+from features.modules.camera import Camera
+from features.reactivity.reactive_updates import update_ui
+from features.reactivity.reactive_values import camera_state, record_button_state
 
 
 def editor(input, camera: Camera):
@@ -61,3 +52,30 @@ def editor(input, camera: Camera):
         )
         ui.modal_show(notification)
 
+    @reactive.Effect
+    @reactive.event(input.delete_yes)
+    def delete_session_for_specific_day():
+        print(input.rb_unsaved_days())
+        state = delete_session_on_date_folder(day=input.rb_unsaved_days())
+        day = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
+            "%Y-%m-%d"
+        )
+        if state:
+            ui.notification_show(
+                f"Dataset deletion from '{day}' was successful.",
+                duration=None,
+                type="default",
+            )
+            ui.update_radio_buttons("rb_unsaved_days")
+        else:
+            ui.notification_show(
+                f"Deleting the dataset from '{day}', failed!",
+                duration=None,
+                type="error",
+            )
+        update_ui()
+
+    @reactive.Effect
+    @reactive.event(input.switch_mode)
+    def change_pipeline_mode():
+        camera.mode = input.switch_mode()

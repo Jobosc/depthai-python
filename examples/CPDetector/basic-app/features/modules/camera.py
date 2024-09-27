@@ -1,10 +1,12 @@
-import cv2
 import datetime
-import depthai as dai
 import os
 import time
+
+import cv2
+import depthai as dai
 from depthai_sdk import OakCamera, RecordType
 from dotenv import load_dotenv
+
 from features.modules.light_barrier import LightBarrier
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")

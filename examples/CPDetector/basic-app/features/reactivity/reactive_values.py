@@ -1,7 +1,8 @@
 import datetime
+
 from shiny import reactive
 
-from .functions import (
+from features.functions import (
     get_recorded_people_in_total,
     get_recorded_people_for_a_specific_day,
     get_all_recorded_sessions_so_far,

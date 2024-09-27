@@ -1,8 +1,8 @@
 import datetime
-import depthai as dai
 import json
 import os
 import shutil
+
 from dotenv import load_dotenv
 
 from .modules.camera import Camera

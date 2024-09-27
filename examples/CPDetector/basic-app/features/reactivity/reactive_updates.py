@@ -1,6 +1,6 @@
-from .functions import get_recorded_people_in_total, get_recorded_people_for_a_specific_day, \
+from features.functions import get_recorded_people_in_total, get_recorded_people_for_a_specific_day, \
     get_all_recorded_sessions_so_far, get_recorded_days, create_date_selection_for_unsaved_sessions
-from .reactive_values import users_all, users_today, sessions_all, days_all, unsaved_days
+from features.reactivity.reactive_values import users_all, users_today, sessions_all, days_all, unsaved_days
 
 
 def update_ui():

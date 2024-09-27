@@ -1,14 +1,16 @@
 import threading
+
 from shiny import ui, App, Inputs, Outputs, Session
 
+import features.interface.camera_led as cam_led
 import features.interface.notification_modal as modals
-import features.interface.reactive_session_editor as session_editor
+import features.interface.session_view as session_view
 import features.interface.sidebar_buttons as missing_data
 import features.interface.sidebar_card as card_sidebar
-import features.interface.camera_led as cam_led
-import features.reactivity.metadata as metadata
-import features.reactivity.buttons as buttons
 import features.interface.text_fields as card_data
+import features.reactivity.buttons as buttons
+import features.reactivity.dataset as dataset
+import features.reactivity.metadata as metadata
 from features.modules.camera import Camera
 from features.modules.light_barrier import LightBarrier
 from features.view import side_view, main_view, header
@@ -40,7 +42,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     modals.update(input)
     metadata.editor(input)
     buttons.editor(input, camera)
-    session_editor.editor(input, output, camera)
+    dataset.editor(input)
+    session_view.editor(input, output)
     card_sidebar.metadata(input, output)
 
     thread = threading.Thread(target=hw_button_handler)
