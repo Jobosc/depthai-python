@@ -1,9 +1,6 @@
+from shiny import render, reactive
+from features.reactivity.reactive_values import camera_led
 import faicons as fa
-from shiny import reactive
-from shiny import render
-
-from ..functions import get_connection_states
-from features.reactivity.reactive_values import camera_state
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),
@@ -11,24 +8,37 @@ STATUS = {
     "recording": fa.icon_svg(name="circle", fill="deepskyblue"),
 }
 
-camera_led = reactive.Value(STATUS["available"])
+class CameraLed:
+    _instance = None
+    input = None
+    output = None
 
+    def __new__(cls, input, output):
+        if cls._instance is None:
+            print("Creating the CameraLed object")
+            cls._instance = super(CameraLed, cls).__new__(cls)
+            cls.input = input
+            cls.output = output
+        return cls._instance
 
-def values(camera):
-    @render.ui
-    def camera_led_update():
-        reactive.invalidate_later(0.01)
-        connections = get_connection_states()
-
-        camera_state.set(connections)
-
-        if camera.running:
-            status = STATUS["recording"]
-        elif connections:
-            status = STATUS["available"]
-        else:
-            status = STATUS["missing"]
-
-        return status
-
-    # return camera_led_update()
+    @staticmethod
+    def values():
+        @render.ui
+        @reactive.event(camera_led)
+        def camera_led_update():
+            return camera_led.get()
+    
+    def record():
+        @reactive.Effect
+        def value():
+            camera_led.set(STATUS["recording"])
+    
+    def available():
+        @reactive.Effect
+        def value():
+            camera_led.set(STATUS["available"])
+    
+    def missing():
+        @reactive.Effect
+        def value():
+            camera_led.set(STATUS["missing"])

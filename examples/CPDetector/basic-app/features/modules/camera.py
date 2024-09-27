@@ -8,12 +8,12 @@ from depthai_sdk import OakCamera, RecordType
 from dotenv import load_dotenv
 
 from features.modules.light_barrier import LightBarrier
+from features.interface.camera_led import CameraLed
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
 temp_path = os.getenv("TEMP_STORAGE")
 date_format = os.getenv("DATE_FORMAT")
-
 
 class Camera(object):
     _instance = None
@@ -29,11 +29,12 @@ class Camera(object):
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
             cls.fps = 40
+            cls.update_led(cls)
         return cls._instance
 
     def run(self, block=False) -> int:
         self.running = True
-        # camera_led.set(STATUS["recording"])
+        CameraLed.record()
 
         state = LightBarrier()
 
@@ -82,8 +83,18 @@ class Camera(object):
                     cv2.destroyAllWindows()
 
             self.running = False
-            # camera_led.set(STATUS["available"])
+            CameraLed.available()
             return 1
+    
+    @staticmethod   #TODO: Maybe check if this would be better as setter property and update with ui
+    def update_led(self):
+        if self.running:
+            CameraLed.record()
+        elif self.camera_connection:
+            CameraLed.available()
+        else:
+            CameraLed.missing()
+
 
     @property
     def camera_connection(self):

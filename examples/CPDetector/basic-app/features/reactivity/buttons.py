@@ -4,6 +4,7 @@ from shiny import ui, reactive
 
 from features.functions import date_format, delete_session_on_date_folder
 from features.modules.camera import Camera
+from features.interface.camera_led import CameraLed
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state
 
@@ -19,12 +20,14 @@ def editor(input, camera: Camera):
                 type="warning",
             )
         elif camera.camera_connection is False and record_button_state.get() is False:
+            CameraLed.missing()
             ui.notification_show(
                 f"Please check if the camera is connected before starting the recording!",
                 duration=None,
                 type="warning",
             )
         else:
+            CameraLed.available()
             if record_button_state.get() is True:
                 record_button_state.set(False)
                 camera.ready = False
@@ -33,6 +36,7 @@ def editor(input, camera: Camera):
                 record_button_state.set(True)
                 camera.ready = True
                 ui.update_action_button("record_button", label="Deactivate recording")
+
 
     @reactive.Effect
     @reactive.event(input.save_button)

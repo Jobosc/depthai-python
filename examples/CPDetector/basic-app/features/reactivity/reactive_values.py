@@ -26,4 +26,4 @@ start_time = reactive.Value(datetime.datetime.now())
 
 hard_drive_state = reactive.Value(False)
 camera_state = reactive.Value(False)
-camera_led = reactive.Value(fa.icon_svg(name="circle", fill="green"))
+camera_led = reactive.Value(None)
