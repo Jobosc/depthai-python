@@ -2,7 +2,7 @@ import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
 
-import features.interface.camera_led as cam_led
+import features.interface.camera_led as camera_led
 import features.interface.notification_modal as modals
 import features.interface.session_view as session_view
 import features.interface.sidebar_buttons as missing_data
@@ -36,7 +36,7 @@ def hw_button_handler():
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    cam_led.values(camera)
+    camera_led.values(camera)
     missing_data.editor()
     card_data.values()
     modals.update(input)

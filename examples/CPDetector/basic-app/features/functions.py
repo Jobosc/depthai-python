@@ -5,8 +5,7 @@ import shutil
 
 from dotenv import load_dotenv
 
-from .modules.camera import Camera
-from .modules.participant import Participant
+from features.modules.participant import Participant
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
@@ -173,11 +172,6 @@ def get_hard_drive_space():
         total, used, free = shutil.disk_usage(main_path)
         return total, used, free
     return 0, 0, 0
-
-
-def get_connection_states():
-    camera = Camera()
-    return camera.camera_connection
 
 
 def __create_date_dictionary(dates: list):
