@@ -59,7 +59,7 @@ def side_view():
                     ui.input_switch("switch_mode", "Record", False),
                     fill=False,
                     fillable=True,
-                    col_widths={"xs": (3, 1)},
+                    col_widths={"xs": (1, 1)},
                     gap="1em",
                 ),
                 class_="bottom-aligned-container",
