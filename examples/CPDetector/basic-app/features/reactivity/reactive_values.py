@@ -21,6 +21,7 @@ unsaved_days = reactive.Value(create_date_selection_for_unsaved_sessions())
 save_view_state = reactive.Value(False)
 
 session_view_state = reactive.Value(False)
+recording_view_state = reactive.Value(False)
 record_button_state = reactive.Value(False)
 start_time = reactive.Value(datetime.datetime.now())
 

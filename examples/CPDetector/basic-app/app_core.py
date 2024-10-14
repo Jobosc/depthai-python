@@ -1,4 +1,3 @@
-import os
 import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
@@ -24,12 +23,6 @@ app_ui = ui.page_sidebar(
     ui.sidebar(side_view()),
     header(),
     main_view(),
-    ui.tags.video(
-        ui.tags.source(src="static/color.mp4", type="video/mp4"),
-        controls=True,
-        width="800px",
-        autoplay=False
-    ),
     title="Gait Recording",
     window_title="Gait Recording GUI",
 )
@@ -56,6 +49,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     thread = threading.Thread(target=hw_button_handler)
     thread.start()
 
-app = App(app_ui, server, static_assets={"/static": os.path.join(os.path.dirname(__file__), "static")})
+app = App(app_ui, server)
 
-# Check if there are files available to save before clicking save (left handside). If there aren't, a warning should appear
+# Add Button to delete temporary recordings
+# Show progress of conversion

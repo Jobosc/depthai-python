@@ -92,7 +92,6 @@ def main_view():
         ui.output_ui("header"),
         __cards(),
         __session_buttons(),
-        ui.output_code("action"),
         ui.output_ui("display_recorded_session_title"),
         ui.layout_columns(
             ui.output_ui("update_date_selector"),
@@ -101,6 +100,8 @@ def main_view():
         ui.layout_columns(
             ui.output_ui("display_buttons"),
         ),
+        ui.output_ui("show_video_radio_buttons"),
+        ui.output_ui("display_recording"),
     )
 
 
@@ -155,7 +156,7 @@ def __session_buttons():
                 # icon="▶️",
             ),
             ui.input_action_button(
-                "show_sessions", "Display sessions", class_="btn-secondary"
+                "show_sessions", "Display sessions", class_="btn-primary"
             ),
         ),
     )

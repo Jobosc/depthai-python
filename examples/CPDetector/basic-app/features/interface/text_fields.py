@@ -30,7 +30,3 @@ def values():
     @render.text
     def current_day():
         return datetime.datetime.now().strftime("%d-%m-%Y")
-
-    @render.code
-    def action():
-        return "Press 'q' to stop recording."

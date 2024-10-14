@@ -83,3 +83,27 @@ def editor(input, camera: Camera):
     @reactive.event(input.switch_mode)
     def change_pipeline_mode():
         camera.mode = input.switch_mode()
+    
+    @reactive.Effect
+    @reactive.event(input.convert_dataset)
+    def initiate_conversion():
+        notification = ui.modal(
+            ui.markdown(f"**Do you really want to convert the videos of the selected dataset? WARNING: This is a time consuming task and should not run while recording patients.**"),
+            ui.input_action_button("convert_yes", "✔ Yes", class_="btn-success"),
+            ui.input_action_button("convert_no", "✘ No", class_="btn-danger"),
+            easy_close=False,
+            footer=None,
+        )
+        ui.modal_show(notification)
+    
+    @reactive.Effect
+    @reactive.event(input.delete_dataset)
+    def initiate_deletion():
+        notification = ui.modal(
+            ui.markdown(f"**Are you sure you want to delete selected datasets**"),
+            ui.input_action_button("delete_session_yes", "✔ Yes", class_="btn-success"),
+            ui.input_action_button("delete_session_no", "✘ No", class_="btn-danger"),
+            easy_close=False,
+            footer=None,
+        )
+        ui.modal_show(notification)

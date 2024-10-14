@@ -2,7 +2,7 @@ import datetime
 
 from shiny import ui, reactive
 
-from features.functions import date_format, read_participant_metadata, delete_person_on_day_folder
+from features.functions import date_format, read_participant_metadata, delete_person_on_day_folder, convert_individual_videos
 from features.modules.participant import Participant
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
@@ -46,8 +46,8 @@ def editor(input):
         save_view_state.set(True)
 
     @reactive.Effect
-    @reactive.event(input.delete_dataset)
-    def delete_dataset():
+    @reactive.event(input.delete_session_yes)
+    def delete_session_yes():
         for person in input.people_selector.get():
             state = delete_person_on_day_folder(
                 day=input.date_selector.get(), person=person
@@ -65,4 +65,11 @@ def editor(input):
                     duration=None,
                     type="error",
                 )
+        update_ui()
+    
+    @reactive.Effect
+    @reactive.event(input.convert_yes)
+    def convert_dataset():
+        for person in input.people_selector.get():
+            convert_individual_videos(day=input.date_selector.get(), person=person)
         update_ui()

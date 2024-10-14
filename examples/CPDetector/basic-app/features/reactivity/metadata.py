@@ -70,6 +70,13 @@ def editor(input):
                 duration=None,
                 type="warning",
             )
+        
+        elif amount_of_files == 0:
+            ui.notification_show(
+                f"No video recordings are available yet!",
+                duration=None,
+                type="warning",
+            )
 
         else:
             with ui.Progress(min=1, max=amount_of_files) as p:
