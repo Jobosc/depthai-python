@@ -132,6 +132,23 @@ def create_date_selection_for_unsaved_sessions() -> dict:
 
     return __create_date_dictionary(dates=dates)
 
+def delete_temporary_folder() -> bool:
+    try:
+        folder = os.path.join(temp_path)
+        for root, dirs, files in os.walk(folder):
+            for file in files:
+                print(os.path.join(root, file))
+                os.remove(os.path.join(root, file))
+        print(f"Deleting folder content in: {folder} was successful")
+
+        # Delete folders
+        shutil.rmtree(folder)
+
+        if len(os.listdir(os.path.join(temp_path))) == 0:
+            shutil.rmtree(os.path.join(temp_path))
+        return True
+    except:
+        return False
 
 def delete_person_on_day_folder(day: str, person: str) -> bool:
     try:

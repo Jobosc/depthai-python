@@ -96,7 +96,7 @@ def editor(input):
             __reset_user()
 
     @reactive.Effect
-    @reactive.event(input.reset_button)
+    @reactive.event(input.reset_button, input.cancel_edit_metadata_button)
     def reset_metadata():
         __reset_user()
 

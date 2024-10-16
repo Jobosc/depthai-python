@@ -27,6 +27,7 @@ def side_view():
             ),
             ui.output_ui("forgotten_session_days"),
             ui.output_ui("save_button_choice"),
+            ui.output_ui("delete_current_session_button_choice"),
             ui.panel_conditional(
                 "input.id",
                 ui.value_box(

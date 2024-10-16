@@ -4,6 +4,8 @@ from features.reactivity.reactive_values import (
     unsaved_days,
     save_view_state,
 )
+from features.functions import get_files_to_move
+from features.reactivity.reactive_updates import update_ui
 
 
 def editor():
@@ -13,12 +15,12 @@ def editor():
             return [
                 ui.input_radio_buttons(
                     "rb_unsaved_days",
-                    "There are unsaved local sessions that need to be stored first:",
+                    "There are unsaved local sessions that need to be deleted or stored first:",
                     unsaved_days.get(),
                 ),
                 ui.input_action_button(
                     "delete_date_sessions",
-                    "Delete Sessions",
+                    "Delete old Sessions",
                     class_="btn-outline-danger",
                 ),
             ]
@@ -36,3 +38,23 @@ def editor():
                 label_busy="Saving Session...",
                 class_="btn-warning",
             )
+    
+    @render.ui
+    def delete_current_session_button_choice():
+        number_of_files = get_files_to_move()
+        if save_view_state.get():
+            return ui.input_action_button(
+                "cancel_edit_metadata_button",
+                "Cancel",
+                label_busy="Saving Session...",
+                class_="btn-outline-secondary",
+            )
+        elif not unsaved_days.get() and number_of_files:
+            return ui.input_task_button(
+                "delete_current_session_button", 
+                "Delete current session", 
+                label_busy="Deleting Sessions...", 
+                class_="btn-outline-danger"
+            )
+        else:
+            return None

@@ -6,7 +6,7 @@ from features.functions import (
     get_recordings_for_a_specific_session,
 )
 from features.reactivity.reactive_values import session_view_state, recording_view_state
-
+from features.reactivity.reactive_updates import update_ui
 
 def editor(input, output):
     @output
@@ -31,13 +31,14 @@ def editor(input, output):
                 session_view_state.set(False)
                 recording_view_state.set(False)
                 ui.update_action_button("show_sessions", label="Display sessions")
+                update_ui()
                 return None
             else:
                 session_view_state.set(True)
                 ui.update_action_button("show_sessions", label="Hide sessions")
                 dates = {"": "Select..."}
                 dates.update(create_date_selection_for_saved_sessions())
-
+                update_ui()
                 return [
                     ui.input_select(
                         "date_selector", "Choose a Date:", dates, width="100%"
