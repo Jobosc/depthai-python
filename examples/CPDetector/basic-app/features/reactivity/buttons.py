@@ -101,9 +101,21 @@ def editor(input, camera: Camera):
     @reactive.event(input.delete_dataset)
     def initiate_deletion():
         notification = ui.modal(
-            ui.markdown(f"**Are you sure you want to delete selected datasets**"),
+            ui.markdown(f"**Are you sure you want to delete selected datasets?**"),
             ui.input_action_button("delete_session_yes", "✔ Yes", class_="btn-success"),
             ui.input_action_button("delete_session_no", "✘ No", class_="btn-danger"),
+            easy_close=False,
+            footer=None,
+        )
+        ui.modal_show(notification)
+    
+    @reactive.Effect
+    @reactive.event(input.delete_current_session_button)
+    def initiate_delete_current_session():
+        notification = ui.modal(
+            ui.markdown(f"**Are you sure you want to delete selected the current session?**"),
+            ui.input_action_button("delete_current_session_yes", "✔ Yes", class_="btn-success"),
+            ui.input_action_button("delete_current_session_no", "✘ No", class_="btn-danger"),
             easy_close=False,
             footer=None,
         )
@@ -115,7 +127,7 @@ def editor(input, camera: Camera):
         save_view_state.set(False)
 
     @reactive.Effect
-    @reactive.event(input.delete_current_session_button)
+    @reactive.event(input.delete_current_session_yes)
     def delete_current_session():
         delete_temporary_folder()
         update_ui()

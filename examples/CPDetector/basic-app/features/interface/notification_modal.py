@@ -21,3 +21,8 @@ def update(input):
     @reactive.event(input.delete_session_yes, input.delete_session_no)
     def modal_remover_4():
         ui.modal_remove()
+    
+    @reactive.Effect
+    @reactive.event(input.delete_current_session_yes, input.delete_current_session_no)
+    def modal_remover_5():
+        ui.modal_remove()
