@@ -12,12 +12,12 @@ import features.reactivity.buttons as buttons
 import features.reactivity.dataset as dataset
 import features.reactivity.metadata as metadata
 from features.modules.camera import Camera
-from features.modules.light_barrier import LightBarrier
 from features.view import side_view, main_view, header
+from features.modules.timestamps import Timestamps
 
 # Light Barrier code
 camera = Camera()
-button = LightBarrier()
+timestamps = Timestamps()
 
 app_ui = ui.page_sidebar(
     ui.sidebar(side_view()),
@@ -28,11 +28,10 @@ app_ui = ui.page_sidebar(
 )
 
 
-def hw_button_handler():
+def camera_handler():
     while True:
-        if button.activated and not camera.running and camera.ready:
-            print("Start camera after light barrier trigger.")
-            camera.run()
+        if camera.ready and not camera.running:
+            camera.run(timestamps=timestamps)
 
 
 def server(input: Inputs, output: Outputs, session: Session):
@@ -40,16 +39,20 @@ def server(input: Inputs, output: Outputs, session: Session):
     missing_data.editor()
     card_data.values()
     modals.update(input)
-    metadata.editor(input)
-    buttons.editor(input, camera)
+    metadata.editor(input, timestamps)
+    buttons.editor(input, camera, timestamps)
     dataset.editor(input)
     session_view.editor(input, output)
     card_sidebar.metadata(input, output)
 
-    thread = threading.Thread(target=hw_button_handler)
+    thread = threading.Thread(target=camera_handler)
     thread.start()
 
 app = App(app_ui, server)
+
+# Save timestamps in metadata
+## Trim videos if possible after recording
+## Create function that trims videos
 
 # Show progress of conversion
 # Where to find timestamp of videostart

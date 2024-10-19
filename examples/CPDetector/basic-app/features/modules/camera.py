@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime, timedelta
 import os
 import time
 
@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 
 from features.modules.light_barrier import LightBarrier
 from features.interface.camera_led import CameraLed
+from features.modules.timestamps import Timestamps
+from features.modules.time_window import TimeWindow
 
 load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
 
@@ -25,14 +27,13 @@ class Camera(object):
 
     def __new__(cls):
         if cls._instance is None:
-            print("Creating the camera object")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
             cls.fps = 40
             cls.update_led(cls)
         return cls._instance
 
-    def run(self, block=False) -> int:
+    def run(self, timestamps, block=False) -> int:
         self.running = True
         CameraLed.record()
 
@@ -40,6 +41,8 @@ class Camera(object):
 
         with OakCamera() as oak:
             # Define cameras
+            oak.device.setTimesync(timedelta(seconds=1), 10, True)
+            
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
                 resolution=dai.ColorCameraProperties.SensorResolution.THE_1080_P,
@@ -61,7 +64,7 @@ class Camera(object):
             if self.mode:
                 print("Record video without stream.")
                 # Folder parameters
-                day = datetime.datetime.now().strftime(date_format)
+                day = datetime.now().strftime(date_format)
 
                 oak.record(
                     [color.out.encoded, stereo.out.encoded],
@@ -72,15 +75,31 @@ class Camera(object):
                 print("View video without recording.")
                 oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1 / 2)
 
-            # oak.show_graph()
-
             oak.start(blocking=block)
+            print(f"Camera start: {datetime.now()}")
+
+            timestamps.camera_start = datetime.now()
+            current_state = 0
+            startpoint = None
             while oak.running():
                 time.sleep(0.001)
                 oak.poll()
-                if not state.activated or not self.ready:
+                
+                if not self.ready: #not state.activated or
                     oak.device.close()
                     cv2.destroyAllWindows()
+                    
+                    if startpoint is not None:
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=datetime.now()))
+                
+                if current_state != state.activated:
+                    if state.activated:
+                        startpoint = datetime.now()
+                    else:
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=datetime.now()))
+                        startpoint = None
+                current_state = state.activated
+
 
             self.running = False
             CameraLed.available()

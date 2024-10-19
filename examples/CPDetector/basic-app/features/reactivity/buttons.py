@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from shiny import ui, reactive
 
@@ -7,8 +7,9 @@ from features.modules.camera import Camera
 from features.interface.camera_led import CameraLed
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state, save_view_state
+from features.modules.timestamps import Timestamps
 
-def editor(input, camera: Camera):
+def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.record_button)
     def update_record_button():
@@ -33,6 +34,8 @@ def editor(input, camera: Camera):
                 ui.update_action_button("record_button", label="Activate recording")
                 update_ui()
             else:
+                print(f"Activate recording: {datetime.now()}")
+                timestamps.start_recording()
                 record_button_state.set(True)
                 camera.ready = True
                 ui.update_action_button("record_button", label="Deactivate recording")
@@ -44,7 +47,7 @@ def editor(input, camera: Camera):
     def initiate_save():
         day = ""
         if input.rb_unsaved_days.is_set():
-            date = datetime.datetime.strptime(
+            date = datetime.strptime(
                 input.rb_unsaved_days(), date_format
             ).strftime("%Y-%m-%d")
             day = f", from {date}"
@@ -62,7 +65,7 @@ def editor(input, camera: Camera):
     def delete_session_for_specific_day():
         print(input.rb_unsaved_days())
         state = delete_session_on_date_folder(day=input.rb_unsaved_days())
-        day = datetime.datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
+        day = datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
             "%Y-%m-%d"
         )
         if state:

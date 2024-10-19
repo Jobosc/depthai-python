@@ -194,9 +194,9 @@ def read_participant_metadata(date: str, person: str):
 
 
 def store_participant_metadata(path: str, metadata: Participant):
-    save_file = open(os.path.join(path, "metadata.json"), "w")
-    json.dump(vars(metadata), fp=save_file)
-    save_file.close()
+    json_data = metadata.model_dump_json()
+    with open(os.path.join(path, "metadata.json"), 'w') as file:
+        file.write(json_data)
 
 
 def get_hard_drive_space():

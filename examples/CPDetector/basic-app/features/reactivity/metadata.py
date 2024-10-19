@@ -5,6 +5,7 @@ import os
 from shiny import ui, reactive
 
 from features.functions import (
+    read_participant_metadata,
     store_participant_metadata,
     get_files_to_move,
     move_data_from_temp_to_main_storage,
@@ -15,15 +16,22 @@ from features.functions import (
 from features.modules.participant import Participant
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
+from features.modules.timestamps import Timestamps
 
 
-def editor(input):
+def editor(input, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.edit_metadata_button)
     def edit_metadata():
+        metadata = read_participant_metadata(
+            date=input.date_selector(), person=input.people_selector()[0]
+        )
+        old_person = Participant(**metadata)
+        
         person = Participant(
             id=input.id(),
             comments=input.comments(),
+            timestamps=old_person.timestamps
         )
 
         path = os.path.join(
@@ -38,7 +46,7 @@ def editor(input):
                 duration=None,
                 type="warning",
             )
-        elif input.people_selector()[0] != input.id():
+        else:
             os.rename(
                 path,
                 os.path.join(main_path, temp_path, input.date_selector(), input.id()),
@@ -58,7 +66,7 @@ def editor(input):
         i = 0
         day = datetime.datetime.now().strftime(date_format)
 
-        person = Participant(id=input.id(), comments=input.comments())
+        person = Participant(id=input.id(), comments=input.comments(), timestamps=timestamps)
 
         amount_of_files = len(get_files_to_move())
         if input.rb_unsaved_days.is_set():
@@ -92,8 +100,8 @@ def editor(input):
                     p.set(i, message="Moving files")
                     await asyncio.sleep(0.1)
 
-            update_ui()
             __reset_user()
+        update_ui()
 
     @reactive.Effect
     @reactive.event(input.reset_button, input.cancel_edit_metadata_button)
