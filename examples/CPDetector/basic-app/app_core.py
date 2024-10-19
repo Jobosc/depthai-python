@@ -50,9 +50,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server)
 
-# Save timestamps in metadata
 ## Trim videos if possible after recording
 ## Create function that trims videos
 
 # Show progress of conversion
-# Where to find timestamp of videostart

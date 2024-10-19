@@ -2,20 +2,22 @@ import datetime
 
 from shiny import ui, reactive
 
-from features.functions import date_format, read_participant_metadata, delete_person_on_day_folder, convert_individual_videos
+from features.functions import read_participant_metadata, delete_person_on_day_folder
+from features.video_processing import convert_individual_videos
 from features.modules.participant import Participant
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
-
+from utils.parser import ENVParser
 
 def editor(input):
     @reactive.Effect
     @reactive.event(input.delete_date_sessions)
     def initiate_session_deletion():
+        env = ENVParser()
         day = ""
         if input.rb_unsaved_days.is_set():
             date = datetime.datetime.strptime(
-                input.rb_unsaved_days(), date_format
+                input.rb_unsaved_days(), env.date_format
             ).strftime("%Y-%m-%d")
             day = f", from {date}"
         notification = ui.modal(

@@ -1,24 +1,19 @@
 import datetime
-import ffmpeg
 import json
 import os
 import shutil
 
-from dotenv import load_dotenv
-
 from features.modules.participant import Participant
 
-load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
+from utils.parser import ENVParser
 
-temp_path = os.getenv("TEMP_STORAGE")
-main_path = os.getenv("MAIN_STORAGE")
-date_format = os.getenv("DATE_FORMAT")
-today = datetime.datetime.now().strftime(date_format)
+env = ENVParser()
+today = datetime.datetime.now().strftime(env.date_format)
 
 
 def get_recorded_days():
     result = []
-    hard_drive_folder = os.path.join(main_path, temp_path)
+    hard_drive_folder = os.path.join(env.main_path, env.temp_path)
     print(f"Collect amount of days recorded from: {hard_drive_folder}")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         result = os.listdir(hard_drive_folder)
@@ -30,7 +25,7 @@ def get_recorded_days():
 
 def get_recorded_people_for_a_specific_day(required_day: str = today):
     result = []
-    hard_drive_folder = os.path.join(main_path, temp_path, required_day)
+    hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day)
     print(
         f"Collect amount of recorded people on {required_day} from: {hard_drive_folder}"
     )
@@ -40,7 +35,7 @@ def get_recorded_people_for_a_specific_day(required_day: str = today):
 
 def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
     result = [None]
-    hard_drive_folder = os.path.join(main_path, temp_path, required_day, person_name)
+    hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day, person_name)
     print(
         f"Collect recordings for {person_name}."
     )
@@ -55,7 +50,7 @@ def get_recordings_for_a_specific_session(required_day: str = today, person_name
 
 def get_recorded_people_in_total():
     all_people = []
-    recordings_path = os.path.join(main_path, temp_path)
+    recordings_path = os.path.join(env.main_path, env.temp_path)
     print(f"Collect amount of total recorded people from: {recordings_path}")
     if os.path.exists(recordings_path):
         for directory in os.listdir(recordings_path):
@@ -66,7 +61,7 @@ def get_recorded_people_in_total():
 
 def get_all_recorded_sessions_so_far():
     sessions = []
-    recordings_path = os.path.join(main_path, temp_path)
+    recordings_path = os.path.join(env.main_path, env.temp_path)
     print(f"Collect amount of total sessions from: {recordings_path}")
 
     if os.path.exists(recordings_path):
@@ -83,7 +78,7 @@ def get_all_recorded_sessions_so_far():
 
 def get_files_to_move():
     all_files = []
-    for _, _, files in os.walk(os.path.join(temp_path, today)):
+    for _, _, files in os.walk(os.path.join(env.temp_path, today)):
         for file in files:
             all_files.append(file)
 
@@ -93,14 +88,14 @@ def get_files_to_move():
 def move_data_from_temp_to_main_storage(
         folder_name: str, participant: Participant, day: str = today
 ):
-    for root, dirs, files in os.walk(os.path.join(temp_path, day)):
+    for root, dirs, files in os.walk(os.path.join(env.temp_path, day)):
         # Copy files
         for file in files:
             session_path = os.path.normpath(root).split("/")
             session_path.insert(-1, folder_name)
             session_path = os.path.join(*session_path)
 
-            destination_path = os.path.join(main_path, session_path)
+            destination_path = os.path.join(env.main_path, session_path)
             if not os.path.exists(destination_path):
                 os.makedirs(destination_path)
 
@@ -111,11 +106,11 @@ def move_data_from_temp_to_main_storage(
             os.remove(os.path.join(root, file))
             yield True
     store_participant_metadata(
-        os.path.join(main_path, temp_path, day, folder_name), participant
+        os.path.join(env.main_path, env.temp_path, day, folder_name), participant
     )
 
     # Delete folders
-    folder_path = os.path.join(temp_path, day)
+    folder_path = os.path.join(env.temp_path, day)
     shutil.rmtree(folder_path)
 
 
@@ -134,7 +129,7 @@ def create_date_selection_for_unsaved_sessions() -> dict:
 
 def delete_temporary_folder() -> bool:
     try:
-        folder = os.path.join(temp_path)
+        folder = os.path.join(env.temp_path)
         for root, dirs, files in os.walk(folder):
             for file in files:
                 print(os.path.join(root, file))
@@ -144,15 +139,15 @@ def delete_temporary_folder() -> bool:
         # Delete folders
         shutil.rmtree(folder)
 
-        if len(os.listdir(os.path.join(temp_path))) == 0:
-            shutil.rmtree(os.path.join(temp_path))
+        if len(os.listdir(os.path.join(env.temp_path))) == 0:
+            shutil.rmtree(os.path.join(env.temp_path))
         return True
     except:
         return False
 
 def delete_person_on_day_folder(day: str, person: str) -> bool:
     try:
-        folder = os.path.join(main_path, temp_path, day, person)
+        folder = os.path.join(env.main_path, env.temp_path, day, person)
         for root, dirs, files in os.walk(folder):
             for file in files:
                 print(os.path.join(root, file))
@@ -162,8 +157,8 @@ def delete_person_on_day_folder(day: str, person: str) -> bool:
         # Delete folders
         shutil.rmtree(folder)
 
-        if len(os.listdir(os.path.join(main_path, temp_path, day))) == 0:
-            shutil.rmtree(os.path.join(main_path, temp_path, day))
+        if len(os.listdir(os.path.join(env.main_path, env.temp_path, day))) == 0:
+            shutil.rmtree(os.path.join(env.main_path, env.temp_path, day))
         return True
     except:
         return False
@@ -171,7 +166,7 @@ def delete_person_on_day_folder(day: str, person: str) -> bool:
 
 def delete_session_on_date_folder(day: str) -> bool:
     try:
-        folder = os.path.join(temp_path, day)
+        folder = os.path.join(env.temp_path, day)
         for root, dirs, files in os.walk(folder):
             for file in files:
                 os.remove(os.path.join(root, file))
@@ -185,7 +180,7 @@ def delete_session_on_date_folder(day: str) -> bool:
 
 def read_participant_metadata(date: str, person: str):
     load_file = open(
-        os.path.join(main_path, temp_path, date, person, "metadata.json"), "r"
+        os.path.join(env.main_path, env.temp_path, date, person, "metadata.json"), "r"
     )
     data = json.load(fp=load_file)
     load_file.close()
@@ -200,81 +195,23 @@ def store_participant_metadata(path: str, metadata: Participant):
 
 
 def get_hard_drive_space():
-    if os.path.exists(main_path):
-        total, used, free = shutil.disk_usage(main_path)
+    if os.path.exists(env.main_path):
+        total, used, free = shutil.disk_usage(env.main_path)
         return total, used, free
     return 0, 0, 0
-
-def convert_videos(input_file, output_file):
-    try:
-        ffmpeg.input(input_file).output(output_file, vcodec='libx264').run()
-        print(f"Conversion successful! File saved as {output_file}")
-    except ffmpeg.Error as e:
-        print(f"An error occurred: {e.stderr.decode()}")
-
-def convert_individual_videos(day, person):
-    file_extension = [".hevc", ".mp4"]
-    input_path = os.path.join(main_path, temp_path, day, person)
-    input_files = []
-    extensions = []
-    file_normpaths = []
-
-    ## Inputfiles
-    # Collect all video material files
-    for root, dirs, files in os.walk(input_path):
-        for file in files:
-            _, ext = os.path.splitext(file)
-
-            if ext in file_extension:
-                name = os.path.join(root, file)
-
-                # Save file parameters
-                input_files.append(name)
-                extensions.append(ext)
-
-                # Save normpaths
-                base, _ = os.path.splitext(name)
-                file_normpaths.append(base)
-
-    # Find all files with existent mp4s which already have a hvec
-    list_of_duplicate_mp4s = []
-    for idx, file_np in enumerate(file_normpaths):
-        index = None
-        index = file_normpaths[idx:].index(file_np)
-        # In case of a duplicate file (without extension)
-        if index:
-            if extensions[index] == ".mp4":
-                list_of_duplicate_mp4s.append(index)
-            elif extensions[idx] == ".mp4":
-                list_of_duplicate_mp4s.append(idx)
-    
-    # Remove all MP4s
-    for i in sorted(list_of_duplicate_mp4s, reverse=True):
-        del input_files[i]
-
-
-    ## Outputfiles
-    timestamp = datetime.datetime.now()
-    time_string = timestamp.strftime("%Y%m%d%H%M")
-    for input_file in input_files:
-        base, _ = os.path.splitext(input_file)
-        output_file = f"{base}_{time_string}.mp4"
-        print(input_file, output_file)
-
-    convert_videos(input_file=input_file, output_file=output_file)
 
 
 def __create_date_dictionary(dates: list):
     dict_dates = dict()
     for date in dates:
-        real_date = datetime.datetime.strptime(date, date_format)
+        real_date = datetime.datetime.strptime(date, env.date_format)
         dict_dates[date] = real_date.strftime("%Y-%m-%d")
     return dict_dates
 
 
 def __get_unsaved_local_session_days():
     result = []
-    if os.path.exists(os.path.join(temp_path)):
-        folders = os.listdir(temp_path)
-        result = [x for x in folders if os.path.isdir(os.path.join(temp_path, x))]
+    if os.path.exists(os.path.join(env.temp_path)):
+        folders = os.listdir(env.temp_path)
+        result = [x for x in folders if os.path.isdir(os.path.join(env.temp_path, x))]
     return result

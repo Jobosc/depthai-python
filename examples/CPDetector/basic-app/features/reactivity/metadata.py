@@ -8,21 +8,20 @@ from features.functions import (
     read_participant_metadata,
     store_participant_metadata,
     get_files_to_move,
-    move_data_from_temp_to_main_storage,
-    temp_path,
-    main_path,
-    date_format,
+    move_data_from_temp_to_main_storage
 )
 from features.modules.participant import Participant
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from features.modules.timestamps import Timestamps
+from utils.parser import ENVParser
 
 
 def editor(input, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.edit_metadata_button)
     def edit_metadata():
+        env = ENVParser()
         metadata = read_participant_metadata(
             date=input.date_selector(), person=input.people_selector()[0]
         )
@@ -35,7 +34,7 @@ def editor(input, timestamps: Timestamps):
         )
 
         path = os.path.join(
-            main_path, temp_path, input.date_selector(), input.people_selector()[0]
+            env.main_path, env.temp_path, input.date_selector(), input.people_selector()[0]
         )
 
         store_participant_metadata(path=path, metadata=person)
@@ -49,7 +48,7 @@ def editor(input, timestamps: Timestamps):
         else:
             os.rename(
                 path,
-                os.path.join(main_path, temp_path, input.date_selector(), input.id()),
+                os.path.join(env.main_path, env.temp_path, input.date_selector(), input.id()),
             )
             __reset_user()
 
@@ -63,8 +62,9 @@ def editor(input, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.save_yes)
     async def store_metadata():
+        env = ENVParser()
         i = 0
-        day = datetime.datetime.now().strftime(date_format)
+        day = datetime.datetime.now().strftime(env.date_format)
 
         person = Participant(id=input.id(), comments=input.comments(), timestamps=timestamps)
 

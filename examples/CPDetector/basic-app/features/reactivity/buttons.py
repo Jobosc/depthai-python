@@ -2,12 +2,13 @@ from datetime import datetime
 
 from shiny import ui, reactive
 
-from features.functions import date_format, delete_session_on_date_folder, delete_temporary_folder
+from features.functions import delete_session_on_date_folder, delete_temporary_folder
 from features.modules.camera import Camera
 from features.interface.camera_led import CameraLed
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state, save_view_state
 from features.modules.timestamps import Timestamps
+from utils.parser import ENVParser
 
 def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
@@ -45,10 +46,11 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.save_button)
     def initiate_save():
+        env = ENVParser()
         day = ""
         if input.rb_unsaved_days.is_set():
             date = datetime.strptime(
-                input.rb_unsaved_days(), date_format
+                input.rb_unsaved_days(), env.date_format
             ).strftime("%Y-%m-%d")
             day = f", from {date}"
         notification = ui.modal(
@@ -63,9 +65,10 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.delete_yes)
     def delete_session_for_specific_day():
+        env = ENVParser()
         print(input.rb_unsaved_days())
         state = delete_session_on_date_folder(day=input.rb_unsaved_days())
-        day = datetime.strptime(input.rb_unsaved_days(), date_format).strftime(
+        day = datetime.strptime(input.rb_unsaved_days(), env.date_format).strftime(
             "%Y-%m-%d"
         )
         if state:

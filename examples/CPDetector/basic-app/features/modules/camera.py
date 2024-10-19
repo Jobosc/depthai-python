@@ -5,17 +5,12 @@ import time
 import cv2
 import depthai as dai
 from depthai_sdk import OakCamera, RecordType
-from dotenv import load_dotenv
 
 from features.modules.light_barrier import LightBarrier
 from features.interface.camera_led import CameraLed
-from features.modules.timestamps import Timestamps
 from features.modules.time_window import TimeWindow
 
-load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
-
-temp_path = os.getenv("TEMP_STORAGE")
-date_format = os.getenv("DATE_FORMAT")
+from utils.parser import ENVParser
 
 class Camera(object):
     _instance = None
@@ -34,6 +29,7 @@ class Camera(object):
         return cls._instance
 
     def run(self, timestamps, block=False) -> int:
+        env = ENVParser()
         self.running = True
         CameraLed.record()
 
@@ -64,11 +60,11 @@ class Camera(object):
             if self.mode:
                 print("Record video without stream.")
                 # Folder parameters
-                day = datetime.now().strftime(date_format)
+                day = datetime.now().strftime(env.date_format)
 
                 oak.record(
                     [color.out.encoded, stereo.out.encoded],
-                    os.path.join(temp_path, day),
+                    os.path.join(env.temp_path, day),
                     RecordType.VIDEO,
                 )
             else:
