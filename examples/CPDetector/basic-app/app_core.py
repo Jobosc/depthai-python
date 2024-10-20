@@ -50,7 +50,8 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server)
 
-## Trim videos if possible after recording
-## Create function that trims videos
-
-# Show progress of conversion
+# Find out why after trimming and converting the first seconds are frozen.
+# Why cant I display recordings that have just been trimmed. Check ChatGPT
+# Add layer to prevent overwriting trimmed videos
+# Show progress of conversion. I think the function blocks the next steps.
+# Status LED needs to be updated during recording

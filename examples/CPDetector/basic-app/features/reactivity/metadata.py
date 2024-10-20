@@ -22,10 +22,9 @@ def editor(input, timestamps: Timestamps):
     @reactive.event(input.edit_metadata_button)
     def edit_metadata():
         env = ENVParser()
-        metadata = read_participant_metadata(
+        old_person = read_participant_metadata(
             date=input.date_selector(), person=input.people_selector()[0]
         )
-        old_person = Participant(**metadata)
         
         person = Participant(
             id=input.id(),

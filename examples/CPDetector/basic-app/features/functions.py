@@ -178,14 +178,14 @@ def delete_session_on_date_folder(day: str) -> bool:
         return False
 
 
-def read_participant_metadata(date: str, person: str):
+def read_participant_metadata(date: str, person: str) -> Participant:
     load_file = open(
         os.path.join(env.main_path, env.temp_path, date, person, "metadata.json"), "r"
     )
     data = json.load(fp=load_file)
     load_file.close()
 
-    return data
+    return Participant(**data)
 
 
 def store_participant_metadata(path: str, metadata: Participant):

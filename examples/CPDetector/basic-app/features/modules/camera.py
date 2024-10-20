@@ -9,6 +9,7 @@ from depthai_sdk import OakCamera, RecordType
 from features.modules.light_barrier import LightBarrier
 from features.interface.camera_led import CameraLed
 from features.modules.time_window import TimeWindow
+from features.modules.timestamps import Timestamps
 
 from utils.parser import ENVParser
 
@@ -28,7 +29,7 @@ class Camera(object):
             cls.update_led(cls)
         return cls._instance
 
-    def run(self, timestamps, block=False) -> int:
+    def run(self, timestamps: Timestamps, block=False) -> int:
         env = ENVParser()
         self.running = True
         CameraLed.record()
@@ -86,16 +87,23 @@ class Camera(object):
                     cv2.destroyAllWindows()
                     
                     if startpoint is not None:
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=datetime.now()))
+                        endpoint = datetime.now()
+                        endpoint_frame = endpoint - timestamps.camera_start
+                        endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame, end_frame=endpoint_frame))
                 
                 if current_state != state.activated:
                     if state.activated:
                         startpoint = datetime.now()
+                        startpoint_frame = startpoint - timestamps.camera_start
+                        startpoint_frame = int(startpoint_frame.total_seconds() * self.fps)
                     else:
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=datetime.now()))
+                        endpoint = datetime.now()
+                        endpoint_frame = endpoint - timestamps.camera_start
+                        endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame, end_frame=endpoint_frame))
                         startpoint = None
                 current_state = state.activated
-
 
             self.running = False
             CameraLed.available()

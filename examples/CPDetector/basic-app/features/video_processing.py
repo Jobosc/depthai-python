@@ -1,66 +1,44 @@
-import datetime
 import ffmpeg
 import os
 
 from utils.parser import ENVParser
+from features.functions import read_participant_metadata
+from features.modules.time_window import TimeWindow 
 
-
-
-def convert_videos(input_file, output_file):
-    try:
-        ffmpeg.input(input_file).output(output_file, vcodec='libx264').run()
-        print(f"Conversion successful! File saved as {output_file}")
-    except ffmpeg.Error as e:
-        print(f"An error occurred: {e.stderr.decode()}")
 
 def convert_individual_videos(day, person):
     env = ENVParser()
-    file_extension = [".hevc", ".mp4"]
     input_path = os.path.join(env.main_path, env.temp_path, day, person)
     input_files = []
-    extensions = []
-    file_normpaths = []
 
     ## Inputfiles
     # Collect all video material files
     for root, dirs, files in os.walk(input_path):
         for file in files:
             _, ext = os.path.splitext(file)
-
-            if ext in file_extension:
-                name = os.path.join(root, file)
-
-                # Save file parameters
-                input_files.append(name)
-                extensions.append(ext)
-
-                # Save normpaths
-                base, _ = os.path.splitext(name)
-                file_normpaths.append(base)
-
-    # Find all files with existent mp4s which already have a hvec
-    list_of_duplicate_mp4s = []
-    for idx, file_np in enumerate(file_normpaths):
-        index = None
-        index = file_normpaths[idx:].index(file_np)
-        # In case of a duplicate file (without extension)
-        if index:
-            if extensions[index] == ".mp4":
-                list_of_duplicate_mp4s.append(index)
-            elif extensions[idx] == ".mp4":
-                list_of_duplicate_mp4s.append(idx)
-    
-    # Remove all MP4s
-    for i in sorted(list_of_duplicate_mp4s, reverse=True):
-        del input_files[i]
-
+            if ext == ".hevc":
+                input_files.append( os.path.join(root, file))
 
     ## Outputfiles
-    timestamp = datetime.datetime.now()
-    time_string = timestamp.strftime("%Y%m%d%H%M")
-    for input_file in input_files:
-        base, _ = os.path.splitext(input_file)
-        output_file = f"{base}_{time_string}.mp4"
-        print(input_file, output_file)
+    metadata = read_participant_metadata(day, person)
+    destination_path = os.path.join(input_path, "sessions")
+    if not os.path.exists(destination_path):
+        os.makedirs(destination_path)
 
-    convert_videos(input_file=input_file, output_file=output_file)
+    for idx, input_file in enumerate(input_files):
+        for idx2, time_window in enumerate(metadata.timestamps.time_windows):
+            output_file = os.path.join(destination_path, f"Gait_Cycle_{idx}_{idx2}.mp4")
+            convert_videos(input_file=input_file, output_file=output_file, time_window=time_window)
+
+
+def convert_videos(input_file: str, output_file: str, time_window: TimeWindow=None):
+    try:
+        input_file = ffmpeg.input(input_file)
+        if time_window:
+            output_file = ffmpeg.output(input_file.trim(start_frame=time_window.start_frame, end_frame=time_window.end_frame), output_file, vcodec='libx264')
+        else:
+            output_file = ffmpeg.output(input_file, output_file, vcodec='libx264')
+        ffmpeg.run(output_file)
+        print(f"Conversion successful! File saved as {output_file}")
+    except ffmpeg.Error as e:
+        print(f"An error occurred: {e.stderr()}")

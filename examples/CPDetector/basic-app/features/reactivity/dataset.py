@@ -34,10 +34,9 @@ def editor(input):
     @reactive.Effect
     @reactive.event(input.edit_dataset)
     def edit_metadata_dataset():
-        metadata = read_participant_metadata(
+        person = read_participant_metadata(
             date=input.date_selector(), person=input.people_selector()[0]
         )
-        person = Participant(**metadata)
 
         print(f"Editing metadata for {person.id}.")
 
