@@ -10,7 +10,7 @@ class ENVParser:
     _date_format = None
     
     def __init__(self) -> None:
-        load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
+        load_dotenv("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/examples/CPDetector/basic-app/.env")
 
         self._temp_path = os.getenv("TEMP_STORAGE")
         self._main_path = os.getenv("MAIN_STORAGE")
