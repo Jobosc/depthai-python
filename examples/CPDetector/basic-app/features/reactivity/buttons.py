@@ -91,7 +91,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     def change_pipeline_mode():
         camera.mode = input.switch_mode()
 
-    @reactive.Effect
+    """@reactive.Effect
     @reactive.event(input.convert_dataset)
     def initiate_conversion():
         notification = ui.modal(
@@ -102,7 +102,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             easy_close=False,
             footer=None,
         )
-        ui.modal_show(notification)
+        ui.modal_show(notification)"""
 
     @reactive.Effect
     @reactive.event(input.delete_dataset)

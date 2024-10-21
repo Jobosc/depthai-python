@@ -75,10 +75,11 @@ def editor(input, output):
                 ui.row(
                     ui.column(
                         6,  # Column width (out of 12) to adjust how much space each button takes
-                        ui.input_action_button(
+                        ui.input_task_button(
                             "convert_dataset",
                             "Convert Recording(s)",
                             class_="btn-outline-warning",
+                            label_busy="Conversion running...",
                             width="100%",
                         )
                     ),

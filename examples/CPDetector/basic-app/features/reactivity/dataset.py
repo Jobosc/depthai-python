@@ -1,4 +1,5 @@
 import datetime
+import asyncio
 
 from shiny import ui, reactive
 
@@ -69,8 +70,24 @@ def editor(input):
         update_ui()
 
     @reactive.Effect
-    @reactive.event(input.convert_yes)
-    def convert_dataset():
+    @reactive.event(input.convert_dataset)
+    async def convert_dataset():
+        amount_of_conversions = 0
+        i = 0
+
         for person in input.people_selector.get():
-            convert_individual_videos(day=input.date_selector.get(), person=person)
+            metadata = read_participant_metadata(input.date_selector.get(), person)
+            amount_of_conversions += len(metadata.timestamps.time_windows) * 2
+
+        for person in input.people_selector.get():
+            with ui.Progress(min=1, max=amount_of_conversions) as p:
+                p.set(0,
+                    message="Converting videos in progress",
+                    detail="This will take a while...",
+                )
+
+                for _ in convert_individual_videos(day=input.date_selector.get(), person=person):
+                    i += 1
+                    p.set(i, message="Converting videos in progress", detail="This will take a while...",)
+                    await asyncio.sleep(0.1)
         update_ui()

@@ -55,6 +55,4 @@ def server(input: Inputs, output: Outputs, session: Session):
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
 # Find out why after trimming and converting the first seconds are frozen.
-# Add layer to prevent overwriting trimmed videos
-# Show progress of conversion. I think the function blocks the next steps.
 # Status LED needs to be updated during recording
