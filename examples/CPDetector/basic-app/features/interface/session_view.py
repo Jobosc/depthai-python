@@ -140,7 +140,7 @@ def editor(input, output):
 
     @output
     @render.ui
-    @reactive.event(input.select_recordings, input.show_sessions, input.select_recordings)
+    @reactive.event(input.select_recordings, input.show_sessions)
     def display_recording():
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
             return [ui.tags.video(

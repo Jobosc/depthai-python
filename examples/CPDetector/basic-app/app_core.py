@@ -1,3 +1,4 @@
+import os
 import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
@@ -14,10 +15,12 @@ from features.interface.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.view import side_view, main_view, header
+from utils.parser import ENVParser
 
 # Light Barrier code
 camera = Camera()
 timestamps = Timestamps()
+env = ENVParser()
 
 app_ui = ui.page_sidebar(
     ui.sidebar(side_view()),
@@ -49,10 +52,9 @@ def server(input: Inputs, output: Outputs, session: Session):
     thread.start()
 
 
-app = App(app_ui, server)
+app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
 # Find out why after trimming and converting the first seconds are frozen.
-# Why cant I display recordings that have just been trimmed. Check ChatGPT
 # Add layer to prevent overwriting trimmed videos
 # Show progress of conversion. I think the function blocks the next steps.
 # Status LED needs to be updated during recording

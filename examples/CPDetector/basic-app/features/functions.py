@@ -36,15 +36,15 @@ def get_recorded_people_for_a_specific_day(required_day: str = today):
 def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
     result = [None]
     hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day, person_name)
-    print(
-        f"Collect recordings for {person_name}."
-    )
+    print(f"Collect recordings for {person_name}.")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         for root, _, files in os.walk(hard_drive_folder):
             for file in files:
                 _, ext = os.path.splitext(file)
                 if ext == ".mp4":
-                    result.append(os.path.join(root, file))
+                    full_path = os.path.join(root, file)
+                    temp_result = os.path.relpath(full_path, env.main_path)
+                    result.append(temp_result)
     return result
 
 
