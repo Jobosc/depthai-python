@@ -4,7 +4,6 @@ import os
 import shutil
 
 from features.modules.participant import Participant
-
 from utils.parser import ENVParser
 
 env = ENVParser()
@@ -32,6 +31,7 @@ def get_recorded_people_for_a_specific_day(required_day: str = today):
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         result = os.listdir(hard_drive_folder)
     return result
+
 
 def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
     result = [None]
@@ -127,6 +127,7 @@ def create_date_selection_for_unsaved_sessions() -> dict:
 
     return __create_date_dictionary(dates=dates)
 
+
 def delete_temporary_folder() -> bool:
     try:
         folder = os.path.join(env.temp_path)
@@ -144,6 +145,7 @@ def delete_temporary_folder() -> bool:
         return True
     except:
         return False
+
 
 def delete_person_on_day_folder(day: str, person: str) -> bool:
     try:

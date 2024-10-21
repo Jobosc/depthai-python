@@ -1,17 +1,17 @@
-from datetime import datetime, timedelta
 import os
 import time
+from datetime import datetime, timedelta
 
 import cv2
 import depthai as dai
 from depthai_sdk import OakCamera, RecordType
 
-from features.modules.light_barrier import LightBarrier
 from features.interface.camera_led import CameraLed
+from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
-
 from utils.parser import ENVParser
+
 
 class Camera(object):
     _instance = None
@@ -39,7 +39,7 @@ class Camera(object):
         with OakCamera() as oak:
             # Define cameras
             oak.device.setTimesync(timedelta(seconds=1), 10, True)
-            
+
             color = oak.camera(
                 source=dai.CameraBoardSocket.CAM_A,
                 resolution=dai.ColorCameraProperties.SensorResolution.THE_1080_P,
@@ -81,17 +81,19 @@ class Camera(object):
             while oak.running():
                 time.sleep(0.001)
                 oak.poll()
-                
-                if not self.ready: #not state.activated or
+
+                if not self.ready:  # not state.activated or
                     oak.device.close()
                     cv2.destroyAllWindows()
-                    
+
                     if startpoint is not None:
                         endpoint = datetime.now()
                         endpoint_frame = endpoint - timestamps.camera_start
                         endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame, end_frame=endpoint_frame))
-                
+                        timestamps.time_windows.append(
+                            TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame,
+                                       end_frame=endpoint_frame))
+
                 if current_state != state.activated:
                     if state.activated:
                         startpoint = datetime.now()
@@ -101,15 +103,17 @@ class Camera(object):
                         endpoint = datetime.now()
                         endpoint_frame = endpoint - timestamps.camera_start
                         endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame, end_frame=endpoint_frame))
+                        timestamps.time_windows.append(
+                            TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame,
+                                       end_frame=endpoint_frame))
                         startpoint = None
                 current_state = state.activated
 
             self.running = False
             CameraLed.available()
             return 1
-    
-    @staticmethod   #TODO: Maybe check if this would be better as setter property and update with ui
+
+    @staticmethod  # TODO: Maybe check if this would be better as setter property and update with ui
     def update_led(self):
         if self.running:
             CameraLed.record()
@@ -117,7 +121,6 @@ class Camera(object):
             CameraLed.available()
         else:
             CameraLed.missing()
-
 
     @property
     def camera_connection(self):

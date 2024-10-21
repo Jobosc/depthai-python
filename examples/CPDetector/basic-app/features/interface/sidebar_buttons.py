@@ -1,11 +1,10 @@
 from shiny import render, ui
 
+from features.functions import get_files_to_move
 from features.reactivity.reactive_values import (
     unsaved_days,
     save_view_state,
 )
-from features.functions import get_files_to_move
-from features.reactivity.reactive_updates import update_ui
 
 
 def editor():
@@ -38,7 +37,7 @@ def editor():
                 label_busy="Saving Session...",
                 class_="btn-warning",
             )
-    
+
     @render.ui
     def delete_current_session_button_choice():
         number_of_files = get_files_to_move()
@@ -51,9 +50,9 @@ def editor():
             )
         elif not unsaved_days.get() and number_of_files:
             return ui.input_task_button(
-                "delete_current_session_button", 
-                "Delete current session", 
-                label_busy="Deleting Sessions...", 
+                "delete_current_session_button",
+                "Delete current session",
+                label_busy="Deleting Sessions...",
                 class_="btn-outline-danger"
             )
         else:

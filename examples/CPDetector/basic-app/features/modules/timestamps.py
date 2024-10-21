@@ -1,7 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel
 from typing import Optional, List
+
+from pydantic import BaseModel
+
 from features.modules.time_window import TimeWindow
+
 
 class Timestamps(BaseModel):
     activate_recording: datetime = None

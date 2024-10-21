@@ -2,7 +2,6 @@ import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
 
-from features.interface.camera_led import CameraLed
 import features.interface.notification_modal as modals
 import features.interface.session_view as session_view
 import features.interface.sidebar_buttons as missing_data
@@ -11,9 +10,10 @@ import features.interface.text_fields as card_data
 import features.reactivity.buttons as buttons
 import features.reactivity.dataset as dataset
 import features.reactivity.metadata as metadata
+from features.interface.camera_led import CameraLed
 from features.modules.camera import Camera
-from features.view import side_view, main_view, header
 from features.modules.timestamps import Timestamps
+from features.view import side_view, main_view, header
 
 # Light Barrier code
 camera = Camera()
@@ -47,6 +47,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
     thread = threading.Thread(target=camera_handler)
     thread.start()
+
 
 app = App(app_ui, server)
 

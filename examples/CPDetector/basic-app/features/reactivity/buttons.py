@@ -3,12 +3,13 @@ from datetime import datetime
 from shiny import ui, reactive
 
 from features.functions import delete_session_on_date_folder, delete_temporary_folder
-from features.modules.camera import Camera
 from features.interface.camera_led import CameraLed
+from features.modules.camera import Camera
+from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state, save_view_state
-from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
+
 
 def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
@@ -41,7 +42,6 @@ def editor(input, camera: Camera, timestamps: Timestamps):
                 camera.ready = True
                 ui.update_action_button("record_button", label="Deactivate recording")
                 update_ui()
-
 
     @reactive.Effect
     @reactive.event(input.save_button)
@@ -90,19 +90,20 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.switch_mode)
     def change_pipeline_mode():
         camera.mode = input.switch_mode()
-    
+
     @reactive.Effect
     @reactive.event(input.convert_dataset)
     def initiate_conversion():
         notification = ui.modal(
-            ui.markdown(f"**Do you really want to convert the videos of the selected dataset? WARNING: This is a time consuming task and should not run while recording patients.**"),
+            ui.markdown(
+                f"**Do you really want to convert the videos of the selected dataset? WARNING: This is a time consuming task and should not run while recording patients.**"),
             ui.input_action_button("convert_yes", "✔ Yes", class_="btn-success"),
             ui.input_action_button("convert_no", "✘ No", class_="btn-danger"),
             easy_close=False,
             footer=None,
         )
         ui.modal_show(notification)
-    
+
     @reactive.Effect
     @reactive.event(input.delete_dataset)
     def initiate_deletion():
@@ -114,7 +115,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             footer=None,
         )
         ui.modal_show(notification)
-    
+
     @reactive.Effect
     @reactive.event(input.delete_current_session_button)
     def initiate_delete_current_session():

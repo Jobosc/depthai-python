@@ -5,8 +5,9 @@ from features.functions import (
     get_recorded_people_for_a_specific_day,
     get_recordings_for_a_specific_session,
 )
-from features.reactivity.reactive_values import session_view_state, recording_view_state
 from features.reactivity.reactive_updates import update_ui
+from features.reactivity.reactive_values import session_view_state, recording_view_state
+
 
 def editor(input, output):
     @output
@@ -117,7 +118,7 @@ def editor(input, output):
                     ),
                 )
         return buttons
-    
+
     @output
     @render.ui
     @reactive.event(input.play_recording)
@@ -129,11 +130,12 @@ def editor(input, output):
             else:
                 recording_view_state.set(True)
                 return ui.input_select(
-                            "select_recordings", 
-                            "Select one of the recordings in this session:", 
-                            get_recordings_for_a_specific_session(required_day=input.date_selector.get(), person_name=input.people_selector.get()[0]), 
-                            width="100%"
-                        ),
+                    "select_recordings",
+                    "Select one of the recordings in this session:",
+                    get_recordings_for_a_specific_session(required_day=input.date_selector.get(),
+                                                          person_name=input.people_selector.get()[0]),
+                    width="100%"
+                ),
         return None
 
     @output
@@ -142,10 +144,10 @@ def editor(input, output):
     def display_recording():
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
             return [ui.tags.video(
-                        ui.tags.source(src=input.select_recordings.get(), type="video/mp4"),
-                        controls=True,
-                        width="800px",
-                        autoplay=False
-                    ),]
+                ui.tags.source(src=input.select_recordings.get(), type="video/mp4"),
+                controls=True,
+                width="800px",
+                autoplay=False
+            ), ]
         else:
             return None

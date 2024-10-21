@@ -1,5 +1,4 @@
 import datetime
-import faicons as fa
 
 from shiny import reactive
 

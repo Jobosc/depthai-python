@@ -1,9 +1,10 @@
-import ffmpeg
 import os
 
-from utils.parser import ENVParser
+import ffmpeg
+
 from features.functions import read_participant_metadata
-from features.modules.time_window import TimeWindow 
+from features.modules.time_window import TimeWindow
+from utils.parser import ENVParser
 
 
 def convert_individual_videos(day, person):
@@ -17,7 +18,7 @@ def convert_individual_videos(day, person):
         for file in files:
             _, ext = os.path.splitext(file)
             if ext == ".hevc":
-                input_files.append( os.path.join(root, file))
+                input_files.append(os.path.join(root, file))
 
     ## Outputfiles
     metadata = read_participant_metadata(day, person)
@@ -31,11 +32,13 @@ def convert_individual_videos(day, person):
             convert_videos(input_file=input_file, output_file=output_file, time_window=time_window)
 
 
-def convert_videos(input_file: str, output_file: str, time_window: TimeWindow=None):
+def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = None):
     try:
         input_file = ffmpeg.input(input_file)
         if time_window:
-            output_file = ffmpeg.output(input_file.trim(start_frame=time_window.start_frame, end_frame=time_window.end_frame), output_file, vcodec='libx264')
+            output_file = ffmpeg.output(
+                input_file.trim(start_frame=time_window.start_frame, end_frame=time_window.end_frame), output_file,
+                vcodec='libx264')
         else:
             output_file = ffmpeg.output(input_file, output_file, vcodec='libx264')
         ffmpeg.run(output_file)

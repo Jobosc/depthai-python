@@ -11,9 +11,9 @@ from features.functions import (
     move_data_from_temp_to_main_storage
 )
 from features.modules.participant import Participant
+from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
-from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
 
 
@@ -25,7 +25,7 @@ def editor(input, timestamps: Timestamps):
         old_person = read_participant_metadata(
             date=input.date_selector(), person=input.people_selector()[0]
         )
-        
+
         person = Participant(
             id=input.id(),
             comments=input.comments(),
@@ -77,7 +77,7 @@ def editor(input, timestamps: Timestamps):
                 duration=None,
                 type="warning",
             )
-        
+
         elif amount_of_files == 0:
             ui.notification_show(
                 f"No video recordings are available yet!",
