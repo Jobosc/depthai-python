@@ -110,7 +110,14 @@ class Camera(object):
                 current_state = state.activated
 
             self.running = False
-            CameraLed.available()
+            CameraLed.missing()
+            
+            while True:
+                time.sleep(1)
+                if self.camera_connection:
+                    CameraLed.available()
+                    break
+                
             return 1
 
     @staticmethod  # TODO: Maybe check if this would be better as setter property and update with ui
