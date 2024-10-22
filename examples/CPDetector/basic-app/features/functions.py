@@ -84,6 +84,8 @@ def get_files_to_move():
 
     return all_files
 
+def check_if_folder_already_exists(folder_name: str, day: str = today):
+    return os.path.exists(os.path.join(env.main_path, env.temp_path, day, folder_name))
 
 def move_data_from_temp_to_main_storage(
         folder_name: str, participant: Participant, day: str = today
@@ -122,8 +124,8 @@ def create_date_selection_for_saved_sessions() -> dict:
 
 def create_date_selection_for_unsaved_sessions() -> dict:
     dates = __get_unsaved_local_session_days()
-    if today in dates:
-        dates.remove(today)
+    """if today in dates:
+        dates.remove(today)"""
 
     return __create_date_dictionary(dates=dates)
 

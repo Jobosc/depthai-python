@@ -5,6 +5,7 @@ import os
 from shiny import ui, reactive
 
 from features.functions import (
+    check_if_folder_already_exists,
     read_participant_metadata,
     store_participant_metadata,
     get_files_to_move,
@@ -81,6 +82,13 @@ def editor(input, timestamps: Timestamps):
         elif amount_of_files == 0:
             ui.notification_show(
                 f"No video recordings are available yet!",
+                duration=None,
+                type="warning",
+            )
+        
+        elif check_if_folder_already_exists(folder_name=input.id(), day=day):
+            ui.notification_show(
+                f"ID already exists for the day!",
                 duration=None,
                 type="warning",
             )

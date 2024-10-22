@@ -7,7 +7,7 @@ from features.interface.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
-from features.reactivity.reactive_values import record_button_state, save_view_state
+from features.reactivity.reactive_values import record_button_state, save_view_state, unsaved_days
 from utils.parser import ENVParser
 
 
@@ -15,7 +15,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.record_button)
     def update_record_button():
-        if input.unsaved_days.is_set():
+        if unsaved_days.get():
             ui.notification_show(
                 f"You need to complete the session from a previous day before you can start recording again!",
                 duration=None,
