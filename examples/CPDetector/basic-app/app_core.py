@@ -54,5 +54,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
-# Find out why after trimming and converting the first seconds are frozen.
+# Only allow one long recording to be saved
+# If person exists for the same day then add a counter
 # Add Logging

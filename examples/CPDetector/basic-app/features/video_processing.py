@@ -1,7 +1,7 @@
 import os
 import shutil
 
-import ffmpeg
+import subprocess
 
 from features.functions import read_participant_metadata
 from features.modules.time_window import TimeWindow
@@ -37,17 +37,29 @@ def convert_individual_videos(day, person):
 
 
 def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = None):
-    try:
-        input_file = ffmpeg.input(input_file)
-        if time_window:
-            output_file = ffmpeg.output(
-                input_file.trim(start_frame=time_window.start_frame, end_frame=time_window.end_frame), output_file,
-                vcodec='libx264')
-        else:
-            output_file = ffmpeg.output(input_file, output_file, vcodec='libx264')
-        ffmpeg.run(output_file)
-        print(f"Conversion successful! File saved as {output_file}")
-        return True
-    except ffmpeg.Error as e:
-        print(f"An error occurred: {e.stderr()}")
-        return True
+    command = [
+        "ffmpeg",
+        "-i", input_file,
+        "-ss", str(format_timedelta(time_window.start_seconds)),
+        "-t", str(format_timedelta(time_window.end_seconds - time_window.start_seconds)),
+        "-c:v", "libx264",
+        output_file
+    ]
+    subprocess.run(command)
+    return True
+
+def format_timedelta(seconds: int) -> str:
+    """
+    Convert seconds into a string in the format HH:MM:SS.
+
+    Args:
+    seconds (int): The seconds to format.
+
+    Returns:
+    str: The formatted string in HH:MM:SS format.
+    """
+    total_seconds = int(seconds)
+    hours, remainder = divmod(total_seconds, 3600)
+    minutes, seconds = divmod(remainder, 60)
+    
+    return f"{hours:02}:{minutes:02}:{seconds:02}"

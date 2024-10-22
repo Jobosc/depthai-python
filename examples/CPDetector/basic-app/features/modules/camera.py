@@ -88,24 +88,24 @@ class Camera(object):
 
                     if startpoint is not None:
                         endpoint = datetime.now()
-                        endpoint_frame = endpoint - timestamps.camera_start
-                        endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
+                        endpoint_timestamp_seconds = endpoint - timestamps.camera_start
+                        endpoint_timestamp_seconds = endpoint_timestamp_seconds.total_seconds()
                         timestamps.time_windows.append(
-                            TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame,
-                                       end_frame=endpoint_frame))
+                            TimeWindow(start=startpoint, end=endpoint, start_seconds=startpoint_timestamp_seconds,
+                                       end_seconds=endpoint_timestamp_seconds))
 
                 if current_state != state.activated:
                     if state.activated:
                         startpoint = datetime.now()
-                        startpoint_frame = startpoint - timestamps.camera_start
-                        startpoint_frame = int(startpoint_frame.total_seconds() * self.fps)
+                        startpoint_timestamp_seconds = startpoint - timestamps.camera_start
+                        startpoint_timestamp_seconds = int(startpoint_timestamp_seconds.total_seconds())
                     else:
                         endpoint = datetime.now()
-                        endpoint_frame = endpoint - timestamps.camera_start
-                        endpoint_frame = int(endpoint_frame.total_seconds() * self.fps)
+                        endpoint_timestamp_seconds = endpoint - timestamps.camera_start
+                        endpoint_timestamp_seconds = int(endpoint_timestamp_seconds.total_seconds())
                         timestamps.time_windows.append(
-                            TimeWindow(start=startpoint, end=endpoint, start_frame=startpoint_frame,
-                                       end_frame=endpoint_frame))
+                            TimeWindow(start=startpoint, end=endpoint, start_seconds=startpoint_timestamp_seconds,
+                                       end_seconds=endpoint_timestamp_seconds))
                         startpoint = None
                 current_state = state.activated
 

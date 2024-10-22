@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pydantic import BaseModel
 
@@ -6,5 +6,5 @@ from pydantic import BaseModel
 class TimeWindow(BaseModel):
     start: datetime
     end: datetime
-    start_frame: int
-    end_frame: int
+    start_seconds: int
+    end_seconds: int
