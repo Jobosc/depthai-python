@@ -16,6 +16,7 @@ from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.view import side_view, main_view, header
 from utils.parser import ENVParser
+from utils.custom_logger import initialize_logger
 
 # Light Barrier code
 camera = Camera()
@@ -38,15 +39,16 @@ def camera_handler():
 
 
 def server(input: Inputs, output: Outputs, session: Session):
-    CameraLed(input, output).values()
+    initialize_logger()
+    CameraLed.values()
     missing_data.editor()
     card_data.values()
     modals.update(input)
     metadata.editor(input, timestamps)
     buttons.editor(input, camera, timestamps)
     dataset.editor(input)
-    session_view.editor(input, output)
-    card_sidebar.metadata(input, output)
+    session_view.editor(input)
+    card_sidebar.metadata(input)
 
     thread = threading.Thread(target=camera_handler)
     thread.start()

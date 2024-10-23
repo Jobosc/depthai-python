@@ -11,7 +11,7 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-
+import logging
 
 class Camera(object):
     _instance = None
@@ -23,6 +23,7 @@ class Camera(object):
 
     def __new__(cls):
         if cls._instance is None:
+            logging.debug("Initiate camera instance.")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
             cls.fps = 40
@@ -30,10 +31,10 @@ class Camera(object):
         return cls._instance
 
     def run(self, timestamps: Timestamps, block=False) -> int:
+        logging.info("Start process to record with camera.")
         env = ENVParser()
         self.running = True
         CameraLed.record()
-
         state = LightBarrier()
 
         with OakCamera() as oak:
@@ -46,20 +47,21 @@ class Camera(object):
                 fps=self.fps,
                 encode=self.encode if self.mode else None,
             )
-
             stereo = oak.stereo(
                 resolution=dai.MonoCameraProperties.SensorResolution.THE_800_P,
                 fps=self.fps,
                 encode=self.encode,
             )
+
             # Set IR brightness
             # Turned off IR because of the possible marker disruptions
             stereo.set_auto_ir(auto_mode=False, continuous_mode=False)
             stereo.set_ir(0, 0)
+            logging.info("Set camera parameters for recording with OAK camera.")
 
             # Synchronize & save all (encoded) streams
             if self.mode:
-                print("Record video without stream.")
+                logging.info("Record video without stream.")
                 # Folder parameters
                 day = datetime.now().strftime(env.date_format)
 
@@ -69,11 +71,11 @@ class Camera(object):
                     RecordType.VIDEO,
                 )
             else:
-                print("View video without recording.")
+                logging.info("View video without recording.")
                 oak.visualize([color.out.camera, stereo.out.depth], fps=True, scale=1 / 2)
 
             oak.start(blocking=block)
-            print(f"Camera start: {datetime.now()}")
+            logging.info(f"Camera started recording at: {datetime.now()}")
 
             timestamps.camera_start = datetime.now()
             current_state = 0
@@ -87,6 +89,7 @@ class Camera(object):
                     cv2.destroyAllWindows()
 
                     if startpoint is not None:
+                        logging.info(f"Light barrier triggered to end at: {datetime.now()}")
                         endpoint = datetime.now()
                         endpoint_timestamp_seconds = endpoint - timestamps.camera_start
                         endpoint_timestamp_seconds = endpoint_timestamp_seconds.total_seconds()
@@ -96,10 +99,12 @@ class Camera(object):
 
                 if current_state != state.activated:
                     if state.activated:
+                        logging.info(f"Light barrier triggered to start at: {datetime.now()}")
                         startpoint = datetime.now()
                         startpoint_timestamp_seconds = startpoint - timestamps.camera_start
                         startpoint_timestamp_seconds = int(startpoint_timestamp_seconds.total_seconds())
                     else:
+                        logging.info(f"Light barrier triggered to end at: {datetime.now()}")
                         endpoint = datetime.now()
                         endpoint_timestamp_seconds = endpoint - timestamps.camera_start
                         endpoint_timestamp_seconds = int(endpoint_timestamp_seconds.total_seconds())

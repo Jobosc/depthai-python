@@ -6,35 +6,37 @@ from features.functions import (
     get_recordings_for_a_specific_session,
 )
 from features.reactivity.reactive_updates import update_ui
-from features.reactivity.reactive_values import session_view_state, recording_view_state
+from features.reactivity.reactive_values import session_view_state, recording_view_state, unsaved_days
+import logging
 
 
-def editor(input, output):
-    @output
+def editor(input):
     @render.ui
     @reactive.event(input.show_sessions)
     def display_recorded_session_title():
-        if input.unsaved_days.is_set():
+        if unsaved_days.get():
+            logging.warning("Sessions can't be displayed due to unsaved recordings.")
             ui.notification_show(
-                f"You need to complete the session from a previous day before you can start editing sessions!",
+                f"You need to complete a previous session before you can start editing sessions!",
                 duration=None,
                 type="warning",
             )
-        if not session_view_state.get():
+        if not session_view_state.get() and not unsaved_days.get():
             return ui.markdown("##### Recorded Sessions")
 
-    @output
     @render.ui
     @reactive.event(input.show_sessions)
     def update_date_selector():
-        if not input.unsaved_days.is_set():
+        if not unsaved_days.get():
             if session_view_state.get():
+                logging.debug("Render UI: Remove date selector")
                 session_view_state.set(False)
                 recording_view_state.set(False)
                 ui.update_action_button("show_sessions", label="Display sessions")
                 update_ui()
                 return None
             else:
+                logging.debug("Render UI: Display date selector")
                 session_view_state.set(True)
                 ui.update_action_button("show_sessions", label="Hide sessions")
                 dates = {"": "Select..."}
@@ -46,12 +48,12 @@ def editor(input, output):
                     ),
                 ]
 
-    @output
     @render.ui
     @reactive.event(input.date_selector, input.show_sessions)
     def update_people_selector():
         if not input.rb_unsaved_days.is_set() and session_view_state.get():
             if input.date_selector.get() != "":
+                logging.debug("Render UI: Display ID selector")
                 return [
                     ui.input_selectize(
                         "people_selector",
@@ -64,13 +66,13 @@ def editor(input, output):
                     ),
                 ]
 
-    @output
     @render.ui
     @reactive.event(input.people_selector, input.show_sessions)
     def display_buttons():
         buttons = []
         datasets = input.people_selector.get()
         if datasets and session_view_state.get():
+            logging.debug("Render UI: Display Convert and Delete button.")
             buttons.append(
                 ui.row(
                     ui.column(
@@ -96,6 +98,7 @@ def editor(input, output):
             )
 
             if len(datasets) == 1:  # Only show Edit button if only one is selected
+                logging.debug("Render UI: Display Edit and Display Session button.")
                 buttons.append(
                     ui.row(
                         ui.column(
@@ -120,16 +123,19 @@ def editor(input, output):
                 )
         return buttons
 
-    @output
     @render.ui
     @reactive.event(input.play_recording)
     def show_video_radio_buttons():
         if session_view_state.get():
             if recording_view_state.get():
                 recording_view_state.set(False)
+                ui.update_action_button("play_recording", label="Display Recording")
+                logging.debug("Render UI: Remove recordings selector.")
                 return None
             else:
                 recording_view_state.set(True)
+                ui.update_action_button("play_recording", label="Hide Recording")
+                logging.debug("Render UI: Display recordings selector.")
                 return ui.input_select(
                     "select_recordings",
                     "Select one of the recordings in this session:",
@@ -139,11 +145,11 @@ def editor(input, output):
                 ),
         return None
 
-    @output
     @render.ui
     @reactive.event(input.select_recordings, input.show_sessions)
     def display_recording():
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
+            logging.debug("Render UI: Display video field.")
             return [ui.tags.video(
                 ui.tags.source(src=input.select_recordings.get(), type="video/mp4"),
                 controls=True,
@@ -151,4 +157,5 @@ def editor(input, output):
                 autoplay=False
             ), ]
         else:
+            logging.debug("Render UI: Remove video field.")
             return None

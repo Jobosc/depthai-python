@@ -2,6 +2,7 @@ import faicons as fa
 from shiny import render, reactive
 
 from features.reactivity.reactive_values import camera_led
+import logging
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),
@@ -12,15 +13,11 @@ STATUS = {
 
 class CameraLed:
     _instance = None
-    input = None
-    output = None
 
-    def __new__(cls, input, output):
+    def __new__(cls):
         if cls._instance is None:
-            print("Creating the CameraLed object")
+            logging.debug("Initiate camera led instance.")
             cls._instance = super(CameraLed, cls).__new__(cls)
-            cls.input = input
-            cls.output = output
         return cls._instance
 
     @staticmethod
@@ -28,6 +25,7 @@ class CameraLed:
         @render.ui
         @reactive.event(camera_led)
         def camera_led_update():
+            logging.debug(f"Collect camera led state.")
             return camera_led.get()
 
     def record():

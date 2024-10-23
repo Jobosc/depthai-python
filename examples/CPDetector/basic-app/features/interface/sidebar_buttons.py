@@ -1,5 +1,5 @@
 from shiny import render, ui
-
+import logging
 from features.functions import get_files_to_move
 from features.reactivity.reactive_values import (
     unsaved_days,
@@ -11,6 +11,7 @@ def editor():
     @render.ui
     def forgotten_session_days():
         if unsaved_days.get():
+            logging.warning("Render UI: There are unsaved local sessions that need to be deleted or stored first.")
             return [
                 ui.input_radio_buttons(
                     "rb_unsaved_days",
@@ -27,10 +28,12 @@ def editor():
     @render.ui
     def save_button_choice():
         if not save_view_state.get():
+            logging.debug("Render UI: Display button to save recordings.")
             return ui.input_task_button(
                 "save_button", "Save", label_busy="Saving Session..."
             )
         else:
+            logging.debug("Render UI: Display button to save edited metadata.")
             return ui.input_action_button(
                 "edit_metadata_button",
                 "Save changes",
@@ -42,6 +45,7 @@ def editor():
     def delete_current_session_button_choice():
         number_of_files = get_files_to_move()
         if save_view_state.get():
+            logging.debug("Render UI: Display button to cancel metadata editing.")
             return ui.input_action_button(
                 "cancel_edit_metadata_button",
                 "Cancel",
@@ -49,6 +53,7 @@ def editor():
                 class_="btn-outline-secondary",
             )
         elif not unsaved_days.get() and number_of_files:
+            logging.debug("Render UI: Display button to delete current session.")
             return ui.input_task_button(
                 "delete_current_session_button",
                 "Delete current session",

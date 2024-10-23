@@ -1,4 +1,5 @@
 import platform
+import logging
 
 if platform.system() == "Linux":
     from gpiozero import Button
@@ -12,6 +13,7 @@ class LightBarrier(object):
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(LightBarrier, cls).__new__(cls)
+            logging.debug("Initiate Light Barrier instance.")
             if platform.system() == "Linux":
                 cls.button = Button(4, pull_up=False)
                 cls.gpio_exist = True

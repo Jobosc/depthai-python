@@ -9,6 +9,7 @@ from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state, save_view_state, unsaved_days
 from utils.parser import ENVParser
+import logging
 
 
 def editor(input, camera: Camera, timestamps: Timestamps):
@@ -16,27 +17,30 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.record_button)
     def update_record_button():
         if unsaved_days.get():
+            logging.info("Record Button: Previous session(s) still exist that need to be completed before recording can start.")
             ui.notification_show(
-                f"You need to complete the session from a previous day before you can start recording again!",
+                "You need to complete a previous session before you can start recording again!",
                 duration=None,
                 type="warning",
             )
         elif camera.camera_connection is False and record_button_state.get() is False:
+            logging.info("Record Button: Camera is not connected and can therefore recording can't be started.")
             CameraLed.missing()
             ui.notification_show(
-                f"Please check if the camera is connected before starting the recording!",
+                "Please check if the camera is connected before starting the recording!",
                 duration=None,
                 type="warning",
             )
         else:
             CameraLed.available()
             if record_button_state.get() is True:
+                logging.info("Record Button: Recording has been stopped.")
                 record_button_state.set(False)
                 camera.ready = False
                 ui.update_action_button("record_button", label="Activate recording")
                 update_ui()
             else:
-                print(f"Activate recording: {datetime.now()}")
+                logging.info("Record Button: Recording has been started.")
                 timestamps.start_recording()
                 record_button_state.set(True)
                 camera.ready = True
@@ -66,12 +70,12 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.delete_yes)
     def delete_session_for_specific_day():
         env = ENVParser()
-        print(input.rb_unsaved_days())
         state = delete_session_on_date_folder(day=input.rb_unsaved_days())
         day = datetime.strptime(input.rb_unsaved_days(), env.date_format).strftime(
             "%Y-%m-%d"
         )
         if state:
+            logging.info(f"Dataset deletion from '{day}' was successful.")
             ui.notification_show(
                 f"Dataset deletion from '{day}' was successful.",
                 duration=None,
@@ -79,6 +83,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             )
             ui.update_radio_buttons("rb_unsaved_days")
         else:
+            logging.info(f"Dataset deletion from '{day}' failed.")
             ui.notification_show(
                 f"Deleting the dataset from '{day}', failed!",
                 duration=None,
@@ -90,6 +95,10 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.switch_mode)
     def change_pipeline_mode():
         camera.mode = input.switch_mode()
+        if camera.mode:
+            logging.info("Switch Button: Record mode has been activated.")
+        else:
+            logging.info("Switch Button: View mode has been activated.")
 
     """@reactive.Effect
     @reactive.event(input.convert_dataset)

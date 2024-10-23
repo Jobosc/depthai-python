@@ -1,8 +1,7 @@
 from shiny import render, ui
 
 
-def metadata(input, output):
-    @output
+def metadata(input):
     @render.ui
     def metadata_output():
         elements = []

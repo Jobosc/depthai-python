@@ -4,7 +4,7 @@ import sys
 from datetime import datetime
 from os.path import join
 
-from utils.decorators import singleton
+from utils.singleton import singleton
 
 
 @singleton
@@ -85,7 +85,7 @@ def __delete_oldest_logs(folder, logs_to_keep=10):
 
 
 def initialize_logger():
-    logging.getLogger().setLevel("debug")
+    logging.getLogger().setLevel("DEBUG")
     logging.getLogger().addHandler(ColorHandler())
 
     folder = "logs"

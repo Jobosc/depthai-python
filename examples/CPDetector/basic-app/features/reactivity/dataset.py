@@ -8,7 +8,7 @@ from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from features.video_processing import convert_individual_videos
 from utils.parser import ENVParser
-
+import logging
 
 def editor(input):
     @reactive.Effect
@@ -31,6 +31,7 @@ def editor(input):
             footer=None,
         )
         ui.modal_show(notification)
+        logging.info(f"Initiate deletion of session with a displayed modal.")
 
     @reactive.Effect
     @reactive.event(input.edit_dataset)
@@ -39,14 +40,12 @@ def editor(input):
             date=input.date_selector(), person=input.people_selector()[0]
         )
 
-        print(f"Editing metadata for {person.id}.")
-
         ui.update_text("id", value=person.id)
         ui.update_text("comments", value=person.comments)
         ui.update_radio_buttons("rb_unsaved_days", selected=None)
-
         save_view_state.set(True)
-
+        logging.info(f"Editing metadata for {person.id}.")
+        
     @reactive.Effect
     @reactive.event(input.delete_session_yes)
     def delete_session_yes():
@@ -56,12 +55,14 @@ def editor(input):
             )
 
             if state:
+                logging.info(f"Dataset deletion of '{person}' was successful.")
                 ui.notification_show(
                     f"Dataset deletion of '{person}' was successful.",
                     duration=None,
                     type="message",
                 )
             else:
+                logging.info(f"Deleting the dataset of '{person}' failed!")
                 ui.notification_show(
                     f"Deleting the dataset of '{person}' failed!",
                     duration=None,
@@ -81,7 +82,7 @@ def editor(input):
 
         for person in input.people_selector.get():
             with ui.Progress(min=1, max=amount_of_conversions) as p:
-                p.set(0,
+                p.set(i,
                     message="Converting videos in progress",
                     detail="This will take a while...",
                 )
@@ -90,4 +91,5 @@ def editor(input):
                     i += 1
                     p.set(i, message="Converting videos in progress", detail="This will take a while...",)
                     await asyncio.sleep(0.1)
+        logging.info("Conversion of all files has been completed.")
         update_ui()

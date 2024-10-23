@@ -16,6 +16,7 @@ from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
+import logging
 
 
 def editor(input, timestamps: Timestamps):
@@ -40,6 +41,7 @@ def editor(input, timestamps: Timestamps):
         store_participant_metadata(path=path, metadata=person)
 
         if input.id() == "":
+            logging.info("Metadata couldn't be edited due to a missing ID.")
             ui.notification_show(
                 f"You need to enter a valid ID before you can edit the session!",
                 duration=None,
@@ -58,6 +60,7 @@ def editor(input, timestamps: Timestamps):
                 type="default",
             )
             save_view_state.set(False)
+            logging.info("Metadata has been edited and saved successfully.")
 
     @reactive.Effect
     @reactive.event(input.save_yes)
@@ -65,7 +68,6 @@ def editor(input, timestamps: Timestamps):
         env = ENVParser()
         i = 0
         day = datetime.datetime.now().strftime(env.date_format)
-
         person = Participant(id=input.id(), comments=input.comments(), timestamps=timestamps)
 
         amount_of_files = len(get_files_to_move())
@@ -73,6 +75,7 @@ def editor(input, timestamps: Timestamps):
             day = input.rb_unsaved_days()
 
         if person.id == "":
+            logging.info("Recordings couldn't be saved due to a missing ID.")
             ui.notification_show(
                 f"You need to enter a valid ID before you can store the session!",
                 duration=None,
@@ -80,6 +83,7 @@ def editor(input, timestamps: Timestamps):
             )
 
         elif amount_of_files == 0:
+            logging.info("Recordings couldn't be saved due to missing files.")
             ui.notification_show(
                 f"No video recordings are available yet!",
                 duration=None,
@@ -87,6 +91,7 @@ def editor(input, timestamps: Timestamps):
             )
         
         elif check_if_folder_already_exists(folder_name=input.id(), day=day):
+            logging.info("Recordings couldn't be saved due to an already existing ID for the current day.")
             ui.notification_show(
                 f"ID already exists for the day!",
                 duration=None,
@@ -108,6 +113,7 @@ def editor(input, timestamps: Timestamps):
                     await asyncio.sleep(0.1)
 
             __reset_user()
+            logging.info("Recordings have been saved.")
         update_ui()
 
     @reactive.Effect
@@ -116,5 +122,6 @@ def editor(input, timestamps: Timestamps):
         __reset_user()
 
     def __reset_user():
+        logging.debug("Metadata has been reset in the view.")
         ui.update_text("id", value="")
         ui.update_text("comments", value="")
