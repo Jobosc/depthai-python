@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import shutil
+import logging
 
 from features.modules.participant import Participant
 from utils.parser import ENVParser
@@ -13,7 +14,7 @@ today = datetime.datetime.now().strftime(env.date_format)
 def get_recorded_days():
     result = []
     hard_drive_folder = os.path.join(env.main_path, env.temp_path)
-    print(f"Collect amount of days recorded from: {hard_drive_folder}")
+    logging.debug(f"Collected the amount of days recorded, from: {hard_drive_folder}")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         result = os.listdir(hard_drive_folder)
         result = [
@@ -25,7 +26,7 @@ def get_recorded_days():
 def get_recorded_people_for_a_specific_day(required_day: str = today):
     result = []
     hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day)
-    print(
+    logging.debug(
         f"Collect amount of recorded people on {required_day} from: {hard_drive_folder}"
     )
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
@@ -36,7 +37,7 @@ def get_recorded_people_for_a_specific_day(required_day: str = today):
 def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
     result = [None]
     hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day, person_name)
-    print(f"Collect recordings for {person_name}.")
+    logging.debug(f"Collect recordings for {person_name}.")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         for root, _, files in os.walk(hard_drive_folder):
             for file in files:
@@ -51,7 +52,7 @@ def get_recordings_for_a_specific_session(required_day: str = today, person_name
 def get_recorded_people_in_total():
     all_people = []
     recordings_path = os.path.join(env.main_path, env.temp_path)
-    print(f"Collect amount of total recorded people from: {recordings_path}")
+    logging.debug(f"Collect amount of total recorded people from: {recordings_path}")
     if os.path.exists(recordings_path):
         for directory in os.listdir(recordings_path):
             if os.path.isdir(os.path.join(recordings_path, directory)):
@@ -62,7 +63,7 @@ def get_recorded_people_in_total():
 def get_all_recorded_sessions_so_far():
     sessions = []
     recordings_path = os.path.join(env.main_path, env.temp_path)
-    print(f"Collect amount of total sessions from: {recordings_path}")
+    logging.debug(f"Collect amount of total sessions from: {recordings_path}")
 
     if os.path.exists(recordings_path):
         for date_dir in os.listdir(recordings_path):
@@ -81,7 +82,7 @@ def get_files_to_move():
     for _, _, files in os.walk(os.path.join(env.temp_path, today)):
         for file in files:
             all_files.append(file)
-
+    logging.debug("Collected all the files that need to be moved.")
     return all_files
 
 def check_if_folder_already_exists(folder_name: str, day: str = today):
@@ -101,7 +102,7 @@ def move_data_from_temp_to_main_storage(
             if not os.path.exists(destination_path):
                 os.makedirs(destination_path)
 
-            print(
+            logging.debug(
                 f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)}"
             )
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
@@ -137,7 +138,7 @@ def delete_temporary_folder() -> bool:
             for file in files:
                 print(os.path.join(root, file))
                 os.remove(os.path.join(root, file))
-        print(f"Deleting folder content in: {folder} was successful")
+        logging.debug(f"Deleting folder content in: {folder} was successful")
 
         # Delete folders
         shutil.rmtree(folder)
@@ -156,7 +157,7 @@ def delete_person_on_day_folder(day: str, person: str) -> bool:
             for file in files:
                 print(os.path.join(root, file))
                 os.remove(os.path.join(root, file))
-        print(f"Deleting folder content in: {folder} was successful")
+        logging.debug(f"Deleting folder content in: {folder} was successful")
 
         # Delete folders
         shutil.rmtree(folder)
