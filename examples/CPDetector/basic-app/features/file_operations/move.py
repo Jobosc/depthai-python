@@ -20,13 +20,8 @@ def move_data_from_temp_to_main_storage(
     for root, dirs, files in os.walk(os.path.join(temporary_path, day)):
         # Copy files
         for file in files:
-            #session_path = os.path.normpath(root).split("/")
-            #session_path.insert(-1, temporary_folder)
-            #session_path = os.path.join(*session_path)
 
-            session_path = os.path.dirname(root)
-
-            destination_path = os.path.join(env.main_path, session_path)
+            destination_path = os.path.join(storage_path, day, temporary_folder)
             if not os.path.exists(destination_path):
                 os.makedirs(destination_path)
 
