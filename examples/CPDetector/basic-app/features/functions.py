@@ -1,16 +1,13 @@
 import datetime
-import json
+import logging
 import os
 import shutil
-import logging
 
 from features.file_operations.read_storage import list_days
-from features.modules.participant import Participant
 from utils.parser import ENVParser
 
 env = ENVParser()
 today = datetime.datetime.now().strftime(env.date_format)
-
 
 
 def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
@@ -28,44 +25,8 @@ def get_recordings_for_a_specific_session(required_day: str = today, person_name
     return result
 
 
-def get_files_to_move():
-    all_files = []
-    for _, _, files in os.walk(os.path.join(env.temp_path, today)):
-        for file in files:
-            all_files.append(file)
-    logging.debug("Collected all the files that need to be moved.")
-    return all_files
-
 def check_if_folder_already_exists(folder_name: str, day: str = today):
     return os.path.exists(os.path.join(env.main_path, env.temp_path, day, folder_name))
-
-def move_data_from_temp_to_main_storage(
-        folder_name: str, participant: Participant, day: str = today
-):
-    for root, dirs, files in os.walk(os.path.join(env.temp_path, day)):
-        # Copy files
-        for file in files:
-            session_path = os.path.normpath(root).split("/")
-            session_path.insert(-1, folder_name)
-            session_path = os.path.join(*session_path)
-
-            destination_path = os.path.join(env.main_path, session_path)
-            if not os.path.exists(destination_path):
-                os.makedirs(destination_path)
-
-            logging.debug(
-                f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)}"
-            )
-            shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
-            os.remove(os.path.join(root, file))
-            yield True
-    store_participant_metadata(
-        os.path.join(env.main_path, env.temp_path, day, folder_name), participant
-    )
-
-    # Delete folders
-    folder_path = os.path.join(env.temp_path, day)
-    shutil.rmtree(folder_path)
 
 
 def create_date_selection_for_saved_sessions() -> dict:
@@ -95,22 +56,6 @@ def delete_session_on_date_folder(day: str) -> bool:
         return True
     except:
         return False
-
-
-def read_participant_metadata(date: str, person: str) -> Participant:
-    load_file = open(
-        os.path.join(env.main_path, env.temp_path, date, person, "metadata.json"), "r"
-    )
-    data = json.load(fp=load_file)
-    load_file.close()
-
-    return Participant(**data)
-
-
-def store_participant_metadata(path: str, metadata: Participant):
-    json_data = metadata.model_dump_json()
-    with open(os.path.join(path, "metadata.json"), 'w') as file:
-        file.write(json_data)
 
 
 def get_hard_drive_space():

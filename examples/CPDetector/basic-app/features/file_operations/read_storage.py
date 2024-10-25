@@ -1,8 +1,6 @@
-import logging
-import os
 from typing import List
 
-from . import storage_path, today
+from . import os, logging, storage_path, today
 
 
 def __extract_list_of_directories(path: str) -> List[str]:

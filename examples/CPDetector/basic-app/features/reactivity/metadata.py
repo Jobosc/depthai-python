@@ -4,14 +4,11 @@ import os
 
 from shiny import ui, reactive
 
+from features.file_operations.move import list_files_to_move, move_data_from_temp_to_main_storage
 from features.functions import (
-    check_if_folder_already_exists,
-    read_participant_metadata,
-    store_participant_metadata,
-    get_files_to_move,
-    move_data_from_temp_to_main_storage
+    check_if_folder_already_exists
 )
-from features.modules.participant import Participant
+from features.modules.participant import Participant, read_participant_metadata
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
@@ -38,7 +35,7 @@ def editor(input, timestamps: Timestamps):
             env.main_path, env.temp_path, input.date_selector(), input.people_selector()[0]
         )
 
-        store_participant_metadata(path=path, metadata=person)
+        person.store_participant_metadata(path=str(path))
 
         if input.id() == "":
             logging.info("Metadata couldn't be edited due to a missing ID.")
@@ -70,7 +67,7 @@ def editor(input, timestamps: Timestamps):
         day = datetime.datetime.now().strftime(env.date_format)
         person = Participant(id=input.id(), comments=input.comments(), timestamps=timestamps)
 
-        amount_of_files = len(get_files_to_move())
+        amount_of_files = len(list_files_to_move())
         if input.rb_unsaved_days.is_set():
             day = input.rb_unsaved_days()
 
@@ -106,7 +103,7 @@ def editor(input, timestamps: Timestamps):
                 )
 
                 for _ in move_data_from_temp_to_main_storage(
-                        folder_name=input.id(), participant=person, day=day
+                        temporary_folder=input.id(), participant=person, day=day
                 ):
                     i += 1
                     p.set(i, message="Moving files")

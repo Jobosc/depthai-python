@@ -1,9 +1,6 @@
-import logging
-import os
 import shutil
 
-from . import temporary_path, storage_path
-
+from . import os, logging, storage_path, temporary_path
 
 def __delete_files_and_folders_in_path(path: str) -> bool:
     try:

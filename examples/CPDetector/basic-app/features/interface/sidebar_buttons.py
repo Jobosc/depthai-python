@@ -1,6 +1,7 @@
 from shiny import render, ui
 import logging
-from features.functions import get_files_to_move
+
+from features.file_operations.move import list_files_to_move
 from features.reactivity.reactive_values import (
     unsaved_days,
     save_view_state,
@@ -43,7 +44,7 @@ def editor():
 
     @render.ui
     def delete_current_session_button_choice():
-        number_of_files = get_files_to_move()
+        number_of_files = list_files_to_move()
         if save_view_state.get():
             logging.debug("Render UI: Display button to cancel metadata editing.")
             return ui.input_action_button(

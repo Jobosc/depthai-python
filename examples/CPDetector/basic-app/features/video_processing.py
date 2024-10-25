@@ -3,7 +3,7 @@ import shutil
 
 import subprocess
 
-from features.functions import read_participant_metadata
+from features.modules.participant import read_participant_metadata
 from features.modules.time_window import TimeWindow
 from utils.parser import ENVParser
 import logging

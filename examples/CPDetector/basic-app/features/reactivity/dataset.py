@@ -4,7 +4,7 @@ import asyncio
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
-from features.functions import read_participant_metadata
+from features.modules.participant import read_participant_metadata
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from features.video_processing import convert_individual_videos
