@@ -80,9 +80,11 @@ def list_sessions_in_total() -> List[str]:
                         )
     return sessions
 
+
 """
 Create Date Selectors for views
 """
+
 
 def create_date_selection_for_saved_sessions() -> dict:
     dates = list_days()
@@ -92,6 +94,7 @@ def create_date_selection_for_saved_sessions() -> dict:
 def create_date_selection_for_unsaved_sessions() -> dict:
     dates = extract_list_of_directories(temporary_path)
     return __create_date_dictionary(dates=dates)
+
 
 def __create_date_dictionary(dates: list):
     dict_dates = dict()

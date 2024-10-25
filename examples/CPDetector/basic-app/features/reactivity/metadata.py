@@ -9,9 +9,8 @@ from features.file_operations.move import list_files_to_move, move_data_from_tem
 from features.file_operations.read import check_if_folder_already_exists
 from features.modules.participant import Participant, read_participant_metadata
 from features.modules.timestamps import Timestamps
-from features.reactivity.reactive_values import save_view_state
-from utils.parser import ENVParser
 from features.modules.ui_state import UIState
+from utils.parser import ENVParser
 
 ui_state = UIState()
 
@@ -56,7 +55,7 @@ def editor(input, timestamps: Timestamps):
                 duration=None,
                 type="default",
             )
-            save_view_state.set(False)
+            ui_state.save_view_state = False
             logging.info("Metadata has been edited and saved successfully.")
 
     @reactive.Effect

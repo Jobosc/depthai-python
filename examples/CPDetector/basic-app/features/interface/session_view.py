@@ -54,7 +54,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.date_selector, input.show_sessions)
-    def update_people_selector():   # Selector: People Selector
+    def update_people_selector():  # Selector: People Selector
         if not input.rb_unsaved_days.is_set() and session_view_state.get():
             if input.date_selector.get() != "":
                 logging.debug("Render UI: Display ID selector")
@@ -130,7 +130,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.play_recording)
-    def show_video_radio_buttons(): # Selector: Recordings Selector
+    def show_video_radio_buttons():  # Selector: Recordings Selector
         if session_view_state.get():
             if recording_view_state.get():
                 recording_view_state.set(False)
@@ -152,7 +152,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.select_recordings, input.show_sessions)
-    def display_recording():    # Video: Display Recording
+    def display_recording():  # Video: Display Recording
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
             logging.debug("Render UI: Display video field.")
             return [ui.tags.video(

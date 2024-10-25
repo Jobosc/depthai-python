@@ -13,12 +13,14 @@ class UIState:
     __sessions_all = reactive.Value(len(list_sessions_in_total()))
     __days_all = reactive.Value(f"Days recorded: {len(list_days())}")
     __unsaved_days = reactive.Value(create_date_selection_for_unsaved_sessions())
+    __save_view_state = reactive.Value(False)
 
     def __new__(cls):
         if cls._instance is None:
             logging.debug("Initiate UIState instance.")
             cls._instance = super(UIState, cls).__new__(cls)
         return cls._instance
+
     def __init__(self):
         self.update_ui()
 
@@ -49,4 +51,10 @@ class UIState:
     def unsaved_days(self):
         return self.__unsaved_days.get()
 
+    @property
+    def save_view_state(self):
+        return self.__save_view_state.get()
 
+    @save_view_state.setter
+    def save_view_state(self, value):
+        self.__save_view_state.set(value)

@@ -8,7 +8,6 @@ from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
 from features.modules.ui_state import UIState
-from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
 
 ui_state = UIState()
@@ -121,7 +120,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.cancel_edit_metadata_button)
     def cancel_edit_metadata():
-        save_view_state.set(False)
+        ui_state.save_view_state = False
 
     @reactive.Effect
     @reactive.event(input.delete_current_session_yes)

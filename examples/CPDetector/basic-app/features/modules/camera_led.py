@@ -3,7 +3,7 @@ import logging
 import faicons as fa
 from shiny import render, reactive
 
-camera_led = reactive.Value(None) #TODO: Try to remove
+camera_led = reactive.Value(None)  # TODO: Try to remove
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),

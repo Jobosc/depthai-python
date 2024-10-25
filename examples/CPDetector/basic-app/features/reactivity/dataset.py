@@ -4,10 +4,9 @@ import logging
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
+from features.file_operations.video_processing import convert_individual_videos
 from features.modules.participant import read_participant_metadata
 from features.modules.ui_state import UIState
-from features.reactivity.reactive_values import save_view_state
-from features.video_processing import convert_individual_videos
 
 ui_state = UIState()
 
@@ -23,7 +22,7 @@ def editor(input):
         ui.update_text("id", value=person.id)
         ui.update_text("comments", value=person.comments)
         ui.update_radio_buttons("rb_unsaved_days", selected=None)
-        save_view_state.set(True)
+        ui_state.save_view_state = True
         logging.info(f"Editing metadata for {person.id}.")
 
     @reactive.Effect
