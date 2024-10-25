@@ -17,6 +17,8 @@ def editor(input):
     @reactive.event(input.show_sessions)
     def display_recorded_session_title():  # Title: Recorded Sessions
         if ui_state.unsaved_days:
+            session_view_state.set(False)
+            recording_view_state.set(False)
             logging.warning("Sessions can't be displayed due to unsaved recordings.")
             ui.notification_show(
                 f"You need to complete a previous session before you can start editing sessions!",
@@ -123,10 +125,11 @@ def editor(input):
                         )
                     ),
                 )
+
         return buttons
 
     @render.ui
-    @reactive.event(input.play_recording, input.show_sessions)
+    @reactive.event(input.play_recording)
     def show_video_radio_buttons(): # Selector: Recordings Selector
         if session_view_state.get():
             if recording_view_state.get():
@@ -134,7 +137,7 @@ def editor(input):
                 ui.update_action_button("play_recording", label="Display Recording")
                 logging.debug("Render UI: Remove recordings selector.")
                 return None
-            else:
+            elif input.date_selector.get() and input.people_selector.get():
                 recording_view_state.set(True)
                 ui.update_action_button("play_recording", label="Hide Recording")
                 logging.debug("Render UI: Display recordings selector.")
