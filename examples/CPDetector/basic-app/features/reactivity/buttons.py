@@ -4,19 +4,23 @@ from datetime import datetime
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_temporary_recordings
-from features.modules.camera_led import CameraLed
 from features.modules.camera import Camera
+from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
-from features.reactivity.reactive_updates import update_ui
-from features.reactivity.reactive_values import record_button_state, save_view_state, unsaved_days
+from features.reactivity.reactive_updates import UIState
+from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
+
+ui_state = UIState()
 
 
 def editor(input, camera: Camera, timestamps: Timestamps):
+    record_button_state = reactive.Value(False)
+
     @reactive.Effect
     @reactive.event(input.record_button)
     def update_record_button():
-        if unsaved_days.get():
+        if ui_state.unsaved_days:
             logging.info(
                 "Record Button: Previous session(s) still exist that need to be completed before recording can start.")
             ui.notification_show(
@@ -39,14 +43,14 @@ def editor(input, camera: Camera, timestamps: Timestamps):
                 record_button_state.set(False)
                 camera.ready = False
                 ui.update_action_button("record_button", label="Activate recording")
-                update_ui()
+                ui_state.update_ui()
             else:
                 logging.info("Record Button: Recording has been started.")
                 timestamps.start_recording()
                 record_button_state.set(True)
                 camera.ready = True
                 ui.update_action_button("record_button", label="Deactivate recording")
-                update_ui()
+                ui_state.update_ui()
 
     @reactive.Effect
     @reactive.event(input.save_button)
@@ -122,4 +126,4 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.delete_current_session_yes)
     def delete_current_session():
         delete_temporary_recordings()
-        update_ui()
+        ui_state.update_ui()

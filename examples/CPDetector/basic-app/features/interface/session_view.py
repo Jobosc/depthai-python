@@ -4,34 +4,35 @@ from shiny import render, reactive, ui
 
 from features.file_operations.read import list_people_for_a_specific_day, list_sessions_for_a_specific_person, \
     create_date_selection_for_saved_sessions
-from features.reactivity.reactive_updates import update_ui
-from features.reactivity.reactive_values import session_view_state, recording_view_state, unsaved_days
+from features.reactivity.reactive_values import session_view_state, recording_view_state
+from features.reactivity.reactive_updates import UIState
 
+ui_state = UIState()
 
 def editor(input):
     @render.ui
     @reactive.event(input.show_sessions)
     def display_recorded_session_title():
-        if unsaved_days.get():
+        if ui_state.unsaved_days:
             logging.warning("Sessions can't be displayed due to unsaved recordings.")
             ui.notification_show(
                 f"You need to complete a previous session before you can start editing sessions!",
                 duration=None,
                 type="warning",
             )
-        if not session_view_state.get() and not unsaved_days.get():
+        if not session_view_state.get() and not ui_state.unsaved_days:
             return ui.markdown("##### Recorded Sessions")
 
     @render.ui
     @reactive.event(input.show_sessions)
     def update_date_selector():
-        if not unsaved_days.get():
+        if not ui_state.unsaved_days:
             if session_view_state.get():
                 logging.debug("Render UI: Remove date selector")
                 session_view_state.set(False)
                 recording_view_state.set(False)
                 ui.update_action_button("show_sessions", label="Display sessions")
-                update_ui()
+                ui_state.update_ui()
                 return None
             else:
                 logging.debug("Render UI: Display date selector")
@@ -39,7 +40,7 @@ def editor(input):
                 ui.update_action_button("show_sessions", label="Hide sessions")
                 dates = {"": "Select..."}
                 dates.update(create_date_selection_for_saved_sessions())
-                update_ui()
+                ui_state.update_ui()
                 return [
                     ui.input_select(
                         "date_selector", "Choose a Date:", dates, width="100%"

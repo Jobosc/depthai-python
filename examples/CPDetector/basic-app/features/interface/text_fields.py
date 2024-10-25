@@ -3,29 +3,30 @@ import logging
 
 from shiny import render, reactive
 
-from features.reactivity.reactive_values import users_all, users_today, sessions_all, days_all
+from features.reactivity.reactive_updates import UIState
 
+ui_state = UIState()
 
 def values():
     @render.text
     def recorded_user():
         logging.debug("Render text: Collect text field for: all users.")
-        return str(users_all.get())
+        return str(ui_state.users_all)
 
     @render.text
     def recorded_user_today():
         logging.debug("Render text: Collect text field for: users today.")
-        return str(users_today.get())
+        return str(ui_state.users_today)
 
     @render.text
     def recorded_session():
         logging.debug("Render text: Collect text field for: all sessions.")
-        return str(sessions_all.get())
+        return str(ui_state.sessions_all)
 
     @render.text
     def recorded_days():
         logging.debug("Render text: Collect text field for: all recorded days.")
-        return str(days_all.get())
+        return str(ui_state.days_all)
 
     @render.text
     def current_time():

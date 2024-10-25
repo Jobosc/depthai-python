@@ -5,9 +5,11 @@ from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
 from features.modules.participant import read_participant_metadata
-from features.reactivity.reactive_updates import update_ui
+from features.reactivity.reactive_updates import UIState
 from features.reactivity.reactive_values import save_view_state
 from features.video_processing import convert_individual_videos
+
+ui_state = UIState()
 
 
 def editor(input):
@@ -46,7 +48,7 @@ def editor(input):
                     duration=None,
                     type="error",
                 )
-        update_ui()
+        ui_state.update_ui()
 
     @reactive.Effect
     @reactive.event(input.convert_dataset)
@@ -70,4 +72,4 @@ def editor(input):
                     p.set(i, message="Converting videos in progress", detail="This will take a while...", )
                     await asyncio.sleep(0.1)
         logging.info("Conversion of all files has been completed.")
-        update_ui()
+        ui_state.update_ui()

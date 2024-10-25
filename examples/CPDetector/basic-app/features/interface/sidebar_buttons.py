@@ -4,10 +4,11 @@ from shiny import render, ui
 
 from features.file_operations.move import list_files_to_move
 from features.reactivity.reactive_values import (
-    unsaved_days,
     save_view_state,
 )
+from features.reactivity.reactive_updates import UIState
 
+ui_state = UIState()
 
 def editor():
     @render.ui
@@ -37,7 +38,7 @@ def editor():
                 label_busy="Saving Session...",
                 class_="btn-outline-secondary",
             )
-        elif unsaved_days.get() and number_of_files:
+        elif ui_state.unsaved_days and number_of_files:
             logging.debug("Render UI: Display button to delete current session.")
             return ui.input_task_button(
                 "delete_current_session_button",
