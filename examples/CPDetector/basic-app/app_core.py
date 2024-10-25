@@ -50,10 +50,9 @@ def server(input: Inputs, output: Outputs, session: Session):
     session_view.editor(input)
     card_sidebar.metadata(input)
 
+    # Setup Threading
     thread = threading.Thread(target=camera_handler)
     thread.start()
 
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
-
-# Add Logging
