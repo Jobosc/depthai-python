@@ -4,8 +4,7 @@ from datetime import datetime
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_temporary_recordings
-from features.functions import delete_session_on_date_folder
-from features.interface.camera_led import CameraLed
+from features.modules.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
@@ -67,31 +66,6 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             footer=None,
         )
         ui.modal_show(notification)
-
-    @reactive.Effect
-    @reactive.event(input.delete_yes)
-    def delete_session_for_specific_day():
-        env = ENVParser()
-        state = delete_session_on_date_folder(day=input.rb_unsaved_days())
-        day = datetime.strptime(input.rb_unsaved_days(), env.date_format).strftime(
-            "%Y-%m-%d"
-        )
-        if state:
-            logging.info(f"Dataset deletion from '{day}' was successful.")
-            ui.notification_show(
-                f"Dataset deletion from '{day}' was successful.",
-                duration=None,
-                type="default",
-            )
-            ui.update_radio_buttons("rb_unsaved_days")
-        else:
-            logging.info(f"Dataset deletion from '{day}' failed.")
-            ui.notification_show(
-                f"Deleting the dataset from '{day}', failed!",
-                duration=None,
-                type="error",
-            )
-        update_ui()
 
     @reactive.Effect
     @reactive.event(input.switch_mode)

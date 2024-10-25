@@ -11,7 +11,7 @@ import features.interface.text_fields as card_data
 import features.reactivity.buttons as buttons
 import features.reactivity.dataset as dataset
 import features.reactivity.metadata as metadata
-from features.interface.camera_led import CameraLed
+from features.modules.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.view import side_view, main_view, header

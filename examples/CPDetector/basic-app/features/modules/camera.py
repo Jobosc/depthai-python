@@ -7,7 +7,7 @@ import cv2
 import depthai as dai
 from depthai_sdk import OakCamera, RecordType
 
-from features.interface.camera_led import CameraLed
+from features.modules.camera_led import CameraLed
 from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps

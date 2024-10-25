@@ -10,7 +10,7 @@ from utils.parser import ENVParser
 
 def convert_individual_videos(day, person):
     env = ENVParser()
-    input_path = os.path.join(env.main_path, env.temp_path, day, person)
+    input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
 
     ## Inputfiles
@@ -43,8 +43,8 @@ def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = 
     command = [
         "ffmpeg",
         "-i", input_file,
-        "-ss", str(format_timedelta(time_window.start_seconds)),
-        "-t", str(format_timedelta(time_window.end_seconds - time_window.start_seconds)),
+        "-ss", str(__format_timedelta(time_window.start_seconds)),
+        "-t", str(__format_timedelta(time_window.end_seconds - time_window.start_seconds)),
         "-c:v", "libx264",
         output_file
     ]
@@ -53,7 +53,7 @@ def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = 
     return True
 
 
-def format_timedelta(seconds: int) -> str:
+def __format_timedelta(seconds: int) -> str:
     """
     Convert seconds into a string in the format HH:MM:SS.
 

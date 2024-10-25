@@ -91,8 +91,6 @@ def create_date_selection_for_saved_sessions() -> dict:
 
 def create_date_selection_for_unsaved_sessions() -> dict:
     dates = extract_list_of_directories(temporary_path)
-    """if today in dates:
-        dates.remove(today)"""
     return __create_date_dictionary(dates=dates)
 
 def __create_date_dictionary(dates: list):
