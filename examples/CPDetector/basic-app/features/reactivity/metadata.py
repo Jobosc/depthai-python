@@ -6,7 +6,7 @@ import os
 from shiny import ui, reactive
 
 from features.file_operations.move import list_files_to_move, move_data_from_temp_to_main_storage
-from features.file_operations.read_storage import check_if_folder_already_exists
+from features.file_operations.read import check_if_folder_already_exists
 from features.modules.participant import Participant, read_participant_metadata
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui

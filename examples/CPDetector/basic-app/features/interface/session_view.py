@@ -2,10 +2,8 @@ import logging
 
 from shiny import render, reactive, ui
 
-from features.file_operations.read_storage import list_people_for_a_specific_day, list_sessions_for_a_specific_person
-from features.functions import (
+from features.file_operations.read import list_people_for_a_specific_day, list_sessions_for_a_specific_person, \
     create_date_selection_for_saved_sessions
-)
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import session_view_state, recording_view_state, unsaved_days
 

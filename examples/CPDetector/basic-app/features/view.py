@@ -1,7 +1,10 @@
+import os
+import shutil
+
 import faicons as fa
 from shiny import ui
 
-from features.functions import get_hard_drive_space
+from utils.parser import ENVParser
 
 ICONS = {
     "user": fa.icon_svg("user", "regular"),
@@ -70,7 +73,10 @@ def side_view():
 
 
 def header():
-    total, used, free = get_hard_drive_space()
+    env = ENVParser()
+    total, used, free = 0, 0, 0
+    if os.path.exists(env.main_path):
+        total, used, free = shutil.disk_usage(env.main_path)
     divisor = 10 ** 9
 
     return ui.layout_columns(

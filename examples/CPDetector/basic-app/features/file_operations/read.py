@@ -1,10 +1,20 @@
+from datetime import datetime
 from typing import List
 
-from . import os, logging, storage_path, today, env
+from . import os, logging, storage_path, today, date_format, temporary_path, env
 
 
 def check_if_folder_already_exists(folder_id: str, day: str = today) -> bool:
     return os.path.exists(os.path.join(storage_path, day, folder_id))
+
+
+def extract_list_of_directories(path: str) -> List[str]:
+    result = []
+    logging.debug(f"Extracting list of directories from: {path}")
+    if os.path.exists(path) and os.path.isdir(path):
+        result = os.listdir(path)
+        result = [x for x in result if os.path.isdir(os.path.join(path, x))]
+    return result
 
 
 """
@@ -33,7 +43,8 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
             for file in files:
                 _, ext = os.path.splitext(file)
                 if ext == ".mp4":
-                    temp_result = os.path.relpath(root, file, env.main_path)
+                    folder = os.path.join(root, file)
+                    temp_result = os.path.relpath(folder, env.main_path)
                     result.append(temp_result)
     return result
 
@@ -69,11 +80,24 @@ def list_sessions_in_total() -> List[str]:
                         )
     return sessions
 
+"""
+Create Date Selectors for views
+"""
 
-def extract_list_of_directories(path: str) -> List[str]:
-    result = []
-    logging.debug(f"Extracting list of directories from: {path}")
-    if os.path.exists(path) and os.path.isdir(path):
-        result = os.listdir(path)
-        result = [x for x in result if os.path.isdir(os.path.join(path, x))]
-    return result
+def create_date_selection_for_saved_sessions() -> dict:
+    dates = list_days()
+    return __create_date_dictionary(dates=dates)
+
+
+def create_date_selection_for_unsaved_sessions() -> dict:
+    dates = extract_list_of_directories(temporary_path)
+    """if today in dates:
+        dates.remove(today)"""
+    return __create_date_dictionary(dates=dates)
+
+def __create_date_dictionary(dates: list):
+    dict_dates = dict()
+    for date in dates:
+        real_date = datetime.strptime(date, date_format)
+        dict_dates[date] = real_date.strftime("%Y-%m-%d")
+    return dict_dates

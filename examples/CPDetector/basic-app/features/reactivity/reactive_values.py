@@ -2,11 +2,8 @@ import datetime
 
 from shiny import reactive
 
-from features.file_operations.read_storage import list_days, list_people_for_a_specific_day, \
-    list_people_in_total, list_sessions_in_total
-from features.functions import (
-    create_date_selection_for_unsaved_sessions,
-)
+from features.file_operations.read import list_days, list_people_for_a_specific_day, \
+    list_people_in_total, list_sessions_in_total, create_date_selection_for_unsaved_sessions
 
 # Variables to display stored data
 users_all = reactive.Value(len(list_people_in_total()))
