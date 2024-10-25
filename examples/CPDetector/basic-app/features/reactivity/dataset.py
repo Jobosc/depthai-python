@@ -14,28 +14,6 @@ from utils.parser import ENVParser
 
 def editor(input):
     @reactive.Effect
-    @reactive.event(input.delete_date_sessions)
-    def initiate_session_deletion():
-        env = ENVParser()
-        day = ""
-        if input.rb_unsaved_days.is_set():
-            date = datetime.datetime.strptime(
-                input.rb_unsaved_days(), env.date_format
-            ).strftime("%Y-%m-%d")
-            day = f", from {date}"
-        notification = ui.modal(
-            ui.markdown(
-                f"**Do you really want to delete the recorded sessions{day}?**"
-            ),
-            ui.input_action_button("delete_yes", "Yes", class_="btn-danger"),
-            ui.input_action_button("delete_no", "No", class_="btn-secondary"),
-            easy_close=False,
-            footer=None,
-        )
-        ui.modal_show(notification)
-        logging.info(f"Initiate deletion of session with a displayed modal.")
-
-    @reactive.Effect
     @reactive.event(input.edit_dataset)
     def edit_metadata_dataset():
         person = read_participant_metadata(

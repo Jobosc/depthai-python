@@ -11,23 +11,6 @@ from features.reactivity.reactive_values import (
 
 def editor():
     @render.ui
-    def forgotten_session_days():
-        if unsaved_days.get():
-            logging.warning("Render UI: There are unsaved local sessions that need to be deleted or stored first.")
-            return [
-                ui.input_radio_buttons(
-                    "rb_unsaved_days",
-                    "There are unsaved local sessions that need to be deleted or stored first:",
-                    unsaved_days.get(),
-                ),
-                ui.input_action_button(
-                    "delete_date_sessions",
-                    "Delete old Sessions",
-                    class_="btn-outline-danger",
-                ),
-            ]
-
-    @render.ui
     def save_button_choice():
         if not save_view_state.get():
             logging.debug("Render UI: Display button to save recordings.")
@@ -54,7 +37,7 @@ def editor():
                 label_busy="Saving Session...",
                 class_="btn-outline-secondary",
             )
-        elif not unsaved_days.get() and number_of_files:
+        elif unsaved_days.get() and number_of_files:
             logging.debug("Render UI: Display button to delete current session.")
             return ui.input_task_button(
                 "delete_current_session_button",
