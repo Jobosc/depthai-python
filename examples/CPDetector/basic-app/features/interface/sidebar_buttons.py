@@ -6,7 +6,7 @@ from features.file_operations.move import list_files_to_move
 from features.reactivity.reactive_values import (
     save_view_state,
 )
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 
 ui_state = UIState()
 

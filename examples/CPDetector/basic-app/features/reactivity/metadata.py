@@ -11,7 +11,7 @@ from features.modules.participant import Participant, read_participant_metadata
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 
 ui_state = UIState()
 

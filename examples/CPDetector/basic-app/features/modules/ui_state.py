@@ -13,7 +13,6 @@ class UIState:
     __sessions_all = reactive.Value(len(list_sessions_in_total()))
     __days_all = reactive.Value(f"Days recorded: {len(list_days())}")
     __unsaved_days = reactive.Value(create_date_selection_for_unsaved_sessions())
-    __record_button_state = reactive.Value(False)
 
     def __new__(cls):
         if cls._instance is None:
@@ -22,11 +21,6 @@ class UIState:
         return cls._instance
     def __init__(self):
         self.update_ui()
-        """self.save_view_state = reactive.Value(False)
-        self.session_view_state = reactive.Value(False)
-        self.recording_view_state = reactive.Value(False)
-        self.record_button_state = reactive.Value(False)
-        self.camera_led = reactive.Value(None)"""
 
     def update_ui(self):
         self.__users_all.set(len(list_people_in_total()))
@@ -54,13 +48,5 @@ class UIState:
     @property
     def unsaved_days(self):
         return self.__unsaved_days.get()
-
-    @property
-    def record_button_state(self):
-        return self.__record_button_state.get()
-
-    @record_button_state.setter
-    def record_button_state(self, value):
-        self.__record_button_state.set(value)
 
 

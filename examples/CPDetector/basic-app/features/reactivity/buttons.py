@@ -7,7 +7,7 @@ from features.file_operations.delete import delete_temporary_recordings
 from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
 

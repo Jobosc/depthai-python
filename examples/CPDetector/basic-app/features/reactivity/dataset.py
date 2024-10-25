@@ -5,7 +5,7 @@ from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
 from features.modules.participant import read_participant_metadata
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 from features.reactivity.reactive_values import save_view_state
 from features.video_processing import convert_individual_videos
 

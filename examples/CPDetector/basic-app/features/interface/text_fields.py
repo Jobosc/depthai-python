@@ -3,7 +3,7 @@ import logging
 
 from shiny import render, reactive
 
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 
 ui_state = UIState()
 

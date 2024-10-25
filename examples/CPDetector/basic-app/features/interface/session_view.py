@@ -4,12 +4,14 @@ from shiny import render, reactive, ui
 
 from features.file_operations.read import list_people_for_a_specific_day, list_sessions_for_a_specific_person, \
     create_date_selection_for_saved_sessions
-from features.reactivity.reactive_values import session_view_state, recording_view_state
-from features.reactivity.reactive_updates import UIState
+from features.modules.ui_state import UIState
 
 ui_state = UIState()
 
 def editor(input):
+    session_view_state = reactive.Value(False)
+    recording_view_state = reactive.Value(False)
+
     @render.ui
     @reactive.event(input.show_sessions)
     def display_recorded_session_title():
