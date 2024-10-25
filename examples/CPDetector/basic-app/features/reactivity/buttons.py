@@ -20,7 +20,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.record_button)
     def update_record_button():
-        if ui_state.unsaved_days:
+        if ui_state.unsaved_days:  # Check if sessions are still unsaved
             logging.info(
                 "Record Button: Previous session(s) still exist that need to be completed before recording can start.")
             ui.notification_show(
@@ -28,7 +28,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
                 duration=None,
                 type="warning",
             )
-        elif camera.camera_connection is False and record_button_state.get() is False:
+        elif camera.camera_connection is False:  # Check if camera is connected
             logging.info("Record Button: Camera is not connected and can therefore recording can't be started.")
             CameraLed.missing()
             ui.notification_show(
@@ -36,7 +36,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
                 duration=None,
                 type="warning",
             )
-        else:
+        else:  # Activate or Deactivate recording depending on the current state
             CameraLed.available()
             if record_button_state.get() is True:
                 logging.info("Record Button: Recording has been stopped.")
@@ -80,6 +80,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
         else:
             logging.info("Switch Button: View mode has been activated.")
 
+    # TODO: Check if this is still needed
     """@reactive.Effect
     @reactive.event(input.convert_dataset)
     def initiate_conversion():

@@ -8,13 +8,14 @@ from features.modules.ui_state import UIState
 
 ui_state = UIState()
 
+
 def editor(input):
     session_view_state = reactive.Value(False)
     recording_view_state = reactive.Value(False)
 
     @render.ui
     @reactive.event(input.show_sessions)
-    def display_recorded_session_title():
+    def display_recorded_session_title():  # Title: Recorded Sessions
         if ui_state.unsaved_days:
             logging.warning("Sessions can't be displayed due to unsaved recordings.")
             ui.notification_show(
@@ -27,7 +28,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.show_sessions)
-    def update_date_selector():
+    def update_date_selector():  # Selector: Date Selector
         if not ui_state.unsaved_days:
             if session_view_state.get():
                 logging.debug("Render UI: Remove date selector")
@@ -51,7 +52,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.date_selector, input.show_sessions)
-    def update_people_selector():
+    def update_people_selector():   # Selector: People Selector
         if not input.rb_unsaved_days.is_set() and session_view_state.get():
             if input.date_selector.get() != "":
                 logging.debug("Render UI: Display ID selector")
@@ -69,7 +70,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.people_selector, input.show_sessions)
-    def display_buttons():
+    def display_buttons():  # Buttons: Convert, Delete, Edit, Display Session
         buttons = []
         datasets = input.people_selector.get()
         if datasets and session_view_state.get():
@@ -125,8 +126,8 @@ def editor(input):
         return buttons
 
     @render.ui
-    @reactive.event(input.play_recording)
-    def show_video_radio_buttons():
+    @reactive.event(input.play_recording, input.show_sessions)
+    def show_video_radio_buttons(): # Selector: Recordings Selector
         if session_view_state.get():
             if recording_view_state.get():
                 recording_view_state.set(False)
@@ -148,7 +149,7 @@ def editor(input):
 
     @render.ui
     @reactive.event(input.select_recordings, input.show_sessions)
-    def display_recording():
+    def display_recording():    # Video: Display Recording
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
             logging.debug("Render UI: Display video field.")
             return [ui.tags.video(
