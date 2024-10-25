@@ -1,8 +1,9 @@
+import logging
+
 import faicons as fa
 from shiny import render, reactive
 
 from features.reactivity.reactive_values import camera_led
-import logging
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),

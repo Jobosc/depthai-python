@@ -1,12 +1,11 @@
+import logging
 import os
 import shutil
-
 import subprocess
 
 from features.modules.participant import read_participant_metadata
 from features.modules.time_window import TimeWindow
 from utils.parser import ENVParser
-import logging
 
 
 def convert_individual_videos(day, person):
@@ -26,7 +25,7 @@ def convert_individual_videos(day, person):
     ## Outputfiles
     metadata = read_participant_metadata(day, person)
     destination_path = os.path.join(input_path, "sessions")
-    
+
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
     if not os.path.exists(destination_path):
@@ -53,6 +52,7 @@ def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = 
     logging.debug(f"Completed conversion for: {input_file}")
     return True
 
+
 def format_timedelta(seconds: int) -> str:
     """
     Convert seconds into a string in the format HH:MM:SS.
@@ -66,5 +66,5 @@ def format_timedelta(seconds: int) -> str:
     total_seconds = int(seconds)
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
-    
+
     return f"{hours:02}:{minutes:02}:{seconds:02}"

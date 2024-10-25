@@ -1,19 +1,17 @@
 import asyncio
 import datetime
+import logging
 import os
 
 from shiny import ui, reactive
 
 from features.file_operations.move import list_files_to_move, move_data_from_temp_to_main_storage
-from features.functions import (
-    check_if_folder_already_exists
-)
+from features.file_operations.read_storage import check_if_folder_already_exists
 from features.modules.participant import Participant, read_participant_metadata
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from utils.parser import ENVParser
-import logging
 
 
 def editor(input, timestamps: Timestamps):
@@ -86,8 +84,8 @@ def editor(input, timestamps: Timestamps):
                 duration=None,
                 type="warning",
             )
-        
-        elif check_if_folder_already_exists(folder_name=input.id(), day=day):
+
+        elif check_if_folder_already_exists(folder_id=input.id(), day=day):
             logging.info("Recordings couldn't be saved due to an already existing ID for the current day.")
             ui.notification_show(
                 f"ID already exists for the day!",
@@ -103,7 +101,7 @@ def editor(input, timestamps: Timestamps):
                 )
 
                 for _ in move_data_from_temp_to_main_storage(
-                        temporary_folder=input.id(), participant=person, day=day
+                        folder_id=input.id(), participant=person, day=day
                 ):
                     i += 1
                     p.set(i, message="Moving files")

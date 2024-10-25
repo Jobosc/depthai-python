@@ -18,7 +18,8 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.event(input.record_button)
     def update_record_button():
         if unsaved_days.get():
-            logging.info("Record Button: Previous session(s) still exist that need to be completed before recording can start.")
+            logging.info(
+                "Record Button: Previous session(s) still exist that need to be completed before recording can start.")
             ui.notification_show(
                 "You need to complete a previous session before you can start recording again!",
                 duration=None,

@@ -1,10 +1,10 @@
+import logging
 from datetime import datetime
 from typing import Optional, List
 
 from pydantic import BaseModel
 
 from features.modules.time_window import TimeWindow
-import logging
 
 
 class Timestamps(BaseModel):

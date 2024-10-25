@@ -1,5 +1,5 @@
-import platform
 import logging
+import platform
 
 if platform.system() == "Linux":
     from gpiozero import Button

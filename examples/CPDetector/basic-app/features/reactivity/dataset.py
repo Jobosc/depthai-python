@@ -1,5 +1,6 @@
-import datetime
 import asyncio
+import datetime
+import logging
 
 from shiny import ui, reactive
 
@@ -9,7 +10,7 @@ from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import save_view_state
 from features.video_processing import convert_individual_videos
 from utils.parser import ENVParser
-import logging
+
 
 def editor(input):
     @reactive.Effect
@@ -46,7 +47,7 @@ def editor(input):
         ui.update_radio_buttons("rb_unsaved_days", selected=None)
         save_view_state.set(True)
         logging.info(f"Editing metadata for {person.id}.")
-        
+
     @reactive.Effect
     @reactive.event(input.delete_session_yes)
     def delete_session_yes():
@@ -84,13 +85,13 @@ def editor(input):
         for person in input.people_selector.get():
             with ui.Progress(min=1, max=amount_of_conversions) as p:
                 p.set(i,
-                    message="Converting videos in progress",
-                    detail="This will take a while...",
-                )
+                      message="Converting videos in progress",
+                      detail="This will take a while...",
+                      )
 
                 for _ in convert_individual_videos(day=input.date_selector.get(), person=person):
                     i += 1
-                    p.set(i, message="Converting videos in progress", detail="This will take a while...",)
+                    p.set(i, message="Converting videos in progress", detail="This will take a while...", )
                     await asyncio.sleep(0.1)
         logging.info("Conversion of all files has been completed.")
         update_ui()

@@ -92,7 +92,7 @@ def initialize_logger():
     os.makedirs(folder, exist_ok=True)
     log_path = join(folder, f"logfile-{datetime.today().strftime('%Y%m%d%H%M')}.log")
     log_formatter = logging.Formatter('%(asctime)s - %(levelname)s : %(message)s (%(filename)s:%(lineno)d)',
-                                     datefmt='%m/%d/%Y %H:%M:%S')
+                                      datefmt='%m/%d/%Y %H:%M:%S')
     file_handler = logging.FileHandler(log_path)
     file_handler.setFormatter(log_formatter)
     logging.getLogger().addHandler(file_handler)

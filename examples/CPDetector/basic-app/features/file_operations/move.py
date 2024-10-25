@@ -1,8 +1,9 @@
 import shutil
 from typing import List
 
+from features.file_operations.delete import delete_temporary_recordings
 from features.modules.participant import Participant
-from . import os, today, temporary_path, logging, storage_path, env
+from . import os, today, temporary_path, logging, storage_path
 
 
 def list_files_to_move() -> List[str]:
@@ -15,24 +16,18 @@ def list_files_to_move() -> List[str]:
 
 
 def move_data_from_temp_to_main_storage(
-        temporary_folder: str, participant: Participant, day: str = today
-):
+        folder_id: str, participant: Participant, day: str = today
+) -> bool:
+    destination_path = os.path.join(storage_path, day, folder_id)
+    if not os.path.exists(destination_path):  # Create missing folder
+        os.makedirs(destination_path)
+
     for root, dirs, files in os.walk(os.path.join(temporary_path, day)):
-        # Copy files
         for file in files:
-
-            destination_path = os.path.join(storage_path, day, temporary_folder)
-            if not os.path.exists(destination_path):
-                os.makedirs(destination_path)
-
+            shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))  # Copy file
             logging.debug(
-                f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)}"
-            )
-            shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))
-            os.remove(os.path.join(root, file))
+                f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)} complete.")
             yield True
-    participant.store_participant_metadata(os.path.join(storage_path, day, temporary_folder))
+    participant.store_participant_metadata(os.path.join(storage_path, day, folder_id))
 
-    # Delete folders
-    folder_path = os.path.join(temporary_path, day)
-    shutil.rmtree(folder_path)
+    delete_temporary_recordings()

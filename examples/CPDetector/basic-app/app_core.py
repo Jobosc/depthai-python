@@ -15,8 +15,8 @@ from features.interface.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.view import side_view, main_view, header
-from utils.parser import ENVParser
 from utils.custom_logger import initialize_logger
+from utils.parser import ENVParser
 
 # Light Barrier code
 camera = Camera()

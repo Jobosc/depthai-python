@@ -1,3 +1,4 @@
+import logging
 import os
 import time
 from datetime import datetime, timedelta
@@ -11,7 +12,7 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-import logging
+
 
 class Camera(object):
     _instance = None
@@ -116,13 +117,13 @@ class Camera(object):
 
             self.running = False
             CameraLed.missing()
-            
+
             while True:
                 time.sleep(1)
                 if self.camera_connection:
                     CameraLed.available()
                     break
-                
+
             return 1
 
     @staticmethod  # TODO: Maybe check if this would be better as setter property and update with ui

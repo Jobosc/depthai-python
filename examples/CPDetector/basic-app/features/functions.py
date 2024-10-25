@@ -1,32 +1,12 @@
 import datetime
-import logging
 import os
 import shutil
 
-from features.file_operations.read_storage import list_days
+from features.file_operations.read_storage import list_days, extract_list_of_directories
 from utils.parser import ENVParser
 
 env = ENVParser()
 today = datetime.datetime.now().strftime(env.date_format)
-
-
-def get_recordings_for_a_specific_session(required_day: str = today, person_name: str = ""):
-    result = [None]
-    hard_drive_folder = os.path.join(env.main_path, env.temp_path, required_day, person_name)
-    logging.debug(f"Collect recordings for {person_name}.")
-    if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
-        for root, _, files in os.walk(hard_drive_folder):
-            for file in files:
-                _, ext = os.path.splitext(file)
-                if ext == ".mp4":
-                    full_path = os.path.join(root, file)
-                    temp_result = os.path.relpath(full_path, env.main_path)
-                    result.append(temp_result)
-    return result
-
-
-def check_if_folder_already_exists(folder_name: str, day: str = today):
-    return os.path.exists(os.path.join(env.main_path, env.temp_path, day, folder_name))
 
 
 def create_date_selection_for_saved_sessions() -> dict:
@@ -36,7 +16,7 @@ def create_date_selection_for_saved_sessions() -> dict:
 
 
 def create_date_selection_for_unsaved_sessions() -> dict:
-    dates = __get_unsaved_local_session_days()
+    dates = extract_list_of_directories(env.temp_path)
     """if today in dates:
         dates.remove(today)"""
 
