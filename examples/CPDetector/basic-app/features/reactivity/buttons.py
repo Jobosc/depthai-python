@@ -1,15 +1,16 @@
+import logging
 from datetime import datetime
 
 from shiny import ui, reactive
 
-from features.functions import delete_session_on_date_folder, delete_temporary_folder
+from features.file_operations.delete import delete_temporary_recordings
+from features.functions import delete_session_on_date_folder
 from features.interface.camera_led import CameraLed
 from features.modules.camera import Camera
 from features.modules.timestamps import Timestamps
 from features.reactivity.reactive_updates import update_ui
 from features.reactivity.reactive_values import record_button_state, save_view_state, unsaved_days
 from utils.parser import ENVParser
-import logging
 
 
 def editor(input, camera: Camera, timestamps: Timestamps):
@@ -145,5 +146,5 @@ def editor(input, camera: Camera, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.delete_current_session_yes)
     def delete_current_session():
-        delete_temporary_folder()
+        delete_temporary_recordings()
         update_ui()

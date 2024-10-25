@@ -1,8 +1,8 @@
 from shiny import render, reactive, ui
 
+from features.file_operations.read_storage import list_people_for_a_specific_day
 from features.functions import (
     create_date_selection_for_saved_sessions,
-    get_recorded_people_for_a_specific_day,
     get_recordings_for_a_specific_session,
 )
 from features.reactivity.reactive_updates import update_ui
@@ -58,7 +58,7 @@ def editor(input):
                     ui.input_selectize(
                         "people_selector",
                         "Choose Datasets:",
-                        get_recorded_people_for_a_specific_day(
+                        list_people_for_a_specific_day(
                             input.date_selector.get()
                         ),
                         multiple=True,

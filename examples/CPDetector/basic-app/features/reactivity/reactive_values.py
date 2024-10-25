@@ -2,20 +2,19 @@ import datetime
 
 from shiny import reactive
 
+from features.file_operations.read_storage import list_days, list_people_for_a_specific_day, \
+    list_people_in_total, list_sessions_in_total
 from features.functions import (
-    get_recorded_people_in_total,
-    get_recorded_people_for_a_specific_day,
-    get_all_recorded_sessions_so_far,
-    get_recorded_days, create_date_selection_for_unsaved_sessions,
+    create_date_selection_for_unsaved_sessions,
 )
 
 # Variables to display stored data
-users_all = reactive.Value(len(get_recorded_people_in_total()))
+users_all = reactive.Value(len(list_people_in_total()))
 users_today = reactive.Value(
-    f"Today: {len(get_recorded_people_for_a_specific_day())}"
+    f"Today: {len(list_people_for_a_specific_day())}"
 )
-sessions_all = reactive.Value(len(get_all_recorded_sessions_so_far()))
-days_all = reactive.Value(f"Days recorded: {len(get_recorded_days())}")
+sessions_all = reactive.Value(len(list_sessions_in_total()))
+days_all = reactive.Value(f"Days recorded: {len(list_days())}")
 unsaved_days = reactive.Value(create_date_selection_for_unsaved_sessions())
 save_view_state = reactive.Value(False)
 
