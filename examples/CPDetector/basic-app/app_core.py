@@ -57,7 +57,6 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
-# Change file structur. Where to store conversion files.
 # Test a longer run with light barrier
 
 # Add a timer to wait before continuing with processing after recording

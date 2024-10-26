@@ -17,6 +17,9 @@ def convert_individual_videos(day, person):
     extensions = []
     file_normpaths = []
 
+    ## Outputfiles
+    metadata = read_participant_metadata(day, person)
+
     ## Inputfiles
     # Collect all video material files
     for root, dirs, files in os.walk(input_path):
@@ -33,6 +36,13 @@ def convert_individual_videos(day, person):
                 # Save normpaths
                 base, _ = os.path.splitext(name)
                 file_normpaths.append(base)
+
+                # Create output folder
+                if os.path.exists(base):
+                    shutil.rmtree(base)
+                os.makedirs(base, exist_ok=True)
+                logging.debug("Prepared output folder for converted files.")
+                
     logging.debug("All input files have been collected.")
 
     # Find all files with existent mp4s which already have a hvec
@@ -51,20 +61,12 @@ def convert_individual_videos(day, person):
         del input_files[i]
 
 
-    ## Outputfiles
-    metadata = read_participant_metadata(day, person)
-    destination_path = os.path.join(input_path, "sessions")
-
-    # Prepare output folder
-    if os.path.exists(destination_path):
-        shutil.rmtree(destination_path)
-    os.makedirs(destination_path, exist_ok=True)
-    logging.debug("Prepared output folder for converted files.")
-
     # Convert all files
-    for idx, input_file in enumerate(input_files):
-        for idx2, time_window in enumerate(metadata.timestamps.time_windows):
-            output_file = os.path.join(destination_path, f"Gait_Cycle_{idx}_{idx2}.mp4")
+    for input_file in input_files:
+        for idx, time_window in enumerate(metadata.timestamps.time_windows):
+            output_folder = os.path.splitext(os.path.basename(input_file))[0]
+            destination_path = os.path.join(input_path, output_folder)
+            output_file = os.path.join(destination_path, f"{env.conversion_file_prefix}_{idx}.mp4")
             yield convert_videos(input_file=input_file, output_file=output_file, time_start=metadata.timestamps.camera_start, time_window=time_window)
     logging.debug("All files have been converted.")
 

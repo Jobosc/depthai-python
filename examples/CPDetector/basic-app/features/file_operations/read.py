@@ -44,7 +44,7 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
         for root, _, files in os.walk(hard_drive_folder):
             for file in files:
                 _, ext = os.path.splitext(file)
-                if ext == ".mp4":
+                if ext == ".mp4" and env.conversion_file_prefix in file:
                     folder = os.path.join(root, file)
                     temp_result = os.path.relpath(folder, env.main_path)
                     result.append(temp_result)
