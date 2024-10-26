@@ -19,8 +19,7 @@ def move_data_from_temp_to_main_storage(
         folder_id: str, participant: Participant, day: str = today
 ) -> bool:
     destination_path = os.path.join(storage_path, day, folder_id)
-    if not os.path.exists(destination_path):  # Create missing folder
-        os.makedirs(destination_path)
+    os.makedirs(destination_path, exist_ok=True)
 
     for root, dirs, files in os.walk(os.path.join(temporary_path, day)):
         for file in files:

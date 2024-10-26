@@ -5,6 +5,7 @@ from datetime import datetime
 from os.path import join
 
 from utils.singleton import singleton
+from utils.parser import ENVParser
 
 
 @singleton
@@ -85,10 +86,11 @@ def __delete_oldest_logs(folder, logs_to_keep=10):
 
 
 def initialize_logger():
-    logging.getLogger().setLevel("DEBUG")
+    env = ENVParser()
+    logging.getLogger().setLevel(env.log_mode)
     logging.getLogger().addHandler(ColorHandler())
 
-    folder = "logs"
+    folder = env.log_path
     os.makedirs(folder, exist_ok=True)
     log_path = join(folder, f"logfile-{datetime.today().strftime('%Y%m%d%H%M')}.log")
     log_formatter = logging.Formatter('%(asctime)s - %(levelname)s : %(message)s (%(filename)s:%(lineno)d)',
@@ -97,7 +99,7 @@ def initialize_logger():
     file_handler.setFormatter(log_formatter)
     logging.getLogger().addHandler(file_handler)
 
-    __delete_oldest_logs(folder=folder)
+    __delete_oldest_logs(folder=folder, logs_to_keep=20)
 
     return log_path
 

@@ -53,7 +53,7 @@ def editor(input):
                 ]
 
     @render.ui
-    @reactive.event(input.date_selector, input.show_sessions)
+    @reactive.event(input.date_selector)
     def update_people_selector():  # Selector: People Selector
         if not input.rb_unsaved_days.is_set() and session_view_state.get():
             if input.date_selector.get() != "":
@@ -71,7 +71,7 @@ def editor(input):
                 ]
 
     @render.ui
-    @reactive.event(input.people_selector, input.show_sessions)
+    @reactive.event(input.people_selector)
     def display_buttons():  # Buttons: Convert, Delete, Edit, Display Session
         buttons = []
         datasets = input.people_selector.get()
@@ -80,17 +80,7 @@ def editor(input):
             buttons.append(
                 ui.row(
                     ui.column(
-                        6,  # Column width (out of 12) to adjust how much space each button takes
-                        ui.input_task_button(
-                            "convert_dataset",
-                            "Convert Recording(s)",
-                            class_="btn-outline-warning",
-                            label_busy="Conversion running...",
-                            width="100%",
-                        )
-                    ),
-                    ui.column(
-                        6,
+                        12,  # Column width (out of 12) to adjust how much space each button takes
                         ui.input_action_button(
                             "delete_dataset",
                             "Delete Session(s)",
@@ -106,7 +96,17 @@ def editor(input):
                 buttons.append(
                     ui.row(
                         ui.column(
-                            6,  # Column width (out of 12) to adjust how much space each button takes
+                            4,  # Column width (out of 12) to adjust how much space each button takes
+                            ui.input_task_button(
+                                "convert_dataset",
+                                "Convert Recording(s)",
+                                class_="btn-outline-warning",
+                                label_busy="Conversion running...",
+                                width="100%",
+                            )
+                        ),
+                        ui.column(
+                            4,  
                             ui.input_action_button(
                                 "play_recording",
                                 "Display Recording",
@@ -115,7 +115,7 @@ def editor(input):
                             )
                         ),
                         ui.column(
-                            6,
+                            4,
                             ui.input_action_button(
                                 "edit_dataset",
                                 "Edit Session",
@@ -151,7 +151,7 @@ def editor(input):
         return None
 
     @render.ui
-    @reactive.event(input.select_recordings, input.show_sessions)
+    @reactive.event(input.select_recordings, recording_view_state)
     def display_recording():  # Video: Display Recording
         if session_view_state.get() and recording_view_state.get() and input.select_recordings.get():
             logging.debug("Render UI: Display video field.")

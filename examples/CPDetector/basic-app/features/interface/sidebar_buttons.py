@@ -28,6 +28,19 @@ def editor():
     @render.ui
     def delete_current_session_button_choice():
         number_of_files = list_files_to_move()
+        if ui_state.unsaved_days and number_of_files:
+            logging.debug("Render UI: Display button to delete current session.")
+            return ui.input_task_button(
+                "delete_current_session_button",
+                "Delete current session",
+                label_busy="Deleting Sessions...",
+                class_="btn-outline-danger"
+            )
+        else:
+            return None
+
+    @render.ui
+    def cancel_edit_metadata_button_choice():
         if ui_state.save_view_state:
             logging.debug("Render UI: Display button to cancel metadata editing.")
             return ui.input_action_button(
@@ -35,14 +48,6 @@ def editor():
                 "Cancel",
                 label_busy="Saving Session...",
                 class_="btn-outline-secondary",
-            )
-        elif ui_state.unsaved_days and number_of_files:
-            logging.debug("Render UI: Display button to delete current session.")
-            return ui.input_task_button(
-                "delete_current_session_button",
-                "Delete current session",
-                label_busy="Deleting Sessions...",
-                class_="btn-outline-danger"
             )
         else:
             return None

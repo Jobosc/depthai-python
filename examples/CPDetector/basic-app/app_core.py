@@ -57,6 +57,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
-# change file structur
+# Change file structur. Where to store conversion files.
 # Led needs to be updated correctly. Maybe add a lag.
-# Save logfile into storage folder
+# Test a longer run with light barrier
+# Add timedelta for cutting videos

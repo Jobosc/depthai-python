@@ -14,6 +14,8 @@ def extract_list_of_directories(path: str) -> List[str]:
     if os.path.exists(path) and os.path.isdir(path):
         result = os.listdir(path)
         result = [x for x in result if os.path.isdir(os.path.join(path, x))]
+    if env.log_filename in result:  # Remove folder that is used for logging
+        result.remove(env.log_filename)
     return result
 
 
@@ -46,6 +48,7 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
                     folder = os.path.join(root, file)
                     temp_result = os.path.relpath(folder, env.main_path)
                     result.append(temp_result)
+
     return result
 
 

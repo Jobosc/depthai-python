@@ -30,7 +30,11 @@ def side_view():
             ),
             ui.output_ui("forgotten_session_days"),
             ui.output_ui("save_button_choice"),
-            ui.output_ui("delete_current_session_button_choice"),
+            ui.panel_conditional(
+                "input.id == '' ",
+                ui.output_ui("delete_current_session_button_choice")
+            ),
+            ui.output_ui("cancel_edit_metadata_button_choice"),
             ui.panel_conditional(
                 "input.id",
                 ui.value_box(
@@ -99,16 +103,21 @@ def main_view():
         ui.output_ui("header"),
         __cards(),
         __session_buttons(),
-        ui.output_ui("display_recorded_session_title"),
-        ui.layout_columns(
-            ui.output_ui("update_date_selector"),
-            ui.output_ui("update_people_selector"),
-        ),
-        ui.layout_columns(
-            ui.output_ui("display_buttons"),
-        ),
-        ui.output_ui("show_video_radio_buttons"),
-        ui.output_ui("display_recording"),
+        
+        
+        ui.panel_conditional(
+                "input.show_sessions % 2 == 1",
+                ui.output_ui("display_recorded_session_title"),
+                ui.layout_columns(
+                    ui.output_ui("update_date_selector"),
+                    ui.output_ui("update_people_selector"),
+                ),
+                ui.layout_columns(
+                    ui.output_ui("display_buttons"),
+                ),
+                ui.output_ui("show_video_radio_buttons"),
+                ui.output_ui("display_recording")
+            ),
     )
 
 

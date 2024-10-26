@@ -57,8 +57,7 @@ def convert_individual_videos(day, person):
     # Prepare output folder
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
-    if not os.path.exists(destination_path):
-        os.makedirs(destination_path)
+    os.makedirs(destination_path, exist_ok=True)
     logging.debug("Prepared output folder for converted files.")
 
     # Convert all files
