@@ -4,10 +4,10 @@ import logging
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
+from features.file_operations.read import list_people_for_a_specific_day
 from features.file_operations.video_processing import convert_individual_videos
 from features.modules.participant import read_participant_metadata
 from features.modules.ui_state import UIState
-from features.file_operations.read import list_people_for_a_specific_day
 
 ui_state = UIState()
 
@@ -36,8 +36,8 @@ def editor(input):
             ui.update_selectize(
                 "people_selector",
                 choices=list_people_for_a_specific_day(
-                        input.date_selector.get()
-                    ),
+                    input.date_selector.get()
+                ),
                 selected=[],
             )
 

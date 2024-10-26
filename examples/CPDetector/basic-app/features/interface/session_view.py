@@ -106,7 +106,7 @@ def editor(input):
                             )
                         ),
                         ui.column(
-                            4,  
+                            4,
                             ui.input_action_button(
                                 "play_recording",
                                 "Display Recording",

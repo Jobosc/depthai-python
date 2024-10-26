@@ -5,7 +5,6 @@ from shiny import ui, reactive
 
 from features.file_operations.delete import delete_temporary_recordings
 from features.modules.camera import Camera
-from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
 from features.modules.ui_state import UIState
 from utils.parser import ENVParser

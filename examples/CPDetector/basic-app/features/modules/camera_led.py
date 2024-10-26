@@ -2,6 +2,7 @@ import logging
 
 import faicons as fa
 from shiny import render, reactive
+
 from features.modules.camera import Camera
 
 

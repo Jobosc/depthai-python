@@ -103,26 +103,26 @@ def main_view():
         ui.output_ui("header"),
         __cards(),
         __session_buttons(),
-        
+
         ui.panel_conditional(
-                "input.show_sessions % 2 == 1",
-                ui.output_ui("display_recorded_session_title"),
-                ui.layout_columns(
-                    ui.output_ui("update_date_selector"),
-                    ui.output_ui("update_people_selector"),
-                ),
-                ui.layout_columns(
-                    ui.output_ui("display_buttons"),
-                ),
+            "input.show_sessions % 2 == 1",
+            ui.output_ui("display_recorded_session_title"),
+            ui.layout_columns(
+                ui.output_ui("update_date_selector"),
+                ui.output_ui("update_people_selector"),
+            ),
+            ui.layout_columns(
+                ui.output_ui("display_buttons"),
+            ),
+            ui.panel_conditional(
+                "input.people_selector != ''",
+                ui.output_ui("show_video_radio_buttons"),
                 ui.panel_conditional(
-                    "input.people_selector != ''",
-                    ui.output_ui("show_video_radio_buttons"),
-                    ui.panel_conditional(
-                        "input.select_recordings != ''",
-                        ui.output_ui("display_recording"),
-                    ),
+                    "input.select_recordings != ''",
+                    ui.output_ui("display_recording"),
                 ),
             ),
+        ),
     )
 
 

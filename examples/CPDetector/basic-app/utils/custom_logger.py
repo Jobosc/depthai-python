@@ -4,8 +4,8 @@ import sys
 from datetime import datetime
 from os.path import join
 
-from utils.singleton import singleton
 from utils.parser import ENVParser
+from utils.singleton import singleton
 
 
 @singleton

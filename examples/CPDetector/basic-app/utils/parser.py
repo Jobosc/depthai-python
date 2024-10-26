@@ -39,7 +39,6 @@ class ENVParser:
             self._log_path = os.path.join(self._main_path, self._temp_path, today_string, self._log_filename)
         else:
             self._log_path = self._log_filename
-        
 
     @property
     def temp_path(self):
@@ -64,27 +63,27 @@ class ENVParser:
     @date_format.setter
     def date_format(self, value):
         self._date_format = value
-    
+
     @property
     def log_path(self):
         return self._log_path
-    
+
     @property
     def log_mode(self):
         return self._log_mode
-    
+
     @property
     def log_filename(self):
         return self._log_filename
-    
+
     @property
     def video_delta_start(self):
         return self._video_delta_start
-    
+
     @property
     def video_delta_end(self):
         return self._video_delta_end
-    
+
     @property
     def conversion_file_prefix(self):
         return self._conversion_file_prefix

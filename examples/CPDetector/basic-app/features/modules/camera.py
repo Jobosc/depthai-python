@@ -106,7 +106,6 @@ class Camera(object):
 
             return 1
 
-
     @property
     def camera_connection(self):
         return False if dai.DeviceBootloader.getAllAvailableDevices() == [] else True
