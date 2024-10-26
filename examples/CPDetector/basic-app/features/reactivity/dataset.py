@@ -50,7 +50,7 @@ def editor(input):
         ui_state.update_ui()
 
     @reactive.Effect
-    @reactive.event(input.convert_dataset)
+    @reactive.event(input.convert_yes)
     async def convert_dataset():
         amount_of_conversions = 0
         i = 0

@@ -27,7 +27,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
                 duration=None,
                 type="warning",
             )
-        elif camera.camera_connection is False:  # Check if camera is connected
+        elif camera.camera_connection is False and record_button_state.get() is False:  # Check if camera is connected
             logging.info("Record Button: Camera is not connected and can therefore recording can't be started.")
             CameraLed.missing()
             ui.notification_show(
@@ -79,8 +79,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
         else:
             logging.info("Switch Button: View mode has been activated.")
 
-    # TODO: Check if this is still needed
-    """@reactive.Effect
+    @reactive.Effect
     @reactive.event(input.convert_dataset)
     def initiate_conversion():
         notification = ui.modal(
@@ -91,7 +90,7 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             easy_close=False,
             footer=None,
         )
-        ui.modal_show(notification)"""
+        ui.modal_show(notification)
 
     @reactive.Effect
     @reactive.event(input.delete_dataset)

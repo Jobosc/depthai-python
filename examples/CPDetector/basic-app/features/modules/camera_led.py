@@ -3,7 +3,7 @@ import logging
 import faicons as fa
 from shiny import render, reactive
 
-camera_led = reactive.Value(None)  # TODO: Try to remove
+camera_led = reactive.Value(None)
 
 STATUS = {
     "available": fa.icon_svg(name="circle", fill="green"),
@@ -14,7 +14,6 @@ STATUS = {
 
 class CameraLed:
     _instance = None
-    __led_state = reactive.Value(None)
 
     def __new__(cls):
         if cls._instance is None:
