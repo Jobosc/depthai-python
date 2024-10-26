@@ -92,26 +92,17 @@ class Camera(object):
                     if startpoint is not None:
                         logging.info(f"Light barrier triggered to end at: {datetime.now()}")
                         endpoint = datetime.now()
-                        endpoint_timestamp_seconds = endpoint - timestamps.camera_start
-                        endpoint_timestamp_seconds = endpoint_timestamp_seconds.total_seconds()
                         timestamps.time_windows.append(
-                            TimeWindow(start=startpoint, end=endpoint, start_seconds=startpoint_timestamp_seconds,
-                                       end_seconds=endpoint_timestamp_seconds))
+                            TimeWindow(start=startpoint, end=endpoint))
 
                 if current_state != state.activated:
                     if state.activated:
-                        logging.info(f"Light barrier triggered to start at: {datetime.now()}")
                         startpoint = datetime.now()
-                        startpoint_timestamp_seconds = startpoint - timestamps.camera_start
-                        startpoint_timestamp_seconds = int(startpoint_timestamp_seconds.total_seconds())
+                        logging.info(f"Light barrier triggered to start at: {startpoint}")
                     else:
-                        logging.info(f"Light barrier triggered to end at: {datetime.now()}")
                         endpoint = datetime.now()
-                        endpoint_timestamp_seconds = endpoint - timestamps.camera_start
-                        endpoint_timestamp_seconds = int(endpoint_timestamp_seconds.total_seconds())
-                        timestamps.time_windows.append(
-                            TimeWindow(start=startpoint, end=endpoint, start_seconds=startpoint_timestamp_seconds,
-                                       end_seconds=endpoint_timestamp_seconds))
+                        logging.info(f"Light barrier triggered to end at: {endpoint}")
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
                         startpoint = None
                 current_state = state.activated
 

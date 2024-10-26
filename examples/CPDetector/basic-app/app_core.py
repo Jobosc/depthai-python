@@ -60,4 +60,3 @@ app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.m
 # Change file structur. Where to store conversion files.
 # Led needs to be updated correctly. Maybe add a lag.
 # Test a longer run with light barrier
-# Add timedelta for cutting videos

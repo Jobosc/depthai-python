@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import logging
 import os
 import shutil
@@ -7,9 +8,9 @@ from features.modules.participant import read_participant_metadata
 from features.modules.time_window import TimeWindow
 from utils.parser import ENVParser
 
+env = ENVParser()
 
 def convert_individual_videos(day, person):
-    env = ENVParser()
     file_extension = [".hevc", ".mp4"]
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
@@ -64,16 +65,18 @@ def convert_individual_videos(day, person):
     for idx, input_file in enumerate(input_files):
         for idx2, time_window in enumerate(metadata.timestamps.time_windows):
             output_file = os.path.join(destination_path, f"Gait_Cycle_{idx}_{idx2}.mp4")
-            yield convert_videos(input_file=input_file, output_file=output_file, time_window=time_window)
+            yield convert_videos(input_file=input_file, output_file=output_file, time_start=metadata.timestamps.camera_start, time_window=time_window)
     logging.debug("All files have been converted.")
 
 
-def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = None):
+def convert_videos(input_file: str, output_file: str, time_start: datetime, time_window: TimeWindow = None) -> bool:
+    start_time = (time_window.start - time_start) + datetime.combine(datetime.min, env.video_delta_start) - datetime.min
+    end_time = (time_window.end - time_window.start) + datetime.combine(datetime.min, env.video_delta_end) - datetime.min
     command = [
         "ffmpeg",
         "-i", input_file,
-        "-ss", str(__format_timedelta(time_window.start_seconds)),
-        "-t", str(__format_timedelta(time_window.end_seconds - time_window.start_seconds)),
+        "-ss", __format_timedelta(start_time),
+        "-t", __format_timedelta(end_time),
         "-c:v", "libx264",
         output_file
     ]
@@ -82,18 +85,19 @@ def convert_videos(input_file: str, output_file: str, time_window: TimeWindow = 
     return True
 
 
-def __format_timedelta(seconds: int) -> str:
+def __format_timedelta(time_difference: timedelta) -> str:
     """
-    Convert seconds into a string in the format HH:MM:SS.
+    Convert time_difference into a string in the format HH:MM:SS.mmm.
 
     Args:
-    seconds (int): The seconds to format.
+    secotime_differenceds (timedelta): The time_difference to format.
 
     Returns:
-    str: The formatted string in HH:MM:SS format.
+    str: The formatted string in HH:MM:SS.mmm format.
     """
-    total_seconds = int(seconds)
+    total_seconds = int(time_difference.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)
     minutes, seconds = divmod(remainder, 60)
+    milliseconds = int(time_difference.microseconds / 1000)
 
-    return f"{hours:02}:{minutes:02}:{seconds:02}"
+    return f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
