@@ -10,28 +10,58 @@ from utils.parser import ENVParser
 
 def convert_individual_videos(day, person):
     env = ENVParser()
+    file_extension = [".hevc", ".mp4"]
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
+    extensions = []
+    file_normpaths = []
 
     ## Inputfiles
     # Collect all video material files
     for root, dirs, files in os.walk(input_path):
         for file in files:
             _, ext = os.path.splitext(file)
-            if ext == ".hevc":
-                input_files.append(os.path.join(root, file))
+
+            if ext in file_extension:
+                name = os.path.join(root, file)
+
+                # Save file parameters
+                input_files.append(name)
+                extensions.append(ext)
+
+                # Save normpaths
+                base, _ = os.path.splitext(name)
+                file_normpaths.append(base)
     logging.debug("All input files have been collected.")
+
+    # Find all files with existent mp4s which already have a hvec
+    list_of_duplicate_mp4s = []
+    for idx, file_np in enumerate(file_normpaths):
+        index = file_normpaths[idx:].index(file_np)
+        # In case of a duplicate file (without extension)
+        if index:
+            if extensions[index] == ".mp4":
+                list_of_duplicate_mp4s.append(index)
+            elif extensions[idx] == ".mp4":
+                list_of_duplicate_mp4s.append(idx)
+
+    # Remove all MP4s
+    for i in sorted(list_of_duplicate_mp4s, reverse=True):
+        del input_files[i]
+
 
     ## Outputfiles
     metadata = read_participant_metadata(day, person)
     destination_path = os.path.join(input_path, "sessions")
 
+    # Prepare output folder
     if os.path.exists(destination_path):
         shutil.rmtree(destination_path)
     if not os.path.exists(destination_path):
         os.makedirs(destination_path)
     logging.debug("Prepared output folder for converted files.")
 
+    # Convert all files
     for idx, input_file in enumerate(input_files):
         for idx2, time_window in enumerate(metadata.timestamps.time_windows):
             output_file = os.path.join(destination_path, f"Gait_Cycle_{idx}_{idx2}.mp4")
