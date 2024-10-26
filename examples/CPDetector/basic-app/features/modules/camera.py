@@ -7,7 +7,6 @@ import cv2
 import depthai as dai
 from depthai_sdk import OakCamera, RecordType
 
-from features.modules.camera_led import CameraLed
 from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
@@ -28,14 +27,12 @@ class Camera(object):
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
             cls.fps = 40
-            cls.update_led(cls)
         return cls._instance
 
     def run(self, timestamps: Timestamps, block=False) -> int:
         logging.info("Start process to record with camera.")
         env = ENVParser()
         self.running = True
-        CameraLed.record()
         state = LightBarrier()
 
         with OakCamera() as oak:
@@ -90,10 +87,9 @@ class Camera(object):
                     cv2.destroyAllWindows()
 
                     if startpoint is not None:
-                        logging.info(f"Light barrier triggered to end at: {datetime.now()}")
                         endpoint = datetime.now()
-                        timestamps.time_windows.append(
-                            TimeWindow(start=startpoint, end=endpoint))
+                        logging.info(f"Light barrier triggered to end at: {endpoint}")
+                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
 
                 if current_state != state.activated:
                     if state.activated:
@@ -107,24 +103,9 @@ class Camera(object):
                 current_state = state.activated
 
             self.running = False
-            CameraLed.missing()
-
-            while True:
-                time.sleep(1)
-                if self.camera_connection:
-                    CameraLed.available()
-                    break
 
             return 1
 
-    @staticmethod  # TODO: Maybe check if this would be better as setter property and update with ui
-    def update_led(self):
-        if self.running:
-            CameraLed.record()
-        elif self.camera_connection:
-            CameraLed.available()
-        else:
-            CameraLed.missing()
 
     @property
     def camera_connection(self):

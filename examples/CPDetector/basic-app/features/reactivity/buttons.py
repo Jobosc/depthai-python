@@ -29,14 +29,12 @@ def editor(input, camera: Camera, timestamps: Timestamps):
             )
         elif camera.camera_connection is False and record_button_state.get() is False:  # Check if camera is connected
             logging.info("Record Button: Camera is not connected and can therefore recording can't be started.")
-            CameraLed.missing()
             ui.notification_show(
                 "Please check if the camera is connected before starting the recording!",
                 duration=None,
                 type="warning",
             )
         else:  # Activate or Deactivate recording depending on the current state
-            CameraLed.available()
             if record_button_state.get() is True:
                 logging.info("Record Button: Recording has been stopped.")
                 record_button_state.set(False)

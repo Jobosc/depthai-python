@@ -2,14 +2,7 @@ import logging
 
 import faicons as fa
 from shiny import render, reactive
-
-camera_led = reactive.Value(None)
-
-STATUS = {
-    "available": fa.icon_svg(name="circle", fill="green"),
-    "missing": fa.icon_svg(name="circle", fill="red"),
-    "recording": fa.icon_svg(name="circle", fill="deepskyblue"),
-}
+from features.modules.camera import Camera
 
 
 class CameraLed:
@@ -21,33 +14,16 @@ class CameraLed:
             cls._instance = super(CameraLed, cls).__new__(cls)
         return cls._instance
 
-    @property
-    def state(self):
-        return self.__led_state.get()
-
-    @state.setter
-    def state(self, value):
-        self.__led_state.set(value)
-
     @staticmethod
     def values():
+        camera = Camera()
+
         @render.ui
-        @reactive.event(camera_led)
         def camera_led_update():
-            logging.debug(f"Collect camera led state.")
-            return camera_led.get()
-
-    def record():
-        @reactive.Effect
-        def value():
-            camera_led.set(STATUS["recording"])
-
-    def available():
-        @reactive.Effect
-        def value():
-            camera_led.set(STATUS["available"])
-
-    def missing():
-        @reactive.Effect
-        def value():
-            camera_led.set(STATUS["missing"])
+            reactive.invalidate_later(1)
+            if camera.running:
+                return fa.icon_svg(name="circle", fill="deepskyblue")
+            elif camera.camera_connection:
+                return fa.icon_svg(name="circle", fill="green")
+            else:
+                return fa.icon_svg(name="circle", fill="red")
