@@ -7,6 +7,7 @@ from pydantic import BaseModel
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
 
+env = ENVParser()
 
 class Participant(BaseModel):
     id: str
@@ -15,14 +16,12 @@ class Participant(BaseModel):
 
     def store_participant_metadata(self, path: str) -> None:
         json_data = self.model_dump_json()
-        with open(os.path.join(path, "metadata.json"), 'w') as file:
+        with open(os.path.join(path, env.metadata_file_name), 'w') as file:
             file.write(json_data)
 
 
 def read_participant_metadata(date: str, person: str) -> "Participant":
-    env = ENVParser()
-    path = os.path.join(env.main_path, env.temp_path, date, person, "metadata.json")
-
+    path = os.path.join(env.main_path, env.temp_path, date, person, env.metadata_file_name)
     load_file = open(path, "r")
     data = json.load(fp=load_file)
     load_file.close()

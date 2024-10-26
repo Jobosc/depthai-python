@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List
+import glob
 
 from . import os, logging, storage_path, today, date_format, temporary_path, env
 
@@ -36,7 +37,6 @@ def list_people_for_a_specific_day(day: str = today) -> List[str]:
 
 
 def list_sessions_for_a_specific_person(day: str = today, person_name: str = ""):
-    # TODO: Improve following lines of code
     result = [None]
     hard_drive_folder = os.path.join(storage_path, day, person_name)
     logging.debug(f"Collect recordings for {person_name}.")
@@ -68,20 +68,8 @@ def list_people_in_total() -> List[str]:
 
 
 def list_sessions_in_total() -> List[str]:
-    sessions = []
     logging.debug(f"Collect amount of total sessions from: {storage_path}")
-
-    # TODO: Simplify by looking for all metadata files
-    if os.path.exists(storage_path):
-        for date_dir in os.listdir(storage_path):
-            people_paths = os.path.join(storage_path, date_dir)
-            if os.path.isdir(people_paths):
-                for person_dir in os.listdir(people_paths):
-                    if os.path.isdir(os.path.join(people_paths, person_dir)):
-                        sessions.extend(
-                            os.listdir(os.path.join(people_paths, person_dir))
-                        )
-    return sessions
+    return glob.glob(os.path.join(storage_path, "**", env.metadata_file_name), recursive=True)
 
 
 """

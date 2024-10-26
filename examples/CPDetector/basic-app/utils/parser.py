@@ -18,6 +18,7 @@ class ENVParser:
     _video_delta_start = None
     _video_delta_end = None
     _conversion_file_prefix = None
+    _metadata_file_name = None
 
     def __init__(self) -> None:
         if platform.system() == "Linux":
@@ -33,6 +34,7 @@ class ENVParser:
         self._video_delta_start = datetime.strptime(os.getenv("VIDEO_DELTA_START"), "%H:%M:%S.%f").time()
         self._video_delta_end = datetime.strptime(os.getenv("VIDEO_DELTA_END"), "%H:%M:%S.%f").time()
         self._conversion_file_prefix = os.getenv("CONVERSION_FILE_PREFIX")
+        self._metadata_file_name = os.getenv("METADATA_FILE_NAME")
 
         if platform.system() == "Linux":
             today_string = datetime.now().strftime(self._date_format)
@@ -87,3 +89,7 @@ class ENVParser:
     @property
     def conversion_file_prefix(self):
         return self._conversion_file_prefix
+    
+    @property
+    def metadata_file_name(self):
+        return self._metadata_file_name
