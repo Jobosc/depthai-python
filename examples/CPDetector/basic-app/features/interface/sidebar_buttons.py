@@ -2,7 +2,6 @@ import logging
 
 from shiny import render, ui
 
-from features.file_operations.move import list_files_to_move
 from features.modules.ui_state import UIState
 
 ui_state = UIState()
@@ -27,8 +26,7 @@ def editor():
 
     @render.ui
     def delete_current_session_button_choice():
-        number_of_files = list_files_to_move()
-        if ui_state.unsaved_days and number_of_files:
+        if ui_state.unsaved_days:
             logging.debug("Render UI: Display button to delete current session.")
             return ui.input_task_button(
                 "delete_current_session_button",

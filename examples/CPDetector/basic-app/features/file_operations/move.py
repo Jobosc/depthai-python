@@ -15,13 +15,11 @@ def list_files_to_move() -> List[str]:
     return all_files
 
 
-def move_data_from_temp_to_main_storage(
-        folder_id: str, participant: Participant, day: str = today
-) -> bool:
+def move_data_from_temp_to_main_storage(folder_id: str, participant: Participant, day: str = today):
     destination_path = os.path.join(storage_path, day, folder_id)
     os.makedirs(destination_path, exist_ok=True)
 
-    for root, dirs, files in os.walk(os.path.join(temporary_path, day)):
+    for root, _, files in os.walk(os.path.join(temporary_path, day)):
         for file in files:
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))  # Copy file
             logging.debug(

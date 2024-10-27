@@ -89,18 +89,24 @@ class Camera(object):
                     if startpoint is not None:
                         endpoint = datetime.now()
                         logging.info(f"Light barrier triggered to end at: {endpoint}")
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                        if endpoint - startpoint > timedelta(seconds=2):
+                            timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
 
-                if current_state != state.activated:
-                    if state.activated:
-                        startpoint = datetime.now()
-                        logging.info(f"Light barrier triggered to start at: {startpoint}")
-                    else:
-                        endpoint = datetime.now()
-                        logging.info(f"Light barrier triggered to end at: {endpoint}")
-                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                        startpoint = None
-                current_state = state.activated
+                try:
+                    if current_state != state.activated:
+                        if state.activated:
+                            startpoint = datetime.now()
+                            logging.info(f"Light barrier triggered to start at: {startpoint}")
+                        else:
+                            endpoint = datetime.now()
+                            logging.info(f"Light barrier triggered to end at: {endpoint}")
+                            if endpoint - startpoint > timedelta(seconds=2):
+                                timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                            startpoint = None
+                            endpoint = None
+                    current_state = state.activated
+                except:
+                    logging.warning("There was an issue storing a time point.")
 
             self.running = False
 
