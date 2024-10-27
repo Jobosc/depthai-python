@@ -89,7 +89,7 @@ class ENVParser:
     @property
     def conversion_file_prefix(self):
         return self._conversion_file_prefix
-    
+
     @property
     def metadata_file_name(self):
         return self._metadata_file_name

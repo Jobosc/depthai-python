@@ -9,6 +9,7 @@ from utils.parser import ENVParser
 
 env = ENVParser()
 
+
 class Participant(BaseModel):
     id: str
     comments: Optional[str] = None
