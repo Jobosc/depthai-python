@@ -159,7 +159,9 @@ def editor(input):
                 ui.tags.source(src=input.select_recordings.get(), type="video/mp4"),
                 controls=True,
                 width="800px",
-                autoplay=False
+                autoplay=False,
+                preload=True,
+                disablepictureinpicture=True,
             ), ]
         else:
             logging.debug("Render UI: Remove video field.")

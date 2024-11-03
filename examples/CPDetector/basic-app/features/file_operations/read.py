@@ -15,10 +15,10 @@ def extract_list_of_directories(path: str) -> List[str]:
     if os.path.exists(path) and os.path.isdir(path):
         result = os.listdir(path)
         result = [x for x in result if os.path.isdir(os.path.join(path, x))]
+        result.sort()
     if env.log_filename in result:  # Remove folder that is used for logging
         result.remove(env.log_filename)
     return result
-
 
 """
 List amount of objects
