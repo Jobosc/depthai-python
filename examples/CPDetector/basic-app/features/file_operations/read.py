@@ -18,6 +18,8 @@ def extract_list_of_directories(path: str) -> List[str]:
         result.sort()
     if env.log_filename in result:  # Remove folder that is used for logging
         result.remove(env.log_filename)
+    elif '.DS_Store' in result:  # Remove folder that is used for logging
+        result.remove('.DS_Store')
     return result
 
 
@@ -67,6 +69,8 @@ def list_people_in_total() -> List[str]:
                 all_people.extend(os.listdir(os.path.join(storage_path, directory)))
                 if env.log_filename in all_people:  # Remove folder that is used for logging
                     all_people.remove(env.log_filename)
+                elif '.DS_Store' in all_people:  # Remove folder that is used for logging
+                    all_people.remove('.DS_Store')
     return all_people
 
 
