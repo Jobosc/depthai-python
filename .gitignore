@@ -57,3 +57,7 @@ venv.bak/
 *.webm
 *.ogg
 *.log
+
+examples/CPDetector/site/
+
+examples/CPDetector/docs/reference/

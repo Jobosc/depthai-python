@@ -4,3 +4,9 @@ gpiozero==2.0.1
 faicons
 pydantic
 ffmpeg-python==0.2.0
+mkdocs==1.6.1
+mkdocs-gen-files==0.5.0
+mkdocs-literate-nav==0.6.1
+mkdocs-material==9.5.33
+mkdocs-section-index==0.3.9
+mkdocstrings[python]==0.25.2

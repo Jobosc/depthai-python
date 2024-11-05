@@ -20,6 +20,7 @@ def extract_list_of_directories(path: str) -> List[str]:
         result.remove(env.log_filename)
     return result
 
+
 """
 List amount of objects
 """
