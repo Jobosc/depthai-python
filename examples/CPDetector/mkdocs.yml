@@ -5,7 +5,7 @@ site_description: "System to record and process Gait Cycles"
 site_author: "John Uroko john.uroko@cloudflight.io"
 
 nav:
-  - Home: index.md
+  - Overview: index.md
   - Instructions: instructions/
   - Code Reference: reference/
 

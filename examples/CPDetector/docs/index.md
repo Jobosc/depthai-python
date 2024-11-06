@@ -1,36 +1,22 @@
-# Overview
-
-Here all important informations are stored to start recording with the Gait recording system.
+Here all important information are stored to start recording with the Gait recording system.
 
 ![main_screen.png](assets/main_screen.png)
 
-### Overview of User Documentation
+## User Interface
+#### [Header Information](instructions/header.md)
+The header information is displayed on top of the screen and shows the current status of the system.
 
-#### Main Functionalities (`index.md`)
-- **(De-)Activate Recording**: Start or stop recording by pressing the **Record** button. The **Session** button displays or hides the session list, which shows all recorded sessions for further analysis.
-- **Recording Modes**:
-    - **View Mode**: Displays the video stream without saving.
-    - **Record Mode**: Records and saves the video stream.
-- **Session Management**: Show, hide, edit, and view recorded sessions. Only saved sessions are visible.
+#### [Information Cards](instructions/info_cards.md)
+This section explains what can be seen on the information cards.
 
-#### Viewing Sessions (`view_session.md`)
-- **Display Recording**: Allows users to review gait cycles by selecting "Display Recording".
-- **Conversion Requirement**: Recordings must be converted into gait cycles before viewing.
-- **Steps to View**:
-    - **Initiate Display Recordings**: Start the process.
-    - **Select Gait Cycle**: Choose the session to display.
-    - **Stream Gait Cycle**: Adjust playback speed as needed.
+## [Main Functionalities](instructions/main_functionalities)
+The main functionalities describe how to start recordings and manage recorded sessions.
 
-#### Header Information (`header.md`)
-- **Storage Information**: Displays total storage, used storage, and available storage on the Raspberry Pi.
-- **Camera Availability**:
-    - **Green**: Camera is available and ready for recording.
-    - **Blue**: Camera is currently recording.
-    - **Red**: Camera is not connected or processing a recording.
+#### [Viewing Sessions](instructions/main_functionalities/view_session.md)
+This chapter describes how to view recorded sessions and access the recordings.
 
-#### Information Cards (`info_cards.md`)
-- **Recorded Users**: Shows the total number of recorded users and the number recorded today.
-- **Recorded Sessions**: Displays the total number of recorded sessions and the number of days with at least one session.
-- **Date and Time**: Shows the current date and time of the system.
+#### [Convert Sessions](instructions/main_functionalities/convert_session.md)
+This chapter describes how to convert recorded sessions to view single Gait cycles.
 
-This summary provides an overview of the main functionalities and features of the GUI, helping users understand how to interact with the system and manage recordings.
+#### [Edit Sessions](instructions/main_functionalities/edit_session.md)
+This chapter describes how to edit metadata of recorded sessions.
