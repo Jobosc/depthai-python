@@ -58,6 +58,5 @@ venv.bak/
 *.ogg
 *.log
 
-examples/CPDetector/site/
-
-examples/CPDetector/basic-app/docs/reference/
+*site/
+*reference/
