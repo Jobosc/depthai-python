@@ -33,12 +33,18 @@ app_ui = ui.page_sidebar(
 
 
 def camera_handler():
+    """
+    This function is used to handle the camera thread.
+    """
     while True:
         if camera.ready and not camera.running:
             camera.run(timestamps=timestamps)
 
 
 def server(input: Inputs, output: Outputs, session: Session):
+    """
+    This function is used to handle the server side of the application.
+    """
     initialize_logger()
     CameraLed.values()
     missing_data.editor()
