@@ -37,6 +37,11 @@ theme:
     - content.code.annotation
     - toc.follow
 
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+
 plugins:
   - search
   - section-index
