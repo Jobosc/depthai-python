@@ -1,2 +1,2 @@
-* [How to start a recording](start_recording.md)
-* [How to stream a recording](stream_recording.md)
+* [How-To: Make a recording](start_recording.md)
+* [How-To: Stream a recording](stream_recording.md)

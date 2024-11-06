@@ -41,10 +41,14 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - attr_list
+  - md_in_html
+  - pymdownx.blocks.caption
 
 plugins:
   - search
   - section-index
+  - glightbox
   - gen-files:
       scripts:
         - scripts/gen_ref_pages.py
