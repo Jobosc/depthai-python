@@ -1,3 +1,14 @@
+"""
+This module provides functions to process and convert video files.
+
+It defines functions to convert individual videos and format time differences.
+
+Functions:
+    convert_individual_videos: Converts individual video files for a specific day and person.
+    convert_videos: Converts a video file based on the specified time window.
+    __format_timedelta: Helper function to format a timedelta object into a string.
+"""
+
 import logging
 import os
 import shutil
@@ -12,21 +23,30 @@ env = ENVParser()
 
 
 def convert_individual_videos(day, person):
+    """
+    Converts individual video files for a specific day and person.
+
+    Args:
+        day (str): The day of the video files to be converted.
+        person (str): The person whose video files are to be converted.
+
+    Yields:
+        bool: True if the conversion was successful, False otherwise.
+    """
     file_extension = [".hevc", ".mp4"]
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
     extensions = []
     file_normpaths = []
 
-    ## Outputfiles
+    ## Output files
     metadata = read_participant_metadata(day, person)
 
-    ## Inputfiles
+    ## Input files
     # Collect all video material files
     for root, dirs, files in os.walk(input_path):
         for file in files:
             _, ext = os.path.splitext(file)
-
             if ext in file_extension:
                 name = os.path.join(root, file)
 
@@ -73,6 +93,18 @@ def convert_individual_videos(day, person):
 
 
 def convert_videos(input_file: str, output_file: str, time_start: datetime, time_window: TimeWindow = None) -> bool:
+    """
+    Converts a video file based on the specified time window.
+
+    Args:
+        input_file (str): The path to the input video file.
+        output_file (str): The path to the output video file.
+        time_start (datetime): The start time of the video.
+        time_window (TimeWindow, optional): The time window for the video conversion. Defaults to None.
+
+    Returns:
+        bool: True if the conversion was successful, False otherwise.
+    """
     start_time = (time_window.start - time_start) + datetime.combine(datetime.min, env.video_delta_start) - datetime.min
     end_time = (time_window.end - time_window.start) + datetime.combine(datetime.min,
                                                                         env.video_delta_end) - datetime.min
@@ -91,13 +123,13 @@ def convert_videos(input_file: str, output_file: str, time_start: datetime, time
 
 def __format_timedelta(time_difference: timedelta) -> str:
     """
-    Convert time_difference into a string in the format HH:MM:SS.mmm.
+    Helper function to format a timedelta object into a string.
 
     Args:
-    secotime_differenceds (timedelta): The time_difference to format.
+        time_difference (timedelta): The time difference to format.
 
     Returns:
-    str: The formatted string in HH:MM:SS.mmm format.
+        str: The formatted string in HH:MM:SS.mmm format.
     """
     total_seconds = int(time_difference.total_seconds())
     hours, remainder = divmod(total_seconds, 3600)

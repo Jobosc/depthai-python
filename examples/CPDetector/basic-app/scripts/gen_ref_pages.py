@@ -1,7 +1,19 @@
-"""Generate the code reference pages and navigation."""
+"""
+Generate the code reference pages and navigation.
+
+This script scans the source directory for Python files and generates
+Markdown documentation files for each module. It also builds the navigation
+structure for the MkDocs site.
+
+Modules:
+    mkdocs_gen_files: A module to generate files for MkDocs.
+    pathlib: A module to handle filesystem paths.
+
+Usage:
+    Run this script to generate the code reference pages and navigation for the MkDocs site.
+"""
 
 from pathlib import Path
-
 import mkdocs_gen_files
 
 nav = mkdocs_gen_files.Nav()

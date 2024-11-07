@@ -1,3 +1,15 @@
+"""
+This module provides functionality to manage and operate the camera for recording sessions.
+
+It defines the Camera class which handles the initialization, running, and state management of the camera.
+
+Classes:
+    Camera: Manages the camera operations including recording and state management.
+
+Methods:
+    run: Starts the camera recording process.
+"""
+
 import logging
 import os
 import time
@@ -14,6 +26,18 @@ from utils.parser import ENVParser
 
 
 class Camera(object):
+    """
+    Manages the camera operations including recording and state management.
+
+    Attributes:
+        _instance (Camera): Singleton instance of the Camera class.
+        running (bool): Indicates if the camera is currently running.
+        encode (dai.VideoEncoderProperties.Profile): The encoding profile for the video.
+        fps (int): Frames per second for the camera.
+        _ready (bool): Indicates if the camera is ready.
+        _mode (bool): Indicates the mode of the camera (recording or viewing).
+    """
+
     _instance = None
     running = False
     encode = None
@@ -30,6 +54,16 @@ class Camera(object):
         return cls._instance
 
     def run(self, timestamps: Timestamps, block=False) -> int:
+        """
+        Starts the camera recording process.
+
+        Args:
+            timestamps (Timestamps): The timestamps object to store recording times.
+            block (bool): Whether to block the execution until recording is finished. Defaults to False.
+
+        Returns:
+            int: Status code indicating the result of the operation.
+        """
         logging.info("Start process to record with camera.")
         env = ENVParser()
         self.running = True
@@ -113,15 +147,27 @@ class Camera(object):
             return 1
 
     @property
-    def camera_connection(self):
+    def camera_connection(self) -> bool:
+        """
+        Checks if the camera is connected.
+
+        Returns:
+            bool: True if the camera is connected, False otherwise.
+        """
         return False if dai.DeviceBootloader.getAllAvailableDevices() == [] else True
 
     @property
-    def ready(self):
+    def ready(self) -> bool:
         return self._ready
 
     @ready.setter
     def ready(self, value: bool):
+        """
+        Sets and Gets the readiness state of the camera.
+
+        Args:
+            value (bool): The readiness state to set.
+        """
         self._ready = value
 
     @property
@@ -130,6 +176,12 @@ class Camera(object):
 
     @mode.setter
     def mode(self, value: bool):
+        """
+        Sets and Gets the mode of the camera.
+
+        Args:
+            value (bool): The mode to set (True for recording, False for viewing).
+        """
         self._mode = value
 
 

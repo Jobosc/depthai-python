@@ -1,3 +1,15 @@
+"""
+This module provides functionality to manage the camera LED status.
+
+It defines the CameraLed class which handles the LED status updates based on the camera's state.
+
+Classes:
+    CameraLed: Manages the LED status updates for the camera.
+
+Methods:
+    state: Updates the LED status based on the camera's running state and connection status.
+"""
+
 import logging
 
 import faicons as fa
@@ -7,6 +19,12 @@ from features.modules.camera import Camera
 
 
 class CameraLed:
+    """
+    Manages the LED status updates for the camera.
+
+    Attributes:
+        _instance (CameraLed): Singleton instance of the CameraLed class.
+    """
     _instance = None
 
     def __new__(cls):
@@ -16,7 +34,13 @@ class CameraLed:
         return cls._instance
 
     @staticmethod
-    def values():
+    def state():
+        """
+        Updates the LED status based on the camera's running state and connection status.
+
+        Returns:
+            render.ui: The UI element representing the LED status.
+        """
         camera = Camera()
 
         @render.ui

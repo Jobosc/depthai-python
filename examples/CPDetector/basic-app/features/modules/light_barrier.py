@@ -1,3 +1,12 @@
+"""
+This module provides functionality to manage the light barrier sensor.
+
+It defines the LightBarrier class which handles the initialization and state management of the light barrier sensor.
+
+Classes:
+    LightBarrier: Manages the light barrier sensor operations including initialization and state checking.
+"""
+
 import logging
 import platform
 
@@ -5,7 +14,15 @@ if platform.system() == "Linux":
     from gpiozero import Button
 
 
-class LightBarrier(object):
+class LightBarrier:
+    """
+    Manages the light barrier sensor operations including initialization and state checking.
+
+    Attributes:
+        _instance (LightBarrier): Singleton instance of the LightBarrier class.
+        button (Button): The GPIO button instance for the light barrier sensor.
+        gpio_exist (bool): Indicates if the GPIO button exists on the system.
+    """
     _instance = None
     button = None
     gpio_exist = False
@@ -21,6 +38,12 @@ class LightBarrier(object):
 
     @property
     def activated(self):
+        """
+        Checks if the light barrier sensor is activated.
+
+        Returns:
+            bool: True if the light barrier sensor is activated, False otherwise.
+        """
         if self.gpio_exist:
             return self.button.value
         else:

@@ -1,3 +1,18 @@
+"""
+This module provides the UI components for the application.
+
+It defines the side view, header, and main view of the application UI, as well as helper functions to create UI elements.
+
+Functions:
+    side_view: Returns the side view UI components.
+    header: Returns the header UI components.
+    main_view: Returns the main view UI components.
+    __dashboard: Creates a dashboard UI component.
+    __cards: Creates the cards UI components.
+    __session_buttons: Creates the session buttons UI components.
+
+"""
+
 import os
 import shutil
 
@@ -15,7 +30,13 @@ ICONS = {
 }
 
 
-def side_view():
+def side_view() -> tuple:
+    """
+    Returns the side view UI components.
+
+    Returns:
+        tuple: A tuple containing the side view UI components.
+    """
     return (
         (
             ui.h4("Input data"),
@@ -76,7 +97,13 @@ def side_view():
     )
 
 
-def header():
+def header() -> ui.layout_columns:
+    """
+    Returns the header UI components.
+
+    Returns:
+        ui.layout_columns: The header UI components.
+    """
     env = ENVParser()
     total, used, free = 0, 0, 0
     if os.path.exists(env.main_path):
@@ -98,7 +125,13 @@ def header():
     )
 
 
-def main_view():
+def main_view() -> tuple:
+    """
+    Returns the main view UI components.
+
+    Returns:
+        tuple: A tuple containing the main view UI components.
+    """
     return (
         ui.output_ui("header"),
         __cards(),
@@ -126,7 +159,19 @@ def main_view():
     )
 
 
-def __dashboard(size: int, title: str, value: list, icon_name: str):
+def __dashboard(size: int, title: str, value: list, icon_name: str) -> ui.column:
+    """
+    Creates a dashboard UI component.
+
+    Args:
+        size (int): The size of the dashboard.
+        title (str): The title of the dashboard.
+        value (list): The values to display in the dashboard.
+        icon_name (str): The name of the icon to display in the dashboard.
+
+    Returns:
+        ui.column: The dashboard UI component.
+    """
     return ui.column(
         size,
         ui.value_box(
@@ -137,7 +182,13 @@ def __dashboard(size: int, title: str, value: list, icon_name: str):
     )
 
 
-def __cards():
+def __cards() -> tuple:
+    """
+    Creates the cards UI components.
+
+    Returns:
+        tuple: A tuple containing the cards UI components.
+    """
     block_size = 12
     return (
         ui.layout_columns(
@@ -166,7 +217,13 @@ def __cards():
     )
 
 
-def __session_buttons():
+def __session_buttons() -> ui.layout_columns:
+    """
+    Creates the recording and session button UI components.
+
+    Returns:
+        ui.layout_columns: The session buttons UI components.
+    """
     return (
         ui.layout_columns(
             ui.input_action_button(

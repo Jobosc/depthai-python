@@ -1,3 +1,13 @@
+"""
+This script initializes and runs a Gait Recording GUI application.
+
+The application uses the Shiny framework to create a user interface for recording gait data.
+It sets up various UI components, initializes logging, and handles camera operations in a separate thread.
+
+Usage:
+    Run this script to start the Gait Recording GUI application.
+"""
+
 import os
 import threading
 
@@ -34,7 +44,9 @@ app_ui = ui.page_sidebar(
 
 def camera_handler():
     """
-    This function is used to handle the camera thread.
+    Handles the camera thread.
+
+    Continuously checks if the camera is ready and not running, and if so, starts the camera with the provided timestamps.
     """
     while True:
         if camera.ready and not camera.running:
@@ -43,10 +55,17 @@ def camera_handler():
 
 def server(input: Inputs, output: Outputs, session: Session):
     """
-    This function is used to handle the server side of the application.
+    Handles the server side of the application.
+
+    Initializes the logger, sets up various UI components and editors, and starts the camera handler thread.
+
+    Args:
+        input (Inputs): The input object for the server.
+        output (Outputs): The output object for the server.
+        session (Session): The session object for the server.
     """
     initialize_logger()
-    CameraLed.values()
+    CameraLed.state()
     missing_data.editor()
     card_data.values()
     modals.update(input)
