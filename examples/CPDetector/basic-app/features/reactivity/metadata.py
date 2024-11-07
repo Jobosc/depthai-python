@@ -1,3 +1,12 @@
+"""
+This module handles the metadata editing and storing functionality for the application.
+
+It defines functions to edit metadata, store metadata, and reset metadata in the UI.
+
+Functions:
+    editor: Sets up the reactive effects for editing, storing, and resetting metadata.
+"""
+
 import asyncio
 import datetime
 import logging
@@ -16,9 +25,21 @@ ui_state = UIState()
 
 
 def editor(input, timestamps: Timestamps):
+    """
+    Sets up the reactive effects for editing, storing, and resetting metadata.
+
+    Args:
+        input: The input object for the server.
+        timestamps (Timestamps): The timestamps object for the session.
+    """
     @reactive.Effect
     @reactive.event(input.edit_metadata_button)
     def edit_metadata():
+        """
+        Edits the metadata for the current session.
+
+        Reads the old metadata, updates it with the new values, and stores it.
+        """
         env = ENVParser()
         old_person = read_participant_metadata(
             date=input.date_selector(), person=input.people_selector()[0]
@@ -61,6 +82,11 @@ def editor(input, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.save_yes)
     async def store_metadata():
+        """
+        Stores the metadata for the current session.
+
+        Moves the files from the temporary storage to the main storage and updates the UI.
+        """
         env = ENVParser()
         i = 0
         day = datetime.datetime.now().strftime(env.date_format)
@@ -115,9 +141,19 @@ def editor(input, timestamps: Timestamps):
     @reactive.Effect
     @reactive.event(input.reset_button, input.cancel_edit_metadata_button)
     def reset_metadata():
+        """
+        Resets the metadata in the UI.
+
+        Clears the input fields for ID and comments.
+        """
         __reset_user()
 
     def __reset_user():
+        """
+        Helper function to reset the user input fields.
+
+        Clears the ID and comments fields and logs the reset action.
+        """
         logging.debug("Metadata has been reset in the view.")
         ui.update_text("id", value="")
         ui.update_text("comments", value="")
