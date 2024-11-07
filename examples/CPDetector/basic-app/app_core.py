@@ -14,9 +14,8 @@ import threading
 from shiny import ui, App, Inputs, Outputs, Session
 
 from features.interface.modal_remover import ModalRemover
-import features.interface.session_view as session_view
+from features.interface.session_manager import SessionManager
 import features.interface.sidebar_buttons as missing_data
-import features.interface.sidebar_card as card_sidebar
 from features.interface.card_values import CardValues
 from features.reactivity.buttons_controller import ButtonsController
 from features.reactivity.storage_controller import StorageController
@@ -72,8 +71,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     MetadataController(input, timestamps)
     ButtonsController(input, camera, timestamps)
     StorageController(input)
-    session_view.editor(input)
-    card_sidebar.metadata(input)
+    SessionManager(input)
 
     # Setup Threading
     thread = threading.Thread(target=camera_handler)
@@ -81,3 +79,7 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
+
+# Currently empty folders are created in the temp directory - That needs to stop
+# The reset button fot metadata is not working
+# More documentation is needed for the sidebar...Especially for the edit view

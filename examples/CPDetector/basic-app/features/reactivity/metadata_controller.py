@@ -3,16 +3,13 @@ This module handles the metadata editing and storing functionality for the appli
 
 Classes:
     MetadataController: Sets up the reactive effects for editing, storing, and resetting metadata.
-
-Functions:
-    None
 """
 import asyncio
 import datetime
 import logging
 import os
 
-from shiny import ui, reactive
+from shiny import ui, reactive, render
 
 from features.file_operations.move import list_files_to_move, move_data_from_temp_to_main_storage
 from features.file_operations.read import check_if_folder_already_exists
@@ -41,6 +38,28 @@ class MetadataController:
         self.reset_metadata()
         self.edit_metadata()
         self.store_metadata()
+        self.card()
+
+    def card(self):
+        """
+        Renders the metadata output as a card.
+
+        This method sets up a reactive UI element that displays the metadata, including the ID and comments, in a card format.
+
+        Returns:
+            list: A list of UI elements displaying the ID and comments.
+        """
+
+        @render.ui
+        def metadata_output() -> list:
+            elements = []
+            if self.input.id() != "":
+                elements.append(ui.markdown(f"ID: {self.input.id()}"))
+            if self.input.comments() != "":
+                elements.append(ui.br())
+                elements.append(ui.markdown("Comments:"))
+                elements.append(ui.markdown(f"{self.input.comments()}"))
+            return elements
 
     def edit_metadata(self):
         """
