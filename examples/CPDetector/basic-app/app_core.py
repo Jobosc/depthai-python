@@ -18,9 +18,9 @@ import features.interface.session_view as session_view
 import features.interface.sidebar_buttons as missing_data
 import features.interface.sidebar_card as card_sidebar
 import features.interface.text_fields as card_data
-import features.reactivity.buttons as buttons
-import features.reactivity.dataset as dataset
-import features.reactivity.metadata as metadata
+from features.reactivity.buttons_controller import ButtonsController
+from features.reactivity.storage_controller import StorageController
+from features.reactivity.metadata_controller import MetadataController
 from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
@@ -69,9 +69,9 @@ def server(input: Inputs, output: Outputs, session: Session):
     missing_data.editor()
     card_data.values()
     modals.update(input)
-    metadata.editor(input, timestamps)
-    buttons.editor(input, camera, timestamps)
-    dataset.editor(input)
+    MetadataController(input, timestamps)
+    ButtonsController(input, camera, timestamps)
+    StorageController(input)
     session_view.editor(input)
     card_sidebar.metadata(input)
 
