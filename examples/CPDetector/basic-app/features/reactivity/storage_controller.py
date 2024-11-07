@@ -28,12 +28,6 @@ class StorageController:
     ui_state = UIState()
 
     def __init__(self, input):
-        """
-        Initializes the StorageController with the given input.
-
-        Args:
-            input: The input object for the server.
-        """
         self.input = input
         self.edit_metadata_dataset()
         self.delete_session_yes()

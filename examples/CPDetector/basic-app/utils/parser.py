@@ -36,9 +36,6 @@ class ENVParser:
     _metadata_file_name = None
 
     def __init__(self) -> None:
-        """
-        Initializes the `ENVParser` instance by loading environment variables from a `.env` file.
-        """
         if platform.system() == "Linux":
             load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
         else:

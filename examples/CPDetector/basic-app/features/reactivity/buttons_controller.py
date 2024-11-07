@@ -18,6 +18,14 @@ from utils.parser import ENVParser
 
 
 class ButtonsController:
+    """
+    Initializes the Buttons with the given input, camera, and timestamps.
+
+    Args:
+        input: The input object for the server.
+        camera (Camera): The camera object for the session.
+        timestamps (Timestamps): The timestamps object for the session.
+    """
     input = None
     camera = None
     timestamps = None
@@ -25,14 +33,6 @@ class ButtonsController:
     record_button_state = reactive.Value(False)
 
     def __init__(self, input, camera: Camera, timestamps: Timestamps):
-        """
-        Initializes the Buttons with the given input, camera, and timestamps.
-
-        Args:
-            input: The input object for the server.
-            camera (Camera): The camera object for the session.
-            timestamps (Timestamps): The timestamps object for the session.
-        """
         self.input = input
         self.camera = camera
         self.timestamps = timestamps
@@ -52,24 +52,26 @@ class ButtonsController:
 
         Checks if there are unsaved sessions or if the camera is connected, and updates the record button state accordingly.
         """
+
         @reactive.Effect
         @reactive.event(self.input.record_button)
         def _():
-            if self.ui_state.unsaved_days: # Check if there are unsaved sessions
-                logging.info("Record Button: Previous session(s) still exist that need to be completed before recording can start.")
+            if self.ui_state.unsaved_days:  # Check if there are unsaved sessions
+                logging.info(
+                    "Record Button: Previous session(s) still exist that need to be completed before recording can start.")
                 ui.notification_show(
                     "You need to complete a previous session before you can start recording again!",
                     duration=None,
                     type="warning",
                 )
-            elif self.camera.camera_connection is False and self.record_button_state.get() is False:    # Check if the camera is connected
+            elif self.camera.camera_connection is False and self.record_button_state.get() is False:  # Check if the camera is connected
                 logging.info("Record Button: Camera is not connected and therefore recording can't be started.")
                 ui.notification_show(
                     "Please check if the camera is connected before starting the recording!",
                     duration=None,
                     type="warning",
                 )
-            else:   # Activate or Deactivate recording based on the current state
+            else:  # Activate or Deactivate recording based on the current state
                 if self.record_button_state.get() is True:
                     logging.info("Record Button: Recording has been stopped.")
                     self.record_button_state.set(False)
@@ -90,6 +92,7 @@ class ButtonsController:
 
         Displays a confirmation modal to save the recorded sessions.
         """
+
         @reactive.Effect
         @reactive.event(self.input.save_button)
         def _():
@@ -115,6 +118,7 @@ class ButtonsController:
 
         Updates the camera mode based on the input switch mode.
         """
+
         @reactive.Effect
         @reactive.event(self.input.switch_mode)
         def _():
@@ -130,6 +134,7 @@ class ButtonsController:
 
         Displays a confirmation modal to convert the videos of the selected dataset.
         """
+
         @reactive.Effect
         @reactive.event(self.input.convert_dataset)
         def _():
@@ -149,6 +154,7 @@ class ButtonsController:
 
         Displays a confirmation modal to delete the selected datasets.
         """
+
         @reactive.Effect
         @reactive.event(self.input.delete_dataset)
         def _():
@@ -167,6 +173,7 @@ class ButtonsController:
 
         Displays a confirmation modal to delete the current session.
         """
+
         @reactive.Effect
         @reactive.event(self.input.delete_current_session_button)
         def _():
@@ -185,6 +192,7 @@ class ButtonsController:
 
         Resets the save view state.
         """
+
         @reactive.Effect
         @reactive.event(self.input.cancel_edit_metadata_button)
         def _():
@@ -196,6 +204,7 @@ class ButtonsController:
 
         Deletes the temporary recordings and updates the UI.
         """
+
         @reactive.Effect
         @reactive.event(self.input.delete_current_session_yes)
         def _():

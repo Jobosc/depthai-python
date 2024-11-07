@@ -22,12 +22,6 @@ class _AnsiColorizer(object):
     _colors = dict(black=30, red=31, green=32, yellow=33, blue=34, magenta=35, cyan=36, white=37)
 
     def __init__(self, stream):
-        """
-        Initializes the _AnsiColorizer with the given stream.
-
-        Args:
-            stream (io.TextIOWrapper): The stream to which the colorized text is written.
-        """
         self.stream = stream
 
     @classmethod
@@ -77,12 +71,6 @@ class ColorHandler(logging.StreamHandler):
         stream (io.TextIOWrapper): The stream to which the colorized log messages are written.
     """
     def __init__(self, stream=sys.stderr):
-        """
-        Initializes the ColorHandler with the given stream.
-
-        Args:
-            stream (io.TextIOWrapper): The stream to which the colorized log messages are written.
-        """
         super(ColorHandler, self).__init__(_AnsiColorizer(stream))
 
     def emit(self, record: logging.LogRecord):
