@@ -13,11 +13,11 @@ import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
 
-import features.interface.notification_modal as modals
+from features.interface.modal_remover import ModalRemover
 import features.interface.session_view as session_view
 import features.interface.sidebar_buttons as missing_data
 import features.interface.sidebar_card as card_sidebar
-import features.interface.text_fields as card_data
+from features.interface.card_values import CardValues
 from features.reactivity.buttons_controller import ButtonsController
 from features.reactivity.storage_controller import StorageController
 from features.reactivity.metadata_controller import MetadataController
@@ -67,8 +67,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     initialize_logger()
     CameraLed.state()
     missing_data.editor()
-    card_data.values()
-    modals.update(input)
+    CardValues()
+    ModalRemover(input)
     MetadataController(input, timestamps)
     ButtonsController(input, camera, timestamps)
     StorageController(input)
