@@ -150,8 +150,14 @@ def create_date_selection_for_saved_sessions() -> dict:
     Returns:
         dict: A dictionary with dates as keys and formatted date strings as values.
     """
+    temp_dates = []
     dates = list_days()
-    return __create_date_dictionary(dates=dates)
+
+    for day in dates:
+        if extract_list_of_directories(os.path.join(storage_path, day)):
+            temp_dates.append(day)
+
+    return __create_date_dictionary(dates=temp_dates)
 
 
 def create_date_selection_for_unsaved_sessions() -> dict:
