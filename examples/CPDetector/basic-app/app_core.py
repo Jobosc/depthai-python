@@ -13,10 +13,10 @@ import threading
 
 from shiny import ui, App, Inputs, Outputs, Session
 
-import features.interface.sidebar_buttons as missing_data
 from features.interface.card_values import CardValues
 from features.interface.modal_remover import ModalRemover
 from features.interface.session_manager import SessionManager
+from features.interface.sidebar_buttons import SidebarButtons
 from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
 from features.modules.timestamps import Timestamps
@@ -65,7 +65,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     """
     initialize_logger()
     CameraLed.state()
-    missing_data.editor()
+    SidebarButtons()
     CardValues()
     ModalRemover(input)
     MetadataController(input, timestamps)
