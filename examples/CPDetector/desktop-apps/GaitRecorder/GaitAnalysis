@@ -2,6 +2,6 @@
 Type=Application
 Name=GaitAnalysis
 Exec=/usr/bin/python3 -m shiny run --port 8080 /home/pi/depthai-python/examples/CPDetector/basic-app/app_core.py
-Icon=/home/pi/depthai-python/examples/CPDetector/desktop-app/person-solid.svg
-Terminal=true 
+Icon=/home/pi/depthai-python/examples/CPDetector/desktop-apps/GaitRecorder/person-solid.svg
+Terminal=true
 Categories=Utility;Application;
