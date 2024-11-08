@@ -43,12 +43,6 @@ def side_view() -> tuple:
             ui.input_dark_mode(),
             ui.input_text("id", "Enter ID"),
             ui.input_text_area("comments", ui.markdown("Comments"), autoresize=True),
-            ui.panel_conditional(
-                "input.id",
-                ui.input_action_button(
-                    "reset_button", "Reset", class_="btn-outline-danger"
-                ),
-            ),
             ui.output_ui("forgotten_session_days"),
             ui.output_ui("save_button_choice"),
             ui.panel_conditional(

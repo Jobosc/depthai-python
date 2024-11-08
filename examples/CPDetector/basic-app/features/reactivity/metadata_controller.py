@@ -180,7 +180,7 @@ class MetadataController:
         """
 
         @reactive.Effect
-        @reactive.event(self.input.reset_button, self.input.cancel_edit_metadata_button)
+        @reactive.event(self.input.cancel_edit_metadata_button)
         def _():
             self.__reset_user()
 
