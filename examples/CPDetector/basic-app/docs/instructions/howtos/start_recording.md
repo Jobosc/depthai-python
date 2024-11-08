@@ -18,11 +18,13 @@
    
 3. As soon as the participant has completed the required runs, click "Deactivate Recording" to stop the recording process.
     - The status led for camera availability will turn back green in case no issues arise.
-4. After completing the recording the interface will look like this:
+4. After completing the recording the interface will look like this. The "Delete current session" button will appear which lets you delete the session in case you don't want to save it. 
 ![open_current_session.png](../../assets/open_current_session.png)
 5. Before starting a new recording you will need to save the recording with a unique ID. Comments are optional. Otherwise, recordings can't be saved.
 
 ### Save recording
 After completing the recordings the data and metadata needs to be stored safely by assigning an ID to it. This ID will be used to identify the recording in the future. Comments are optional.
 ![metadata.png](../../assets/metadata.png)
-After saving the recordings, they can be managed with the operations under "Display sessions".
+
+!!! Note
+    After saving the recordings, they can be managed with the operations under "Display sessions".
