@@ -12,12 +12,12 @@ Methods:
 
 import logging
 import os
-import time
 from datetime import datetime, timedelta
 
 import cv2
 import depthai as dai
-from depthai_sdk import OakCamera, RecordType
+import numpy as np
+from depthai_sdk import OakCamera
 
 from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
@@ -49,7 +49,7 @@ class Camera(object):
         if cls._instance is None:
             logging.debug("Initiate camera instance.")
             cls._instance = super(Camera, cls).__new__(cls)
-            cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
+            cls.encode = dai.VideoEncoderProperties.Profile.MJPEG
             cls.fps = 40
         return cls._instance
 
@@ -69,8 +69,144 @@ class Camera(object):
         self.running = True
         state = LightBarrier()
 
+        # Create Pipeline
+        pipeline = dai.Pipeline()
+
+        # Define sources and outputs
+        color = pipeline.create(dai.node.ColorCamera)
+        color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        color.setFps(self.fps)
+        color.setCamera("color")
+
+        monoLeft = pipeline.create(dai.node.MonoCamera)
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoLeft.setFps(self.fps)
+        monoLeft.setCamera("left")
+
+        monoRight = pipeline.create(dai.node.MonoCamera)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoRight.setFps(self.fps)
+        monoRight.setCamera("right")
+
+        stereo = pipeline.create(dai.node.StereoDepth)
+        stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
+        stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
+        stereo.setLeftRightCheck(True)
+        stereo.setExtendedDisparity(True)
+        stereo.setSubpixel(False)
+
+        monoLeft.out.link(stereo.left)
+        monoRight.out.link(stereo.right)
+
+        if self.mode:  # Recording mode
+            # Video encoder node
+            video_encoder_color = pipeline.create(dai.node.VideoEncoder)
+            video_encoder_color.setDefaultProfilePreset(self.fps, self.encode)
+            color.video.link(video_encoder_color.input)
+
+            # Color output node
+            xout_video = pipeline.create(dai.node.XLinkOut)
+            xout_video.setStreamName("video")
+            video_encoder_color.bitstream.link(xout_video.input)
+
+            # Depth output node
+            video_encoder_depth = pipeline.create(dai.node.VideoEncoder)
+            # Depth resolution/FPS will be the same as mono resolution/FPS
+            video_encoder_depth.setDefaultProfilePreset(self.fps, self.encode)
+            stereo.disparity.link(video_encoder_depth.input)
+
+            xout_depth = pipeline.create(dai.node.XLinkOut)
+            xout_depth.setStreamName("disparity")
+            video_encoder_depth.bitstream.link(xout_depth.input)
+
+            logging.info("Record video without stream.")
+
+
+        else:  # Viewing mode
+            xoutGrp = pipeline.create(dai.node.XLinkOut)
+            xoutGrp.setStreamName("xout")
+
+            # Sync outputs with each other
+            sync = pipeline.create(dai.node.Sync)
+            sync.setSyncThreshold(timedelta(milliseconds=50))
+            stereo.disparity.link(sync.inputs["disparity"])
+            color.video.link(sync.inputs["video"])
+            sync.out.link(xoutGrp.input)
+
+            logging.info("View video without recording.")
+
+        with dai.Device(pipeline) as device:
+            logging.info(f"Camera started recording at: {datetime.now()}")
+            timestamps.camera_start = datetime.now()
+            current_state = 0
+            startpoint = None
+
+            if self.mode:  # Recording mode
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=30, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=30, blocking=block)
+
+                # Open a file to save encoded video
+                day = datetime.now().strftime(env.date_format)
+                with open(os.path.join(env.temp_path, day, "color.mjpeg"), 'wb') as video_file, open(
+                        os.path.join(env.temp_path, day, "disparity.mjpeg"), 'wb') as depth_file:
+                    print("Press Ctrl+C to stop encoding...")
+                    while True:
+                        try:
+                            while disparity_queue.has():
+                                disparity_queue.get().getData().tofile(depth_file)
+                            while video_queue.has():
+                                video_queue.get().getData().tofile(video_file)
+                        except KeyboardInterrupt:
+                            break
+
+                        if not self.ready:  # not state.activated or
+                            if startpoint is not None:
+                                endpoint = datetime.now()
+                                logging.info(f"Light barrier triggered to end at: {endpoint}")
+                                if endpoint - startpoint > timedelta(seconds=2):
+                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                            break
+
+                        try:
+                            if current_state != state.activated:
+                                if state.activated:
+                                    startpoint = datetime.now()
+                                    logging.info(f"Light barrier triggered to start at: {startpoint}")
+                                else:
+                                    endpoint = datetime.now()
+                                    logging.info(f"Light barrier triggered to end at: {endpoint}")
+                                    if endpoint - startpoint > timedelta(seconds=2):
+                                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                                    startpoint = None
+                                    endpoint = None
+                            current_state = state.activated
+                        except:
+                            logging.warning("There was an issue storing a time point.")
+
+            else:  # Viewing mode
+                queue = device.getOutputQueue(name="xout", maxSize=30, blocking=block)
+
+                disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
+                while True:
+                    msgGrp = queue.get()
+                    for name, msg in msgGrp:
+                        if name == "disparity":
+                            frame = msg.getFrame()
+                            frame = (frame * disparityMultiplier).astype(np.uint8)
+                            frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                        else:
+                            frame = msg.getCvFrame()
+                        cv2.imshow(name, frame)
+                    if not self.ready:  # not state.activated or
+                        cv2.destroyAllWindows()
+                        break
+
+            self.running = False
+
+            return 1
+
         with OakCamera() as oak:
-            # Define cameras
+            """# Define cameras
             oak.device.setTimesync(timedelta(seconds=1), 10, True)
 
             color = oak.camera(
@@ -83,7 +219,7 @@ class Camera(object):
                 resolution=dai.MonoCameraProperties.SensorResolution.THE_800_P,
                 fps=self.fps,
                 encode=self.encode,
-            )
+            )"""
 
             # Set IR brightness
             # Turned off IR because of the possible marker disruptions
@@ -91,7 +227,7 @@ class Camera(object):
             stereo.set_ir(0, 0)
             logging.info("Set camera parameters for recording with OAK camera.")
 
-            # Synchronize & save all (encoded) streams
+            """# Synchronize & save all (encoded) streams
             if self.mode:
                 logging.info("Record video without stream.")
                 # Folder parameters
@@ -111,8 +247,8 @@ class Camera(object):
 
             timestamps.camera_start = datetime.now()
             current_state = 0
-            startpoint = None
-            while oak.running():
+            startpoint = None"""
+            """while oak.running():
                 time.sleep(0.001)
                 oak.poll()
 
@@ -144,7 +280,7 @@ class Camera(object):
 
             self.running = False
 
-            return 1
+            return 1"""
 
     @property
     def camera_connection(self) -> bool:
