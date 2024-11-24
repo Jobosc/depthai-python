@@ -139,6 +139,9 @@ class Camera(object):
             timestamps.camera_start = datetime.now()
             current_state = 0
             startpoint = None
+            device.setIrLaserDotProjectorIntensity(0)
+            device.setIrFloodLightIntensity(0)
+            logging.info("Set camera parameters for recording with OAK camera.")
 
             if self.mode:  # Recording mode
                 disparity_queue = device.getOutputQueue(name="disparity", maxSize=30, blocking=block)
@@ -196,7 +199,7 @@ class Camera(object):
                             frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
                         else:
                             frame = msg.getCvFrame()
-                        cv2.imshow(name, frame)
+                            cv2.imshow(name, frame)
                     if not self.ready:  # not state.activated or
                         cv2.destroyAllWindows()
                         break
@@ -204,12 +207,6 @@ class Camera(object):
             self.running = False
 
             return 1
-
-            """# Set IR brightness
-            # Turned off IR because of the possible marker disruptions
-            stereo.set_auto_ir(auto_mode=False, continuous_mode=False)
-            stereo.set_ir(0, 0)
-            logging.info("Set camera parameters for recording with OAK camera.")"""
 
 
     @property
