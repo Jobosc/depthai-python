@@ -79,3 +79,5 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
+
+#Save files from any day. Not just today
