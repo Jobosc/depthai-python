@@ -73,7 +73,7 @@ class Camera(object):
 
         # Define sources and outputs
         color = pipeline.create(dai.node.ColorCamera)
-        color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_800_P)
         color.setFps(self.fps)
         color.setCamera("color")
 
@@ -89,7 +89,7 @@ class Camera(object):
 
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
-        stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
+        #stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
         stereo.setLeftRightCheck(True)
         stereo.setExtendedDisparity(True)
         stereo.setSubpixel(False)
