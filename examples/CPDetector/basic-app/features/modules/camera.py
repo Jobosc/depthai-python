@@ -49,7 +49,7 @@ class Camera(object):
             logging.debug("Initiate camera instance.")
             cls._instance = super(Camera, cls).__new__(cls)
             cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
-            cls.fps = 40
+            cls.fps = 30
         return cls._instance
 
     def run(self, timestamps: Timestamps, block=False) -> int:
@@ -122,6 +122,8 @@ class Camera(object):
 
 
         else:  # Viewing mode
+            color.setIspScale(1, 2)
+
             xoutGrp = pipeline.create(dai.node.XLinkOut)
             xoutGrp.setStreamName("xout")
 
@@ -134,6 +136,7 @@ class Camera(object):
 
             logging.info("View video without recording.")
 
+             
         with dai.Device(pipeline) as device:
             logging.info(f"Camera started recording at: {datetime.now()}")
             timestamps.camera_start = datetime.now()
@@ -152,7 +155,6 @@ class Camera(object):
                 os.makedirs(os.path.join(env.temp_path, day), exist_ok=True)
                 with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file, open(
                         os.path.join(env.temp_path, day, "disparity.mp4"), 'wb') as depth_file:
-                    print("Press Ctrl+C to stop encoding...")
                     while True:
                         try:
                             while disparity_queue.has():
@@ -187,20 +189,17 @@ class Camera(object):
                             logging.warning("There was an issue storing a time point.")
 
             else:  # Viewing mode
-                queue = device.getOutputQueue(name="xout", maxSize=30, blocking=block)
-
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
+                queue = device.getOutputQueue(name="xout", maxSize=30, blocking=block)
                 while True:
                     msgGrp = queue.get()
                     for name, msg in msgGrp:
+                        frame = msg.getCvFrame()
                         if name == "disparity":
-                            frame = msg.getFrame()
                             frame = (frame * disparityMultiplier).astype(np.uint8)
                             frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-                        else:
-                            frame = msg.getCvFrame()
-                            cv2.imshow(name, frame)
-                    if not self.ready:  # not state.activated or
+                        cv2.imshow(name, frame)
+                    if cv2.waitKey(1) == ord("q") or not self.ready:
                         cv2.destroyAllWindows()
                         break
 
