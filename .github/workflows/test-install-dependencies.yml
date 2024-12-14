@@ -4,11 +4,11 @@
   workflow_dispatch:
   push:
     paths:
-      - 'docs/source/_static/install_dependencies.sh'
+      - 'docs/install_dependencies.sh'
       - 'examples/install_requirements.py'
   pull_request:
       paths:
-      - 'docs/source/_static/install_dependencies.sh'
+      - 'docs/install_dependencies.sh'
       - 'examples/install_requirements.py'
 
  jobs:
@@ -16,7 +16,7 @@
      runs-on: ubuntu-latest
      strategy:
        matrix:
-          container_image: ["fedora:34", "fedora:35", "fedora:36", "ubuntu:18.04", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:rolling"]
+          container_image: ["fedora:34", "fedora:35", "fedora:36", "ubuntu:20.04", "ubuntu:22.04", "ubuntu:24.04", "ubuntu:rolling"]
      container:
        image: ${{ matrix.container_image }}
      steps:
@@ -30,7 +30,7 @@
        - name: Install dependencies
          run: |
            ln -snf /usr/share/zoneinfo/UTC /etc/localtime && echo UTC > /etc/timezone # Otherwise tzdata installer prompts for user input
-           sed '/udevadm control --reload-rules && sudo udevadm trigger/d' docs/source/_static/install_dependencies.sh > tmp_script.sh # Doesn't work on docker
+           sed '/udevadm control --reload-rules && sudo udevadm trigger/d' docs/install_dependencies.sh > tmp_script.sh # Doesn't work on docker
            bash tmp_script.sh
        - name: Create a virtual environment
          if: endsWith(matrix.container_image, 'rolling') == true
@@ -48,13 +48,13 @@
    test_macos:
       strategy:
         matrix:
-          os: ["macos-11", "macos-12", "macos-13", "macos-14"]
+          os: ["macos-12", "macos-13", "macos-14"]
       runs-on: ${{ matrix.os }}
       steps:
        - uses: actions/checkout@v3
        - name: Install dependencies
          run: |
-           sed '/udevadm control --reload-rules && sudo udevadm trigger/d' docs/source/_static/install_dependencies.sh > tmp_script.sh
+           sed '/udevadm control --reload-rules && sudo udevadm trigger/d' docs/install_dependencies.sh > tmp_script.sh
            bash tmp_script.sh
        - name: Create a virtual environment
          run: |
