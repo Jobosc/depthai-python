@@ -135,6 +135,13 @@ class Camera(object):
 
             logging.info("View video without recording.")
 
+        # import numpy as np
+        # HFOV = np.deg2rad(dai.Device().readCalibration().getFov(dai.CameraBoardSocket.CAM_A, useSpec=True))
+        # print(f"The HFOV in radiants is: {HFOV}")
+        # HFOVA in radiants is 1.8849555921538759
+        # HFOVB in radiants is 2.2165681500327987
+        # HFOVC in radiants is 2.2165681500327987
+
              
         with dai.Device(pipeline) as device:
             logging.info(f"Camera started recording at: {datetime.now()}")

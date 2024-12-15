@@ -3,4 +3,5 @@ Type=Application
 Name=Docs
 Exec=mkdocs serve --dev-addr "127.0.0.1:8000" -f /home/pi/depthai-python/examples/CPDetector/basic-app/mkdocs.yml
 Icon=/home/pi/depthai-python/examples/CPDetector/desktop-apps/Documentation/book-solid.svg
+Terminal=true
 Categories=Utility;Application;
