@@ -73,7 +73,7 @@ class Camera(object):
 
         # Define sources and outputs
         color = pipeline.create(dai.node.ColorCamera)
-        color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_800_P)
+        color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
         color.setFps(self.fps)
         color.setCamera("color")
 
@@ -91,7 +91,7 @@ class Camera(object):
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
         #stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
         stereo.setLeftRightCheck(True)
-        stereo.setExtendedDisparity(True)
+        stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
         stereo.setSubpixel(False)
 
         monoLeft.out.link(stereo.left)
@@ -110,7 +110,6 @@ class Camera(object):
 
             # Depth output node
             video_encoder_depth = pipeline.create(dai.node.VideoEncoder)
-            # Depth resolution/FPS will be the same as mono resolution/FPS
             video_encoder_depth.setDefaultProfilePreset(self.fps, self.encode)
             stereo.disparity.link(video_encoder_depth.input)
 
@@ -145,34 +144,36 @@ class Camera(object):
             device.setIrLaserDotProjectorIntensity(0)
             device.setIrFloodLightIntensity(0)
             logging.info("Set camera parameters for recording with OAK camera.")
+            device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
+            device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
 
             if self.mode:  # Recording mode
-                disparity_queue = device.getOutputQueue(name="disparity", maxSize=30, blocking=block)
-                video_queue = device.getOutputQueue(name="video", maxSize=30, blocking=block)
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=50, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=50, blocking=block)
+                color_frame = None
+                disparity_frame = None
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
                 os.makedirs(os.path.join(env.temp_path, day), exist_ok=True)
                 with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file, open(
                         os.path.join(env.temp_path, day, "disparity.mp4"), 'wb') as depth_file:
+                    print("Recording started...")
                     while True:
                         try:
                             while disparity_queue.has():
                                 disparity_queue.get().getData().tofile(depth_file)
                             while video_queue.has():
                                 video_queue.get().getData().tofile(video_file)
-                        except KeyboardInterrupt:
-                            break
 
-                        if not self.ready:  # not state.activated or
-                            if startpoint is not None:
-                                endpoint = datetime.now()
-                                logging.info(f"Light barrier triggered to end at: {endpoint}")
-                                if endpoint - startpoint > timedelta(seconds=2):
-                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                            break
+                            if not self.ready:
+                                if startpoint is not None:
+                                    endpoint = datetime.now()
+                                    logging.info(f"Light barrier triggered to end at: {endpoint}")
+                                    if endpoint - startpoint > timedelta(seconds=2):
+                                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                                break
 
-                        try:
                             if current_state != state.activated:
                                 if state.activated:
                                     startpoint = datetime.now()
@@ -185,8 +186,21 @@ class Camera(object):
                                     startpoint = None
                                     endpoint = None
                             current_state = state.activated
+
+
+                            """while disparity_queue.has():
+                                disparity_frame = disparity_queue.get().getData()
+                            while video_queue.has():
+                                color_frame = video_queue.get().getData()
+
+                            # Blend when both received
+                            if disparity_frame is not None and color_frame is not None:
+                                disparity_frame.tofile(depth_file)
+                                color_frame.tofile(video_file)"""
+
                         except:
                             logging.warning("There was an issue storing a time point.")
+                            break
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
@@ -249,4 +263,6 @@ class Camera(object):
 
 if __name__ == "__main__":
     cam = Camera()
-    cam.run()
+    cam.ready = True
+    cam.mode = True
+    cam.run(timestamps=Timestamps())
