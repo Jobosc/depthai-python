@@ -11,7 +11,8 @@ import logging
 import platform
 
 if platform.system() == "Linux":
-    from gpiozero import Button
+    from gpiozero import Button, Device
+    from gpiozero.pins.lgpio import LGPIOFactory
 
 
 class LightBarrier:
@@ -32,6 +33,7 @@ class LightBarrier:
             cls._instance = super(LightBarrier, cls).__new__(cls)
             logging.debug("Initiate Light Barrier instance.")
             if platform.system() == "Linux":
+                Device.pin_factory = LGPIOFactory()
                 cls.button = Button(4, pull_up=False)
                 cls.gpio_exist = True
         return cls._instance

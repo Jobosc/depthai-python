@@ -37,7 +37,7 @@ class ENVParser:
 
     def __init__(self) -> None:
         if platform.system() == "Linux":
-            load_dotenv("/home/pi/depthai-python/examples/CPDetector/basic-app/.env")
+            load_dotenv("/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/.env")
         else:
             load_dotenv("examples/CPDetector/basic-app/.env")
 
