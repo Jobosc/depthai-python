@@ -1,11 +1,19 @@
 import cv2
-import numpy as np
+import math
+
+def min_non_zero(arr):
+    # Filter out null (None) values
+    non_null_values = [x for x in arr if x != 0]
+    # Return the minimum value from the filtered list
+    return min(non_null_values) if non_null_values else None
 
 def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_MOUSEMOVE:
         # Get the pixel value at (x, y)
         pixel_value = param[y, x]
-        print(f"Pixel value at ({x}, {y}): {pixel_value}")
+        calc_pixel_value = 1 if pixel_value == 0 else pixel_value
+        depth_value = 1280 * (1 / (2 * math.tan((127 / 2) * (math.pi / 180)))) * (7.5 / calc_pixel_value)  # Convert pixel value to depth in centimeters
+        print(f"Pixel value at ({x}, {y}): {pixel_value} - Depth value: {depth_value:.2f} cm")
 
 def read_disparity_frame(video_path, frame_number):
     # Open the video file
@@ -36,11 +44,14 @@ def read_disparity_frame(video_path, frame_number):
     return frame
 
 # Example usage
-video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241126/6-1944301031BBED1200/disparity.mp4'
-frame_number = 10  # Frame number to read
+video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241216/depth.mp4'
+frame_number = 260  # Frame number to read
 disparity_frame = read_disparity_frame(video_path, frame_number)
 
 if disparity_frame is not None:
+    min_value = min_non_zero(disparity_frame.flatten())
+    print(f"The minimum non-zero value is: {min_value}")
+
     print(f"Disparity frame {frame_number} values:\n{disparity_frame}")
     # Display the frame
     cv2.imshow('Disparity Frame', disparity_frame)

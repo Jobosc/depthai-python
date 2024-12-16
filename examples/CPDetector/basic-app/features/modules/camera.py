@@ -78,19 +78,19 @@ class Camera(object):
         color.setCamera("color")
 
         monoLeft = pipeline.create(dai.node.MonoCamera)
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
         monoLeft.setFps(self.fps)
         monoLeft.setCamera("left")
 
         monoRight = pipeline.create(dai.node.MonoCamera)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
         monoRight.setFps(self.fps)
         monoRight.setCamera("right")
 
         stereo = pipeline.create(dai.node.StereoDepth)
-        stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
+        # stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
         #stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
-        stereo.setLeftRightCheck(True)
+        stereo.setLeftRightCheck(False)
         stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
         stereo.setSubpixel(False)
 
@@ -142,14 +142,15 @@ class Camera(object):
         # HFOVB in radiants is 2.2165681500327987
         # HFOVC in radiants is 2.2165681500327987
 
+        #dai.StereoDepthConfig.setDisparityShift(10)
              
         with dai.Device(pipeline) as device:
             logging.info(f"Camera started recording at: {datetime.now()}")
             timestamps.camera_start = datetime.now()
             current_state = 0
             startpoint = None
-            device.setIrLaserDotProjectorIntensity(0)
-            device.setIrFloodLightIntensity(0)
+            device.setIrLaserDotProjectorIntensity(1)
+            device.setIrFloodLightIntensity(1)
             logging.info("Set camera parameters for recording with OAK camera.")
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
