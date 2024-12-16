@@ -15,6 +15,7 @@ import logging
 import faicons as fa
 from shiny import render, reactive
 
+from features.modules.camera import Camera
 from features.modules.light_barrier import LightBarrier
 
 
@@ -41,12 +42,15 @@ class RecordLed:
         Returns:
             render.ui: The UI element representing the LED status.
         """
-        light_barrier = LightBarrier
+        camera = Camera()
+        light_barrier = LightBarrier()
 
         @render.ui
         def recording_led_update():
             reactive.invalidate_later(1)
-            if light_barrier.activated:
+            if not camera.running:
+                return fa.icon_svg(name="circle", fill="gray")
+            elif light_barrier.activated:
                 return fa.icon_svg(name="circle", fill="green")
             else:
                 return fa.icon_svg(name="circle", fill="red")
