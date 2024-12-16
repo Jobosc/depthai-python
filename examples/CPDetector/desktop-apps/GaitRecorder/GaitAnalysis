@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
 Name=GaitAnalysis
-Exec=/usr/bin/python3 -m shiny run --port 8080 /home/pi/depthai-python/examples/CPDetector/basic-app/app_core.py
-Icon=/home/pi/depthai-python/examples/CPDetector/desktop-apps/GaitRecorder/person-solid.svg
+Exec=/home/pi/Desktop/luxonis/depthai-python/.venv/bin/python3 -m shiny run --port 8080 /home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/app_core.py
+Icon=/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/desktop-apps/GaitRecorder/person-solid.svg
 Terminal=true
 Categories=Utility;Application;
