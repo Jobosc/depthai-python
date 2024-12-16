@@ -110,11 +110,13 @@ def header() -> ui.layout_columns:
         ui.markdown(
             f"{total / divisor:.2f}GB - Used: {used / divisor:.2f}GB - Free: {free / divisor:.2f}GB"
         ),
+        ui.output_ui("recording_led_update"),
+        ui.markdown("Recording active"),
         ui.output_ui("camera_led_update"),
         ui.markdown("Camera availability"),
         fill=False,
         fillable=True,
-        col_widths={"xs": (5, 1, 3, 1, 2)},
+        col_widths={"xs": (2, 1, 3, 1, 2, 1, 2)},
         gap="0em",
     )
 

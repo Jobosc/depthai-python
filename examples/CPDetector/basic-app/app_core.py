@@ -19,6 +19,7 @@ from features.interface.session_manager import SessionManager
 from features.interface.sidebar_buttons import SidebarButtons
 from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
+from features.modules.recording_led import RecordLed
 from features.modules.timestamps import Timestamps
 from features.reactivity.buttons_controller import ButtonsController
 from features.reactivity.metadata_controller import MetadataController
@@ -65,6 +66,7 @@ def server(input: Inputs, output: Outputs, session: Session):
     """
     initialize_logger()
     CameraLed.state()
+    RecordLed.state()
     SidebarButtons()
     CardValues()
     ModalRemover(input)
