@@ -48,7 +48,7 @@ class Camera(object):
         if cls._instance is None:
             logging.debug("Initiate camera instance.")
             cls._instance = super(Camera, cls).__new__(cls)
-            cls.encode = dai.VideoEncoderProperties.Profile.H265_MAIN
+            cls.encode = dai.VideoEncoderProperties.Profile.MJPEG
             cls.fps = 30
         return cls._instance
 
@@ -88,7 +88,7 @@ class Camera(object):
         monoRight.setCamera("right")
 
         stereo = pipeline.create(dai.node.StereoDepth)
-        # stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_ACCURACY)
+        stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         #stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
         stereo.setLeftRightCheck(False)
         stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
