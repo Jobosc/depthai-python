@@ -15,11 +15,39 @@ import shutil
 import subprocess
 from datetime import datetime, timedelta
 
+import cv2
+import numpy as np
+
 from features.modules.participant import read_participant_metadata
 from features.modules.time_window import TimeWindow
 from utils.parser import ENVParser
 
 env = ENVParser()
+
+
+def convert_npy_disparity_to_video(npy_file: str, output_file: str, fps: int = 30) -> None:
+    # Load the .npy file
+    data = np.load(npy_file)
+
+    # Normalize the frames to 0-255
+    data_normalized = ((data - data.min()) / (data.max() - data.min()) * 255).astype(np.uint8)
+
+    # Get the dimensions of the frames
+    num_frames, height, width = data_normalized.shape
+
+    # Define the codec and create VideoWriter object
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
+    output_video_path = output_file
+    video = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height), isColor=True)
+
+    # Write each frame to the video
+    for i in range(num_frames):
+        frame = data_normalized[i]
+        map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+        video.write(map_frame)
+
+    # Release the video writer object
+    video.release()
 
 
 def convert_individual_videos(day, person):
@@ -33,11 +61,8 @@ def convert_individual_videos(day, person):
     Yields:
         bool: True if the conversion was successful, False otherwise.
     """
-    file_extension = [".hevc", ".mp4"]
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
-    extensions = []
-    file_normpaths = []
 
     ## Output files
     metadata = read_participant_metadata(day, person)
@@ -47,16 +72,12 @@ def convert_individual_videos(day, person):
     for root, dirs, files in os.walk(input_path):
         for file in files:
             _, ext = os.path.splitext(file)
-            if ext in file_extension:
+            if ext == ".mp4":
                 name = os.path.join(root, file)
-
-                # Save file parameters
                 input_files.append(name)
-                extensions.append(ext)
 
                 # Save normpaths
                 base, _ = os.path.splitext(name)
-                file_normpaths.append(base)
 
                 # Create output folder
                 if os.path.exists(base):
@@ -65,21 +86,6 @@ def convert_individual_videos(day, person):
                 logging.debug("Prepared output folder for converted files.")
 
     logging.debug("All input files have been collected.")
-
-    # Find all files with existent mp4s which already have a hvec
-    list_of_duplicate_mp4s = []
-    for idx, file_np in enumerate(file_normpaths):
-        index = file_normpaths[idx:].index(file_np)
-        # In case of a duplicate file (without extension)
-        if index:
-            if extensions[index] == ".mp4":
-                list_of_duplicate_mp4s.append(index)
-            elif extensions[idx] == ".mp4":
-                list_of_duplicate_mp4s.append(idx)
-
-    # Remove all MP4s
-    for i in sorted(list_of_duplicate_mp4s, reverse=True):
-        del input_files[i]
 
     # Convert all files
     for input_file in input_files:
@@ -108,7 +114,7 @@ def convert_videos(input_file: str, output_file: str, time_start: datetime, time
     start_time = (time_window.start - time_start) + datetime.combine(datetime.min, env.video_delta_start) - datetime.min
     end_time = (time_window.end - time_window.start) + datetime.combine(datetime.min,
                                                                         env.video_delta_end) - datetime.min
-    
+
     logging.info(f"Conversion start time: {start_time}; Conversion end time: {end_time}")
     command = [
         "ffmpeg",
@@ -139,3 +145,9 @@ def __format_timedelta(time_difference: timedelta) -> str:
     milliseconds = int(time_difference.microseconds / 1000)
 
     return f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
+
+
+if "__main__" == __name__:
+    convert_npy_disparity_to_video(
+        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241217/DepthFrames.npy",
+        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241217/output.mp4")

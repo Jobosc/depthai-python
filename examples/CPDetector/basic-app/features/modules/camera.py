@@ -78,22 +78,21 @@ class Camera(object):
         color.setCamera("color")
 
         monoLeft = pipeline.create(dai.node.MonoCamera)
-        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
+        monoLeft.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
         monoLeft.setFps(self.fps)
-        monoLeft.setCamera("left")
 
         monoRight = pipeline.create(dai.node.MonoCamera)
-        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_720_P)
+        monoRight.setResolution(dai.MonoCameraProperties.SensorResolution.THE_800_P)
         monoRight.setFps(self.fps)
-        monoRight.setCamera("right")
 
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         stereo.initialConfig.setMedianFilter(dai.MedianFilter.MEDIAN_OFF)
-        stereo.setLeftRightCheck(False)
+        stereo.setLeftRightCheck(False)      # This is required to align Depth with Color. Otherwise set to False
         stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
         stereo.setSubpixel(True)
         stereo.setSubpixelFractionalBits(5)
+        #stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) #TODO: Check if required
 
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
@@ -110,13 +109,9 @@ class Camera(object):
             video_encoder_color.bitstream.link(xout_video.input)
 
             # Depth output node
-            video_encoder_depth = pipeline.create(dai.node.VideoEncoder)
-            video_encoder_depth.setDefaultProfilePreset(self.fps, self.encode)
-            stereo.disparity.link(video_encoder_depth.input)
-
-            xout_depth = pipeline.create(dai.node.XLinkOut)
-            xout_depth.setStreamName("disparity")
-            video_encoder_depth.bitstream.link(xout_depth.input)
+            frame_depth = pipeline.create(dai.node.XLinkOut)
+            frame_depth.setStreamName("disparity")
+            stereo.disparity.link(frame_depth.input)
 
             logging.info("Record video without stream.")
 
@@ -155,23 +150,22 @@ class Camera(object):
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
 
             if self.mode:  # Recording mode
+                depthFrames =[]
                 disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
                 video_queue = device.getOutputQueue(name="video", maxSize=self.fps, blocking=block)
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
                 os.makedirs(os.path.join(env.temp_path, day), exist_ok=True)
-                with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file, open(
-                        os.path.join(env.temp_path, day, "disparity.mp4"), 'wb') as depth_file:
+                with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file:
                     print("Recording started...")
                     logging.info(f"Camera started recording at: {datetime.now()}")
                     timestamps.camera_start = datetime.now()
                     while True:
                         try:
-                            while disparity_queue.has():
-                                disparity_queue.get().getData().tofile(depth_file)
-                            while video_queue.has():
-                                video_queue.get().getData().tofile(video_file)
+                            #while video_queue.has():
+                            video_queue.get().getData().tofile(video_file)
+                            depthFrames.append(disparity_queue.get().getFrame())
 
                             if not self.ready:
                                 if startpoint is not None:
@@ -196,6 +190,8 @@ class Camera(object):
                         except:
                             logging.warning("There was an issue storing a time point.")
                             break
+
+                    np.save(os.path.join(env.temp_path, day, f"disparity.npy"), np.array(depthFrames))
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()

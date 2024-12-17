@@ -12,6 +12,7 @@ import shutil
 from typing import List
 
 from features.file_operations.delete import delete_temporary_recordings
+from features.file_operations.video_processing import convert_npy_disparity_to_video
 from features.modules.participant import Participant
 from . import os, today, temporary_path, logging, storage_path
 
@@ -45,6 +46,8 @@ def move_data_from_temp_to_main_storage(folder_id: str, participant: Participant
 
     for root, _, files in os.walk(os.path.join(temporary_path, day)):
         for file in files:
+            if file.endswith(".npy"):   # Create the disparity video before moving all files
+                convert_npy_disparity_to_video(os.path.join(root, file), os.path.join(root, "disparity.mp4"))
             shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))  # Copy file
             logging.debug(
                 f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)} complete.")
