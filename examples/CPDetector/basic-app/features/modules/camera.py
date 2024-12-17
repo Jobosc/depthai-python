@@ -89,10 +89,11 @@ class Camera(object):
 
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
-        #stereo.initialConfig.setMedianFilter(dai.MedianFilter.KERNEL_7x7)
+        stereo.initialConfig.setMedianFilter(dai.MedianFilter.MEDIAN_OFF)
         stereo.setLeftRightCheck(False)
         stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
-        stereo.setSubpixel(False)
+        stereo.setSubpixel(True)
+        stereo.setSubpixelFractionalBits(5)
 
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
@@ -156,10 +157,8 @@ class Camera(object):
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
 
             if self.mode:  # Recording mode
-                disparity_queue = device.getOutputQueue(name="disparity", maxSize=50, blocking=block)
-                video_queue = device.getOutputQueue(name="video", maxSize=50, blocking=block)
-                color_frame = None
-                disparity_frame = None
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=self.fps, blocking=block)
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
@@ -194,18 +193,6 @@ class Camera(object):
                                     startpoint = None
                                     endpoint = None
                             current_state = state.activated
-
-
-                            """while disparity_queue.has():
-                                disparity_frame = disparity_queue.get().getData()
-                            while video_queue.has():
-                                color_frame = video_queue.get().getData()
-
-                            # Blend when both received
-                            if disparity_frame is not None and color_frame is not None:
-                                disparity_frame.tofile(depth_file)
-                                color_frame.tofile(video_file)"""
-
                         except:
                             logging.warning("There was an issue storing a time point.")
                             break

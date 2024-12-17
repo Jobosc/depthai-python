@@ -60,3 +60,4 @@ venv.bak/
 
 *site/
 *reference/
+*.npy
