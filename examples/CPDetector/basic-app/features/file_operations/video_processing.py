@@ -108,6 +108,8 @@ def convert_videos(input_file: str, output_file: str, time_start: datetime, time
     start_time = (time_window.start - time_start) + datetime.combine(datetime.min, env.video_delta_start) - datetime.min
     end_time = (time_window.end - time_window.start) + datetime.combine(datetime.min,
                                                                         env.video_delta_end) - datetime.min
+    
+    logging.info(f"Conversion start time: {start_time}; Conversion end time: {end_time}")
     command = [
         "ffmpeg",
         "-i", input_file,
