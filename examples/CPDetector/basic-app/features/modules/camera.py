@@ -145,8 +145,6 @@ class Camera(object):
         #dai.StereoDepthConfig.setDisparityShift(10)
              
         with dai.Device(pipeline) as device:
-            logging.info(f"Camera started recording at: {datetime.now()}")
-            timestamps.camera_start = datetime.now()
             current_state = 0
             startpoint = None
             device.setIrLaserDotProjectorIntensity(1)
@@ -167,6 +165,8 @@ class Camera(object):
                 with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file, open(
                         os.path.join(env.temp_path, day, "disparity.mp4"), 'wb') as depth_file:
                     print("Recording started...")
+                    logging.info(f"Camera started recording at: {datetime.now()}")
+                    timestamps.camera_start = datetime.now()
                     while True:
                         try:
                             while disparity_queue.has():
@@ -193,7 +193,7 @@ class Camera(object):
                                         timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
                                     startpoint = None
                                     endpoint = None
-                            current_state = state.activated
+                                current_state = state.activated
 
 
                             """while disparity_queue.has():
