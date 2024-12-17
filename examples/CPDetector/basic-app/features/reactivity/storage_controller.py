@@ -109,7 +109,7 @@ class StorageController:
                 amount_of_conversions += len(metadata.timestamps.time_windows) * 2
 
             for person in self.input.people_selector.get():
-                with ui.Progress(min=1, max=amount_of_conversions) as p:
+                with ui.Progress(min=0, max=amount_of_conversions) as p:
                     p.set(i,
                           message="Converting videos in progress",
                           detail="This will take a while...",

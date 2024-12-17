@@ -1,11 +1,6 @@
 import cv2
 import math
 
-def min_non_zero(arr):
-    # Filter out null (None) values
-    non_null_values = [x for x in arr if x != 0]
-    # Return the minimum value from the filtered list
-    return min(non_null_values) if non_null_values else None
 
 def mouse_callback(event, x, y, flags, param):
     if event == cv2.EVENT_MOUSEMOVE:
@@ -49,9 +44,6 @@ frame_number = 260  # Frame number to read
 disparity_frame = read_disparity_frame(video_path, frame_number)
 
 if disparity_frame is not None:
-    min_value = min_non_zero(disparity_frame.flatten())
-    print(f"The minimum non-zero value is: {min_value}")
-
     print(f"Disparity frame {frame_number} values:\n{disparity_frame}")
     # Display the frame
     cv2.imshow('Disparity Frame', disparity_frame)
