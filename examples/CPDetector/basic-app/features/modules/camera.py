@@ -144,8 +144,8 @@ class Camera(object):
         with dai.Device(pipeline) as device:
             current_state = 0
             startpoint = None
-            device.setIrLaserDotProjectorIntensity(1)
-            device.setIrFloodLightIntensity(1)
+            device.setIrLaserDotProjectorIntensity(1)   # Enhancement of depth perception
+            device.setIrFloodLightIntensity(0)          # Enhancement of low light performance
             logging.info("Set camera parameters for recording with OAK camera.")
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
@@ -261,17 +261,18 @@ if __name__ == "__main__":
     cam.mode = True
     cam.run(timestamps=Timestamps())
 
-    env = ENVParser()
-    day = datetime.now().strftime(env.date_format)
-    convert_npy_disparity_to_video(os.path.join(env.temp_path, day, f"disparity.npy"),
-                                   os.path.join(env.temp_path, day, "disparity.mp4"))
+    if cam.mode:
+        env = ENVParser()
+        day = datetime.now().strftime(env.date_format)
+        convert_npy_disparity_to_video(os.path.join(env.temp_path, day, f"disparity.npy"),
+                                       os.path.join(env.temp_path, day, "disparity.mp4"))
 
-    print("Converting color video...")
-    command = [
-        "ffmpeg",
-        "-i", os.path.join(env.temp_path, day, f"color.mp4"),
-        "-c:v", "libx264",
-        f"{os.path.join(env.temp_path, day, 'rgb.mp4')}",
-        "-y"
-    ]
-    subprocess.run(command)
+        print("Converting color video...")
+        command = [
+            "ffmpeg",
+            "-i", os.path.join(env.temp_path, day, f"color.mp4"),
+            "-c:v", "libx264",
+            f"{os.path.join(env.temp_path, day, 'rgb.mp4')}",
+            "-y"
+        ]
+        subprocess.run(command)

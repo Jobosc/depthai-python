@@ -29,8 +29,11 @@ print(f"Total number of disparity frames: {frame_count}")
 frame_count = count_frames(rgb_video_path)
 print(f"Total number of color frames: {frame_count}")
 
+
 # Load the .npy file
 depth_array = np.load(npy_path)
+frame_count = depth_array.shape[0]
+print(f"Total number of disparity_npy frames: {frame_count}")
 
 # Open the video files
 disparity_cap = cv2.VideoCapture(disparity_video_path)
