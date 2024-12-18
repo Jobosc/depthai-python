@@ -118,6 +118,7 @@ def convert_videos(input_file: str, output_file: str, time_start: datetime, time
     logging.info(f"Conversion start time: {start_time}; Conversion end time: {end_time}")
     command = [
         "ffmpeg",
+        "-framerate", "30",
         "-i", input_file,
         "-ss", __format_timedelta(start_time),
         "-t", __format_timedelta(end_time),

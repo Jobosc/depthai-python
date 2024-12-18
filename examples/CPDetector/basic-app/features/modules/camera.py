@@ -142,16 +142,18 @@ class Camera(object):
         # HFOVC in radiants is 2.2165681500327987
 
         with dai.Device(pipeline) as device:
-            current_state = 0
-            startpoint = None
+            #timestamps.camera_start = datetime.now()
+            #logging.info(f"Camera started recording at: {datetime.now()}")
             device.setIrLaserDotProjectorIntensity(1)   # Enhancement of depth perception
             device.setIrFloodLightIntensity(0)          # Enhancement of low light performance
             logging.info("Set camera parameters for recording with OAK camera.")
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
-
+            
             if self.mode:  # Recording mode
                 depthFrames = []
+                current_state = 0
+                startpoint = None
                 disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
                 video_queue = device.getOutputQueue(name="video", maxSize=self.fps, blocking=block)
 
