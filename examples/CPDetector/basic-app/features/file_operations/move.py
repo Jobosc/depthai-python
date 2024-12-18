@@ -28,7 +28,7 @@ def list_files_to_move() -> List[str]:
     for _, _, files in os.walk(os.path.join(temporary_path, str(today))):
         for file in files:
             all_files.append(file)
-    logging.debug("Collected all the files that need to be moved.")
+    logging.debug(f"A list of {len(all_files)} files has been collected to be moved.")
     return all_files
 
 

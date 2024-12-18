@@ -28,12 +28,10 @@ env = ENVParser()
 def convert_npy_disparity_to_video(npy_file: str, output_file: str, fps: int = 30) -> None:
     # Load the .npy file
     data = np.load(npy_file)
-
-    # Normalize the frames to 0-255
-    data_normalized = ((data - data.min()) / (data.max() - data.min()) * 255).astype(np.uint8)
+    logging.debug("Numpy file with depth values has been loaded")
 
     # Get the dimensions of the frames
-    num_frames, height, width = data_normalized.shape
+    num_frames, height, width = data.shape
 
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
@@ -41,13 +39,15 @@ def convert_npy_disparity_to_video(npy_file: str, output_file: str, fps: int = 3
     video = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height), isColor=True)
 
     # Write each frame to the video
+    logging.debug("Initialized the conversion of depth array to depth video.")
     for i in range(num_frames):
-        frame = data_normalized[i]
+        frame = cv2.normalize(data[i], None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
         map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
         video.write(map_frame)
 
     # Release the video writer object
     video.release()
+    logging.debug("Depth video conversion complete.")
 
 
 def convert_individual_videos(day, person):
