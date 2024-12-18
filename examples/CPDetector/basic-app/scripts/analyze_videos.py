@@ -2,9 +2,9 @@ import cv2
 import numpy as np
 
 # Paths to the video files and the .npy file
-disparity_video_path = '/Users/johnuroko/Downloads/depth/disparity.mp4'
-rgb_video_path = '/Users/johnuroko/Downloads/depth/rgb.mp4'
-npy_path = '/Users/johnuroko/Downloads/depth/disparity.npy'
+disparity_video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241218/disparity.mp4'
+rgb_video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241218/rgb.mp4'
+npy_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241218/disparity.npy'
 
 def count_frames(video_path):
     # Open the video file
@@ -58,22 +58,20 @@ def show_frames(frame_number):
         return
 
     # Display the frames
-    cv2.imshow('Disparity Video', disparity_frame)
     cv2.imshow('RGB Video', rgb_frame)
+    cv2.imshow('Disparity Video', disparity_frame)
+
 
     # Mouse callback function to print pixel values
     def mouse_callback(event, x, y, flags, param):
         if event == cv2.EVENT_MOUSEMOVE:
-            print(f"Pixel value at ({x}, {y}): {depth_array[frame_number, y, x]}")
-            # TODO: Calculate depth value from pixel value correctly!!!
-            # depth_value = 1280 * (1 / (2 * math.tan((127 / 2) * (math.pi / 180)))) * (7.5 / calc_pixel_value)  # Convert pixel value to depth in centimeters
-            # print(f"Pixel value at ({x}, {y}): {pixel_value} - Depth value: {depth_value:.2f} cm")
+            print(f"Pixel value at ({x}, {y}): {depth_array[frame_number, y, x]}mm")
 
     # Set the mouse callback function
     cv2.setMouseCallback('Disparity Video', mouse_callback)
 
 # Display a specific frame (e.g., frame number 100)
-frame_number = 100
+frame_number = 0
 if frame_number < total_frames:
     show_frames(frame_number)
 else:
@@ -84,13 +82,20 @@ def handle_key_events():
     global frame_number
     while True:
         key = cv2.waitKey(0) & 0xFF
-        if key == ord('n'):  # Move to the next frame when 'n' is pressed
+        if key == ord("m"):  # Right arrow key
             frame_number += 1
             if frame_number < total_frames:
                 show_frames(frame_number)
             else:
                 print("Reached the end of the video.")
                 break
+        elif key == ord("n"):  # Left arrow key
+            frame_number -= 1
+            if frame_number >= 0:
+                show_frames(frame_number)
+            else:
+                print("Reached the beginning of the video.")
+                frame_number = 0
         elif key == ord('q'):  # Quit when 'q' is pressed
             break
 
