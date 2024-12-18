@@ -88,11 +88,14 @@ class Camera(object):
         stereo = pipeline.create(dai.node.StereoDepth)
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         stereo.initialConfig.setMedianFilter(dai.MedianFilter.MEDIAN_OFF)
-        stereo.setLeftRightCheck(False)      # This is required to align Depth with Color. Otherwise set to False
-        stereo.setExtendedDisparity(False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
+        dai.RawStereoDepthConfig.PostProcessing.SpeckleFilter()
+        #stereo.initialConfig.setDisparityShift(10)
+        stereo.setLeftRightCheck(False)  # This is required to align Depth with Color. Otherwise set to False
+        stereo.setExtendedDisparity(
+            False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
         stereo.setSubpixel(True)
         stereo.setSubpixelFractionalBits(5)
-        #stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) #TODO: Check if required
+        # stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) #TODO: Check if required
 
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
@@ -111,7 +114,7 @@ class Camera(object):
             # Depth output node
             frame_depth = pipeline.create(dai.node.XLinkOut)
             frame_depth.setStreamName("disparity")
-            stereo.disparity.link(frame_depth.input)
+            stereo.depth.link(frame_depth.input)
 
             logging.info("Record video without stream.")
 
@@ -138,8 +141,6 @@ class Camera(object):
         # HFOVB in radiants is 2.2165681500327987
         # HFOVC in radiants is 2.2165681500327987
 
-        #dai.StereoDepthConfig.setDisparityShift(10)
-             
         with dai.Device(pipeline) as device:
             current_state = 0
             startpoint = None
@@ -150,7 +151,7 @@ class Camera(object):
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
 
             if self.mode:  # Recording mode
-                depthFrames =[]
+                depthFrames = []
                 disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
                 video_queue = device.getOutputQueue(name="video", maxSize=self.fps, blocking=block)
 
@@ -163,7 +164,7 @@ class Camera(object):
                     timestamps.camera_start = datetime.now()
                     while True:
                         try:
-                            #while video_queue.has():
+                            # while video_queue.has():
                             video_queue.get().getData().tofile(video_file)
                             depthFrames.append(disparity_queue.get().getFrame())
 
@@ -212,7 +213,6 @@ class Camera(object):
 
             return 1
 
-
     @property
     def camera_connection(self) -> bool:
         """
@@ -253,7 +253,25 @@ class Camera(object):
 
 
 if __name__ == "__main__":
+    from features.file_operations.video_processing import convert_npy_disparity_to_video
+    import subprocess
+
     cam = Camera()
     cam.ready = True
     cam.mode = True
     cam.run(timestamps=Timestamps())
+
+    env = ENVParser()
+    day = datetime.now().strftime(env.date_format)
+    convert_npy_disparity_to_video(os.path.join(env.temp_path, day, f"disparity.npy"),
+                                   os.path.join(env.temp_path, day, "disparity.mp4"))
+
+    print("Converting color video...")
+    command = [
+        "ffmpeg",
+        "-i", os.path.join(env.temp_path, day, f"color.mp4"),
+        "-c:v", "libx264",
+        f"{os.path.join(env.temp_path, day, 'rgb.mp4')}",
+        "-y"
+    ]
+    subprocess.run(command)
