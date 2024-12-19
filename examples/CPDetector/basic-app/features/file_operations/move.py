@@ -45,15 +45,18 @@ def move_data_from_temp_to_main_storage(folder_id: str, participant: Participant
     os.makedirs(destination_path, exist_ok=True)
 
     # Create the disparity video before moving all files
-    convert_npy_files_to_video(os.path.join(temporary_path, day, "depth_frames"), "depth.mp4", True)
-    convert_npy_files_to_video(os.path.join(temporary_path, day, "rgb_frames"), "rgb.mp4", False)
+    #convert_npy_files_to_video(os.path.join(temporary_path, day, "depth_frames"), "depth.mp4", True)
+    #convert_npy_files_to_video(os.path.join(temporary_path, day, "rgb_frames"), "rgb.mp4", False)
 
-    for root, _, files in os.walk(os.path.join(temporary_path, day)):
+    for root, directory, files in os.walk(os.path.join(temporary_path, day)):
+        for dir in directory:
+            os.makedirs(os.path.join(destination_path, dir), exist_ok=True)
         for file in files:
-
-            shutil.copy2(os.path.join(root, file), os.path.join(destination_path, file))  # Copy file
+            norm_path = os.path.normpath(root)
+            folder = os.path.basename(norm_path)
+            shutil.copy2(os.path.join(root, file), os.path.join(destination_path, folder, file))  # Copy file
             logging.debug(
-                f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, file)} complete.")
+                f"Moving file: {os.path.join(root, file)} to {os.path.join(destination_path, folder, file)} complete.")
             yield True
     participant.store_participant_metadata(os.path.join(storage_path, day, folder_id))
 
