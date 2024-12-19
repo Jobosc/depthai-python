@@ -31,7 +31,6 @@ class Camera(object):
     Attributes:
         _instance (Camera): Singleton instance of the Camera class.
         running (bool): Indicates if the camera is currently running.
-        encode (dai.VideoEncoderProperties.Profile): The encoding profile for the video.
         fps (int): Frames per second for the camera.
         _ready (bool): Indicates if the camera is ready.
         _mode (bool): Indicates the mode of the camera (recording or viewing).
@@ -39,7 +38,6 @@ class Camera(object):
 
     _instance = None
     running = False
-    encode = None
     fps = None
     _ready = False
     _mode = False
@@ -48,7 +46,6 @@ class Camera(object):
         if cls._instance is None:
             logging.debug("Initiate camera instance.")
             cls._instance = super(Camera, cls).__new__(cls)
-            cls.encode = dai.VideoEncoderProperties.Profile.MJPEG
             cls.fps = 30
         return cls._instance
 
@@ -93,23 +90,18 @@ class Camera(object):
         stereo.setLeftRightCheck(False)  # This is required to align Depth with Color. Otherwise set to False
         stereo.setExtendedDisparity(
             False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
-        stereo.setSubpixel(True)
-        stereo.setSubpixelFractionalBits(5)
+        stereo.setSubpixel(False)
+        #stereo.setSubpixelFractionalBits(5)
         # stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) #TODO: Check if required
 
         monoLeft.out.link(stereo.left)
         monoRight.out.link(stereo.right)
 
         if self.mode:  # Recording mode
-            # Video encoder node
-            video_encoder_color = pipeline.create(dai.node.VideoEncoder)
-            video_encoder_color.setDefaultProfilePreset(self.fps, self.encode)
-            color.video.link(video_encoder_color.input)
-
             # Color output node
-            xout_video = pipeline.create(dai.node.XLinkOut)
-            xout_video.setStreamName("video")
-            video_encoder_color.bitstream.link(xout_video.input)
+            frame_color = pipeline.create(dai.node.XLinkOut)
+            frame_color.setStreamName("video")
+            color.video.link(frame_color.input)
 
             # Depth output node
             frame_depth = pipeline.create(dai.node.XLinkOut)
@@ -117,7 +109,6 @@ class Camera(object):
             stereo.depth.link(frame_depth.input)
 
             logging.info("Record video without stream.")
-
 
         else:  # Viewing mode
             color.setIspScale(1, 2)
@@ -134,13 +125,6 @@ class Camera(object):
 
             logging.info("View video without recording.")
 
-        # import numpy as np
-        # HFOV = np.deg2rad(dai.Device().readCalibration().getFov(dai.CameraBoardSocket.CAM_A, useSpec=True))
-        # print(f"The HFOV in radiants is: {HFOV}")
-        # HFOVA in radiants is 1.8849555921538759
-        # HFOVB in radiants is 2.2165681500327987
-        # HFOVC in radiants is 2.2165681500327987
-
         with dai.Device(pipeline) as device:
             #timestamps.camera_start = datetime.now()
             #logging.info(f"Camera started recording at: {datetime.now()}")
@@ -151,7 +135,6 @@ class Camera(object):
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
             
             if self.mode:  # Recording mode
-                depthFrames = []
                 current_state = 0
                 startpoint = None
                 disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
@@ -160,41 +143,43 @@ class Camera(object):
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
                 os.makedirs(os.path.join(env.temp_path, day), exist_ok=True)
-                with open(os.path.join(env.temp_path, day, "color.mp4"), 'wb') as video_file:
-                    print("Recording started...")
-                    logging.info(f"Camera started recording at: {datetime.now()}")
-                    timestamps.camera_start = datetime.now()
-                    while True:
-                        try:
-                            # while video_queue.has():
-                            video_queue.get().getData().tofile(video_file)
-                            depthFrames.append(disparity_queue.get().getFrame())
+                depth_frames_path = os.path.join(env.temp_path, day, "depth_frames")
+                os.makedirs(depth_frames_path, exist_ok=True)
+                rgb_frames_path = os.path.join(env.temp_path, day, "rgb_frames")
+                os.makedirs(rgb_frames_path, exist_ok=True)
 
-                            if not self.ready:
-                                if startpoint is not None:
-                                    endpoint = datetime.now()
-                                    logging.info(f"Light barrier triggered to end at: {endpoint}")
-                                    if endpoint - startpoint > timedelta(seconds=2):
-                                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                                break
+                print("Recording started...")
+                logging.info(f"Camera started recording at: {datetime.now()}")
+                timestamps.camera_start = datetime.now()
+                while True:
+                    try:
+                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
+                        np.save(os.path.join(depth_frames_path, f"{timestamp}.npy"), disparity_queue.get().getFrame())
+                        np.save(os.path.join(rgb_frames_path, f"{timestamp}.npy"), video_queue.get().getCvFrame())
 
-                            if current_state != state.activated:
-                                if state.activated:
-                                    startpoint = datetime.now()
-                                    logging.info(f"Light barrier triggered to start at: {startpoint}")
-                                else:
-                                    endpoint = datetime.now()
-                                    logging.info(f"Light barrier triggered to end at: {endpoint}")
-                                    if endpoint - startpoint > timedelta(seconds=2):
-                                        timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                                    startpoint = None
-                                    endpoint = None
-                                current_state = state.activated
-                        except:
-                            logging.warning("There was an issue storing a time point.")
+                        if not self.ready:
+                            if startpoint is not None:
+                                endpoint = datetime.now()
+                                logging.info(f"Light barrier triggered to end at: {endpoint}")
+                                if endpoint - startpoint > timedelta(seconds=2):
+                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
                             break
 
-                    np.save(os.path.join(env.temp_path, day, f"disparity.npy"), np.array(depthFrames))
+                        if current_state != state.activated:
+                            if state.activated:
+                                startpoint = datetime.now()
+                                logging.info(f"Light barrier triggered to start at: {startpoint}")
+                            else:
+                                endpoint = datetime.now()
+                                logging.info(f"Light barrier triggered to end at: {endpoint}")
+                                if endpoint - startpoint > timedelta(seconds=2):
+                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
+                                startpoint = None
+                                endpoint = None
+                            current_state = state.activated
+                    except:
+                        logging.warning("There was an issue storing a time point.")
+                        break
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
@@ -255,8 +240,10 @@ class Camera(object):
 
 
 if __name__ == "__main__":
-    from features.file_operations.video_processing import convert_npy_disparity_to_video
-    import subprocess
+    from features.file_operations.video_processing import convert_npy_files_to_video
+    from features.file_operations.delete import delete_temporary_recordings
+
+    delete_temporary_recordings()
 
     cam = Camera()
     cam.ready = True
@@ -266,15 +253,5 @@ if __name__ == "__main__":
     if cam.mode:
         env = ENVParser()
         day = datetime.now().strftime(env.date_format)
-        convert_npy_disparity_to_video(os.path.join(env.temp_path, day, f"disparity.npy"),
-                                       os.path.join(env.temp_path, day, "disparity.mp4"))
-
-        print("Converting color video...")
-        command = [
-            "ffmpeg",
-            "-i", os.path.join(env.temp_path, day, f"color.mp4"),
-            "-c:v", "libx264",
-            f"{os.path.join(env.temp_path, day, 'rgb.mp4')}",
-            "-y"
-        ]
-        subprocess.run(command)
+        convert_npy_files_to_video(os.path.join(env.temp_path, day, "depth_frames"), "depth.mp4", True)
+        convert_npy_files_to_video(os.path.join(env.temp_path, day, "rgb_frames"), "rgb.mp4", False)

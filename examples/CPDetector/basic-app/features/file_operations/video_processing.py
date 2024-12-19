@@ -25,30 +25,51 @@ from utils.parser import ENVParser
 env = ENVParser()
 
 
-def convert_npy_disparity_to_video(npy_file: str, output_file: str, fps: int = 30) -> None:
-    # Load the .npy file
-    data = np.load(npy_file)
-    logging.debug("Numpy file with depth values has been loaded")
+def convert_npy_files_to_video(path_of_frames: str, output_name: str, depth: bool) -> None:
 
-    # Get the dimensions of the frames
-    num_frames, height, width = data.shape
+    # List all files in the directories
+    npy_files = [f for f in os.listdir(path_of_frames) if f.endswith('.npy')]
 
+    # Sort files based on timestamps in filenames
+    npy_files.sort(key=lambda x: datetime.strptime(x.split('.')[0], "%Y%m%d_%H%M%S%f"))
+
+    # Calculate FPS from timestamps
+    timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
+    time_diffs = [(timestamps[i] - timestamps[i-1]).total_seconds() for i in range(1, len(timestamps))]
+    avg_time_diff = sum(time_diffs) / len(time_diffs)
+    fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
+
+    print(f"Number of FPS: {fps}")
+
+    # Load the first frame to get the dimensions
+    first_frame = np.load(os.path.join(path_of_frames, npy_files[0]))
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
-    output_video_path = output_file
-    video = cv2.VideoWriter(output_video_path, fourcc, fps, (width, height), isColor=True)
 
     # Write each frame to the video
-    logging.debug("Initialized the conversion of depth array to depth video.")
-    for i in range(num_frames):
-        frame = cv2.normalize(data[i], None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-        map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-        video.write(map_frame)
+    try:
+        if depth:
+            height, width = first_frame.shape
+            video = cv2.VideoWriter(os.path.join(path_of_frames, "..", output_name), fourcc, fps, (width, height),
+                                    isColor=True)
 
-    # Release the video writer object
+            for npy_file in npy_files:
+                frame = np.load(os.path.join(path_of_frames, npy_file))
+                frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+                map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                video.write(map_frame)
+        else:
+            height, width, channel = first_frame.shape
+            video = cv2.VideoWriter(os.path.join(path_of_frames, "..", output_name), fourcc, fps, (width, height),
+                                    isColor=True)
+            for npy_file in npy_files:
+                frame = np.load(os.path.join(path_of_frames, npy_file))
+                video.write(frame)
+    except EOFError:
+        pass
+
     video.release()
-    logging.debug("Depth video conversion complete.")
-
+    print("Video conversions complete.")
 
 def convert_individual_videos(day, person):
     """
@@ -118,7 +139,6 @@ def convert_videos(input_file: str, output_file: str, time_start: datetime, time
     logging.info(f"Conversion start time: {start_time}; Conversion end time: {end_time}")
     command = [
         "ffmpeg",
-        "-framerate", "30",
         "-i", input_file,
         "-ss", __format_timedelta(start_time),
         "-t", __format_timedelta(end_time),
@@ -149,6 +169,5 @@ def __format_timedelta(time_difference: timedelta) -> str:
 
 
 if "__main__" == __name__:
-    convert_npy_disparity_to_video(
-        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241217/DepthFrames.npy",
-        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241217/output.mp4")
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241219/depth_frames", "depth.mp4", True)
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241219/rgb_frames", "rgb.mp4", False)
