@@ -9,7 +9,6 @@ Classes:
 Methods:
     run: Starts the camera recording process.
 """
-import asyncio
 import logging
 import os
 from datetime import datetime, timedelta
@@ -41,6 +40,7 @@ class Camera(object):
     fps = None
     _ready = False
     _mode = False
+    _storing_data = False
 
     def __init__(self):
         self.rgb_frames_path = None
@@ -53,7 +53,7 @@ class Camera(object):
             cls.fps = 30
         return cls._instance
 
-    async def run(self, timestamps: Timestamps, block=False) -> int:
+    def run(self, timestamps: Timestamps, block=False) -> int:
         """
         Starts the camera recording process.
 
@@ -160,15 +160,10 @@ class Camera(object):
                 timestamps.camera_start = datetime.now()
                 while True:
                     try:
-                        depth_frame = disparity_queue.get().getFrame()
-                        rgb_frame = video_queue.get().getCvFrame()
-                        depth_frames.append(depth_frame)
-                        rgb_frames.append(rgb_frame)
-
-                        if len(depth_frames) == self.fps * 10:
-                            asyncio.create_task(self.__save_frames(depth_frames, rgb_frames))
+                        """if len(depth_frames) == self.fps * 10:
+                            self.__save_frames(depth_frames, rgb_frames)
                             depth_frames = []
-                            rgb_frames = []
+                            rgb_frames = []"""
 
                         if not self.ready:
                             if startpoint is not None:
@@ -190,10 +185,24 @@ class Camera(object):
                                 startpoint = None
                                 endpoint = None
                             current_state = state.activated
+
+                        if current_state and len(depth_frames) < self.fps * 10:
+                            depth_frame = disparity_queue.get().getFrame()
+                            rgb_frame = video_queue.get().getCvFrame()
+                            depth_frames.append(depth_frame)
+                            rgb_frames.append(rgb_frame)
+                        else:
+                            self._storing_data = True
+                            self.__save_frames(depth_frames, rgb_frames)
+                            self._storing_data = False
+
+                            depth_frames = []
+                            rgb_frames = []
+
                     except:
                         logging.warning("There was an issue storing a time point.")
                         break
-                asyncio.create_task(self.__save_frames(depth_frames, rgb_frames))
+                self.__save_frames(depth_frames, rgb_frames)
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
@@ -214,7 +223,7 @@ class Camera(object):
 
             return 1
 
-    async def __save_frames(self, depth_frames, rgb_frames):
+    def __save_frames(self, depth_frames, rgb_frames):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
         logging.info(f"Saving frames at: {timestamp}")
         np.save(os.path.join(self.depth_frames_path, f"{timestamp}.npy"), np.array(depth_frames))
@@ -234,6 +243,10 @@ class Camera(object):
     @property
     def ready(self) -> bool:
         return self._ready
+
+    @property
+    def storing_data(self) -> bool:
+        return self._storing_data
 
     @ready.setter
     def ready(self, value: bool):
@@ -269,7 +282,7 @@ if __name__ == "__main__":
     cam = Camera()
     cam.ready = True
     cam.mode = True
-    asyncio.run(cam.run(timestamps=Timestamps()))
+    cam.run(timestamps=Timestamps())
 
     if cam.mode:
         env = ENVParser()

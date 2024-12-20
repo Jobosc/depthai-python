@@ -7,7 +7,7 @@ It sets up various UI components, initializes logging, and handles camera operat
 Usage:
     Run this script to start the Gait Recording GUI application.
 """
-import asyncio
+
 import os
 import threading
 
@@ -50,7 +50,7 @@ def camera_handler():
     """
     while True:
         if camera.ready and not camera.running:
-            asyncio.run(camera.run(timestamps=timestamps))
+            camera.run(timestamps=timestamps)
 
 
 def server(input: Inputs, output: Outputs, session: Session):

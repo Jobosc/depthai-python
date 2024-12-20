@@ -46,9 +46,9 @@ class CameraLed:
         @render.ui
         def camera_led_update():
             reactive.invalidate_later(1)
-            if camera.running:
+            if camera.running and not camera.storing_data:
                 return fa.icon_svg(name="circle", fill="deepskyblue")
-            elif camera.camera_connection:
+            elif camera.camera_connection and not camera.storing_data:
                 return fa.icon_svg(name="circle", fill="green")
             else:
                 return fa.icon_svg(name="circle", fill="red")
