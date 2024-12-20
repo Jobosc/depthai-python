@@ -42,37 +42,37 @@ def convert_npy_files_to_video(path_of_frames: str, output_name: str, depth: boo
 
     print(f"Number of FPS: {fps}")
 
-    # Load the first frame to get the dimensions
-    first_frame = np.load(os.path.join(path_of_frames, npy_files[0]))[0]
-    # Define the codec and create VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
+    for idx, npy_file in enumerate(npy_files):
+        # Load the first frame to get the dimensions
+        session = np.load(os.path.join(path_of_frames, npy_file))
+        # Define the codec and create VideoWriter object
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
 
-    # Write each frame to the video
-    try:
-        if depth:
-            height, width = first_frame.shape
-            video = cv2.VideoWriter(os.path.join(path_of_frames, "..", output_name), fourcc, fps, (width, height),
-                                    isColor=True)
+        # Write each frame to the video
+        try:
+            path = os.path.join(path_of_frames, "..", f"{output_name}_{idx}.mp4")
+            frames = np.load(os.path.join(path_of_frames, npy_file))
+            if depth:
+                height, width = session[0].shape
+                video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
 
-            for npy_file in npy_files:
-                frames = np.load(os.path.join(path_of_frames, npy_file))
                 for frame in frames:
                     frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
                     map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
                     video.write(map_frame)
-        else:
-            height, width, channel = first_frame.shape
-            video = cv2.VideoWriter(os.path.join(path_of_frames, "..", output_name), fourcc, fps, (width, height),
-                                    isColor=True)
-            for npy_file in npy_files:
-                frames = np.load(os.path.join(path_of_frames, npy_file))
+            else:
+                height, width, channel = session[0].shape
+                video = cv2.VideoWriter(path, fourcc, fps, (width, height),  isColor=True)
+
                 for frame in frames:
                     video.write(frame)
-    except EOFError:
-        pass
 
-    video.release()
-    print("Video conversions complete.")
+            video.release()
+            print("Video conversions complete.")
+        except EOFError:
+            pass
+
+
 
 def convert_individual_videos(day, person):
     """
@@ -90,8 +90,8 @@ def convert_individual_videos(day, person):
 
 
     # Create videos before conversion
-    #convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), "depth.mp4", True)
-    convert_npy_files_to_video(os.path.join(input_path, "rgb_frames"), "rgb.mp4", False)
+    #convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), "depth", True)
+    convert_npy_files_to_video(os.path.join(input_path, "rgb_frames"), "rgb", False)
 
     ## Output files
     metadata = read_participant_metadata(day, person)
@@ -177,5 +177,5 @@ def __format_timedelta(time_difference: timedelta) -> str:
 
 
 if "__main__" == __name__:
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/depth_frames", "depth.mp4", True)
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/rgb_frames", "rgb.mp4", False)
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/depth_frames", "depth", True)
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/rgb_frames", "rgb", False)
