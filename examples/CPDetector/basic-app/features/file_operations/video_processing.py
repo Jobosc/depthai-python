@@ -88,12 +88,13 @@ def convert_individual_videos(day, person):
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
     input_files = []
 
-    ## Output files
-    metadata = read_participant_metadata(day, person)
 
     # Create videos before conversion
     #convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), "depth.mp4", True)
     convert_npy_files_to_video(os.path.join(input_path, "rgb_frames"), "rgb.mp4", False)
+
+    ## Output files
+    metadata = read_participant_metadata(day, person)
 
     ## Input files
     # Collect all video material files

@@ -9,7 +9,7 @@ Classes:
 Methods:
     run: Starts the camera recording process.
 """
-
+import asyncio
 import logging
 import os
 from datetime import datetime, timedelta
@@ -22,7 +22,6 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-import threading
 
 
 class Camera(object):
@@ -54,7 +53,7 @@ class Camera(object):
             cls.fps = 30
         return cls._instance
 
-    def run(self, timestamps: Timestamps, block=False) -> int:
+    async def run(self, timestamps: Timestamps, block=False) -> int:
         """
         Starts the camera recording process.
 
@@ -167,8 +166,7 @@ class Camera(object):
                         rgb_frames.append(rgb_frame)
 
                         if len(depth_frames) == self.fps * 10:
-                            save_thread = threading.Thread(target=self.__save_frames, args=(depth_frames, rgb_frames))
-                            save_thread.start()
+                            asyncio.create_task(self.__save_frames(depth_frames, rgb_frames))
                             depth_frames = []
                             rgb_frames = []
 
@@ -195,8 +193,7 @@ class Camera(object):
                     except:
                         logging.warning("There was an issue storing a time point.")
                         break
-                save_thread = threading.Thread(target=self.__save_frames, args=(depth_frames, rgb_frames))
-                save_thread.start()
+                asyncio.create_task(self.__save_frames(depth_frames, rgb_frames))
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
@@ -217,10 +214,12 @@ class Camera(object):
 
             return 1
 
-    def __save_frames(self, depth_frames, rgb_frames):
+    async def __save_frames(self, depth_frames, rgb_frames):
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
+        logging.info(f"Saving frames at: {timestamp}")
         np.save(os.path.join(self.depth_frames_path, f"{timestamp}.npy"), np.array(depth_frames))
         np.save(os.path.join(self.rgb_frames_path, f"{timestamp}.npy"), np.array(rgb_frames))
+        logging.info(f"Frames saved at: {timestamp}")
 
     @property
     def camera_connection(self) -> bool:
@@ -270,7 +269,7 @@ if __name__ == "__main__":
     cam = Camera()
     cam.ready = True
     cam.mode = True
-    cam.run(timestamps=Timestamps())
+    asyncio.run(cam.run(timestamps=Timestamps()))
 
     if cam.mode:
         env = ENVParser()

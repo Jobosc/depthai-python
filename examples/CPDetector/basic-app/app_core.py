@@ -7,7 +7,7 @@ It sets up various UI components, initializes logging, and handles camera operat
 Usage:
     Run this script to start the Gait Recording GUI application.
 """
-
+import asyncio
 import os
 import threading
 
@@ -50,7 +50,7 @@ def camera_handler():
     """
     while True:
         if camera.ready and not camera.running:
-            camera.run(timestamps=timestamps)
+            asyncio.run(camera.run(timestamps=timestamps))
 
 
 def server(input: Inputs, output: Outputs, session: Session):
@@ -82,4 +82,4 @@ def server(input: Inputs, output: Outputs, session: Session):
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})
 
-#Save files from any day. Not just today
+# Save files from any day. Not just today
