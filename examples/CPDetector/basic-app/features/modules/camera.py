@@ -22,6 +22,7 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
+import threading
 
 
 class Camera(object):
@@ -41,6 +42,10 @@ class Camera(object):
     fps = None
     _ready = False
     _mode = False
+
+    def __init__(self):
+        self.rgb_frames_path = None
+        self.depth_frames_path = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -143,19 +148,29 @@ class Camera(object):
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
                 os.makedirs(os.path.join(env.temp_path, day), exist_ok=True)
-                depth_frames_path = os.path.join(env.temp_path, day, "depth_frames")
-                os.makedirs(depth_frames_path, exist_ok=True)
-                rgb_frames_path = os.path.join(env.temp_path, day, "rgb_frames")
-                os.makedirs(rgb_frames_path, exist_ok=True)
+                self.depth_frames_path = os.path.join(env.temp_path, day, "depth_frames")
+                os.makedirs(self.depth_frames_path, exist_ok=True)
+                self.rgb_frames_path = os.path.join(env.temp_path, day, "rgb_frames")
+                os.makedirs(self.rgb_frames_path, exist_ok=True)
+
+                depth_frames = []
+                rgb_frames = []
 
                 print("Recording started...")
                 logging.info(f"Camera started recording at: {datetime.now()}")
                 timestamps.camera_start = datetime.now()
                 while True:
                     try:
-                        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
-                        np.save(os.path.join(depth_frames_path, f"{timestamp}.npy"), disparity_queue.get().getFrame())
-                        np.save(os.path.join(rgb_frames_path, f"{timestamp}.npy"), video_queue.get().getCvFrame())
+                        depth_frame = disparity_queue.get().getFrame()
+                        rgb_frame = video_queue.get().getCvFrame()
+                        depth_frames.append(depth_frame)
+                        rgb_frames.append(rgb_frame)
+
+                        if len(depth_frames) == self.fps * 10:
+                            save_thread = threading.Thread(target=self.__save_frames, args=(depth_frames, rgb_frames))
+                            save_thread.start()
+                            depth_frames = []
+                            rgb_frames = []
 
                         if not self.ready:
                             if startpoint is not None:
@@ -180,6 +195,8 @@ class Camera(object):
                     except:
                         logging.warning("There was an issue storing a time point.")
                         break
+                save_thread = threading.Thread(target=self.__save_frames, args=(depth_frames, rgb_frames))
+                save_thread.start()
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
@@ -199,6 +216,11 @@ class Camera(object):
             self.running = False
 
             return 1
+
+    def __save_frames(self, depth_frames, rgb_frames):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
+        np.save(os.path.join(self.depth_frames_path, f"{timestamp}.npy"), np.array(depth_frames))
+        np.save(os.path.join(self.rgb_frames_path, f"{timestamp}.npy"), np.array(rgb_frames))
 
     @property
     def camera_connection(self) -> bool:

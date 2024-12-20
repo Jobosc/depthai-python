@@ -34,15 +34,16 @@ def convert_npy_files_to_video(path_of_frames: str, output_name: str, depth: boo
     npy_files.sort(key=lambda x: datetime.strptime(x.split('.')[0], "%Y%m%d_%H%M%S%f"))
 
     # Calculate FPS from timestamps
-    timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
+    """timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
     time_diffs = [(timestamps[i] - timestamps[i-1]).total_seconds() for i in range(1, len(timestamps))]
     avg_time_diff = sum(time_diffs) / len(time_diffs)
-    fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
+    fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0"""
+    fps = 30
 
     print(f"Number of FPS: {fps}")
 
     # Load the first frame to get the dimensions
-    first_frame = np.load(os.path.join(path_of_frames, npy_files[0]))
+    first_frame = np.load(os.path.join(path_of_frames, npy_files[0]))[0]
     # Define the codec and create VideoWriter object
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
 
@@ -54,17 +55,19 @@ def convert_npy_files_to_video(path_of_frames: str, output_name: str, depth: boo
                                     isColor=True)
 
             for npy_file in npy_files:
-                frame = np.load(os.path.join(path_of_frames, npy_file))
-                frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-                map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-                video.write(map_frame)
+                frames = np.load(os.path.join(path_of_frames, npy_file))
+                for frame in frames:
+                    frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+                    map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                    video.write(map_frame)
         else:
             height, width, channel = first_frame.shape
             video = cv2.VideoWriter(os.path.join(path_of_frames, "..", output_name), fourcc, fps, (width, height),
                                     isColor=True)
             for npy_file in npy_files:
-                frame = np.load(os.path.join(path_of_frames, npy_file))
-                video.write(frame)
+                frames = np.load(os.path.join(path_of_frames, npy_file))
+                for frame in frames:
+                    video.write(frame)
     except EOFError:
         pass
 
@@ -173,5 +176,5 @@ def __format_timedelta(time_difference: timedelta) -> str:
 
 
 if "__main__" == __name__:
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241219/depth_frames", "depth.mp4", True)
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241219/rgb_frames", "rgb.mp4", False)
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/depth_frames", "depth.mp4", True)
+    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241220/rgb_frames", "rgb.mp4", False)
