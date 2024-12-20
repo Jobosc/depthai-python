@@ -141,8 +141,8 @@ class Camera(object):
             if self.mode:  # Recording mode
                 current_state = 0
                 startpoint = None
-                disparity_queue = device.getOutputQueue(name="disparity", maxSize=self.fps, blocking=block)
-                video_queue = device.getOutputQueue(name="video", maxSize=self.fps, blocking=block)
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=2, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=2, blocking=block)
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
@@ -186,12 +186,12 @@ class Camera(object):
                                 endpoint = None
                             current_state = state.activated
 
-                        if current_state and len(depth_frames) < self.fps * 10:
+                        if current_state == 1 and len(depth_frames) < self.fps * 10:
                             depth_frame = disparity_queue.get().getFrame()
                             rgb_frame = video_queue.get().getCvFrame()
                             depth_frames.append(depth_frame)
                             rgb_frames.append(rgb_frame)
-                        else:
+                        elif len(depth_frames) > 0:
                             self._storing_data = True
                             self.__save_frames(depth_frames, rgb_frames)
                             self._storing_data = False
@@ -202,7 +202,6 @@ class Camera(object):
                     except:
                         logging.warning("There was an issue storing a time point.")
                         break
-                self.__save_frames(depth_frames, rgb_frames)
 
             else:  # Viewing mode
                 disparityMultiplier = 255.0 / stereo.initialConfig.getMaxDisparity()
