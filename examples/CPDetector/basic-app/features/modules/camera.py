@@ -12,6 +12,7 @@ Methods:
 import logging
 import os
 from datetime import datetime, timedelta
+from multiprocessing import Pool, cpu_count
 
 import cv2
 import depthai as dai
@@ -75,6 +76,7 @@ class Camera(object):
         # Define sources and outputs
         color = pipeline.create(dai.node.ColorCamera)
         color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
+        #color.initialControl.setAutoExposureLimit(500)
         color.setFps(self.fps)
         color.setCamera("color")
 
@@ -154,6 +156,8 @@ class Camera(object):
 
                 depth_frames = []
                 rgb_frames = []
+                depth_timestamps = []
+                rgb_timestamps = []
 
                 print("Recording started...")
                 logging.info(f"Camera started recording at: {datetime.now()}")
@@ -187,14 +191,18 @@ class Camera(object):
                             current_state = state.activated
 
                         if current_state == 1 and len(depth_frames) < self.fps * 10:
-                            depth_frame = disparity_queue.get().getFrame()
-                            rgb_frame = video_queue.get().getCvFrame()
-                            depth_frames.append(depth_frame)
-                            rgb_frames.append(rgb_frame)
+                            depth_frame = disparity_queue.get()
+                            rgb_frame = video_queue.get()
+                            depth_frames.append(depth_frame.getFrame())
+                            rgb_frames.append(rgb_frame.getCvFrame())
+                            depth_timestamps.append(datetime.now() - (dai.Clock.now() - depth_frame.getTimestamp()))
+                            rgb_timestamps.append(datetime.now() - (dai.Clock.now() - rgb_frame.getTimestamp()))
                         elif len(depth_frames) > 0:
+                            print("Saving frames...")
                             self._storing_data = True
-                            self.__save_frames(depth_frames, rgb_frames)
+                            self.__save_frames(depth_frames, rgb_frames, depth_timestamps, rgb_timestamps)
                             self._storing_data = False
+                            print("Frames saved.")
 
                             depth_frames = []
                             rgb_frames = []
@@ -222,11 +230,19 @@ class Camera(object):
 
             return 1
 
-    def __save_frames(self, depth_frames, rgb_frames):
-        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S%f")
+    def __save_frames(self, depth_frames, rgb_frames, depth_timestamps, rgb_timestamps):
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         logging.info(f"Saving frames at: {timestamp}")
-        np.save(os.path.join(self.depth_frames_path, f"{timestamp}.npy"), np.array(depth_frames))
-        np.save(os.path.join(self.rgb_frames_path, f"{timestamp}.npy"), np.array(rgb_frames))
+
+        depth_path = os.path.join(self.depth_frames_path, timestamp)
+        os.makedirs(depth_path, exist_ok=True)
+        rgb_path = os.path.join(self.rgb_frames_path, timestamp)
+        os.makedirs(rgb_path, exist_ok=True)
+        depth_args = [(frame, depth_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(depth_frames, depth_timestamps)]
+        rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
+        with Pool(processes=cpu_count()) as pool:
+            pool.map(_save_single_frame, depth_args + rgb_args)
+
         logging.info(f"Frames saved at: {timestamp}")
 
     @property
@@ -271,6 +287,10 @@ class Camera(object):
         """
         self._mode = value
 
+def _save_single_frame(args):
+    frame, path, frame_type = args
+    np.save(os.path.join(path, f"{frame_type}.npy"), frame)
+    logging.debug(f"Frame {frame_type}.npy saved at: {datetime.now()}")
 
 if __name__ == "__main__":
     from features.file_operations.video_processing import convert_npy_files_to_video
