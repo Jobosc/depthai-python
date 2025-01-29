@@ -39,13 +39,13 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name:
 
         # Write each frame to the video
         try:
-            path = os.path.join(path_of_frames, "..", f"{output_name}_{subfolder}.mp4")
+            path = os.path.join(path_of_frames, "..", f"{output_name}.mp4")
             frame = np.load(os.path.join(subfolder_path, npy_files[0]))
             if depth:
                 height, width = frame.shape
                 video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
 
-                for idx, npy_file in enumerate(npy_files):
+                for npy_file in npy_files:
                     frame = np.load(os.path.join(subfolder_path, npy_file))
                     frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
                     map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
@@ -54,12 +54,13 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name:
                 height, width, channel = frame.shape
                 video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
 
-                for idx, npy_file in enumerate(npy_files):
+                for npy_file in npy_files:
                     frame = np.load(os.path.join(subfolder_path, npy_file))
                     video.write(frame)
 
             video.release()
-            convert_videos(path, path)
+            convert_videos(path, os.path.join(path_of_frames, "..", f"{output_name}_{subfolder}.mp4"))
+            os.remove(path)
             print("Video conversions complete.")
         except EOFError:
             pass
@@ -78,7 +79,7 @@ def convert_videos(input_file: str, output_file: str) -> bool:
         bool: True if the conversion was successful, False otherwise.
     """
 
-    command = ["ffmpeg", "-i", input_file, "-c:v", "libx264", output_file]
+    command = ["ffmpeg", "-i", input_file, "-c:v", "libx264", output_file, "-y"]
     subprocess.run(command)
     logging.debug(f"Completed conversion for: {input_file}")
     return True
