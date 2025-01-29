@@ -9,33 +9,27 @@ Functions:
     __format_timedelta: Helper function to format a timedelta object into a string.
 """
 
-import logging
 import os
-import shutil
-import subprocess
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import cv2
 import numpy as np
 
-from features.modules.participant import read_participant_metadata
-from features.modules.time_window import TimeWindow
 from utils.parser import ENVParser
 
 env = ENVParser()
 
 
-def convert_npy_files_to_video(path_of_frames: str, subfolder:str, output_name: str, depth: bool) -> bool:
+def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name: str, depth: bool) -> bool:
     subfolder_path = os.path.join(path_of_frames, subfolder)
     if os.path.isdir(subfolder_path):
         npy_files = [f for f in os.listdir(subfolder_path) if f.endswith('.npy')]
         npy_files.sort(key=lambda x: datetime.strptime(x.split('.')[0], "%Y%m%d_%H%M%S%f"))
         # Calculate FPS from timestamps
         timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
-        time_diffs = [(timestamps[i] - timestamps[i-1]).total_seconds() for i in range(1, len(timestamps))]
+        time_diffs = [(timestamps[i] - timestamps[i - 1]).total_seconds() for i in range(1, len(timestamps))]
         avg_time_diff = sum(time_diffs) / len(time_diffs)
         fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
-        #fps = 30
 
         print(f"Number of FPS: {fps}")
 
@@ -56,7 +50,7 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder:str, output_name: 
                     video.write(map_frame)
             else:
                 height, width, channel = frame.shape
-                video = cv2.VideoWriter(path, fourcc, fps, (width, height),  isColor=True)
+                video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
 
                 for idx, npy_file in enumerate(npy_files):
                     frame = np.load(os.path.join(subfolder_path, npy_file))
@@ -66,9 +60,8 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder:str, output_name: 
             print("Video conversions complete.")
         except EOFError:
             pass
-    
-    return True
 
+    return True
 
 
 def convert_individual_videos(day, person):
@@ -84,7 +77,6 @@ def convert_individual_videos(day, person):
     """
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
 
-
     # Create videos before conversion
     for subfolder in os.listdir(os.path.join(input_path, "depth_frames")):
         yield convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), subfolder, "depth", True)
@@ -93,5 +85,8 @@ def convert_individual_videos(day, person):
 
 
 if "__main__" == __name__:
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20250128/depth_frames", "depth", True)
-    convert_npy_files_to_video("/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20250128/rgb_frames", "rgb", False)
+    convert_npy_files_to_video(
+        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20250128/depth_frames", "depth",
+        True)
+    convert_npy_files_to_video(
+        "/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20250128/rgb_frames", "rgb", False)
