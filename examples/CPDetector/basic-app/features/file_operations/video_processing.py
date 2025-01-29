@@ -25,49 +25,49 @@ from utils.parser import ENVParser
 env = ENVParser()
 
 
-def convert_npy_files_to_video(path_of_frames: str, output_name: str, depth: bool) -> None:
+def convert_npy_files_to_video(path_of_frames: str, subfolder:str, output_name: str, depth: bool) -> bool:
+    subfolder_path = os.path.join(path_of_frames, subfolder)
+    if os.path.isdir(subfolder_path):
+        npy_files = [f for f in os.listdir(subfolder_path) if f.endswith('.npy')]
+        npy_files.sort(key=lambda x: datetime.strptime(x.split('.')[0], "%Y%m%d_%H%M%S%f"))
+        # Calculate FPS from timestamps
+        timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
+        time_diffs = [(timestamps[i] - timestamps[i-1]).total_seconds() for i in range(1, len(timestamps))]
+        avg_time_diff = sum(time_diffs) / len(time_diffs)
+        fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
+        #fps = 30
 
-    for subfolder in os.listdir(path_of_frames):
-        subfolder_path = os.path.join(path_of_frames, subfolder)
-        if os.path.isdir(subfolder_path):
-            npy_files = [f for f in os.listdir(subfolder_path) if f.endswith('.npy')]
-            npy_files.sort(key=lambda x: datetime.strptime(x.split('.')[0], "%Y%m%d_%H%M%S%f"))
-            # Calculate FPS from timestamps
-            timestamps = [datetime.strptime(f.split('.')[0], "%Y%m%d_%H%M%S%f") for f in npy_files]
-            time_diffs = [(timestamps[i] - timestamps[i-1]).total_seconds() for i in range(1, len(timestamps))]
-            avg_time_diff = sum(time_diffs) / len(time_diffs)
-            fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
-            #fps = 30
+        print(f"Number of FPS: {fps}")
 
-            print(f"Number of FPS: {fps}")
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
 
-            fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # You can use other codecs like 'XVID'
+        # Write each frame to the video
+        try:
+            path = os.path.join(path_of_frames, "..", f"{output_name}_{subfolder}.mp4")
+            frame = np.load(os.path.join(subfolder_path, npy_files[0]))
+            if depth:
+                height, width = frame.shape
+                video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
 
-            # Write each frame to the video
-            try:
-                path = os.path.join(path_of_frames, "..", f"{output_name}_{subfolder}.mp4")
-                frame = np.load(os.path.join(subfolder_path, npy_files[0]))
-                if depth:
-                    height, width = frame.shape
-                    video = cv2.VideoWriter(path, fourcc, fps, (width, height), isColor=True)
+                for idx, npy_file in enumerate(npy_files):
+                    frame = np.load(os.path.join(subfolder_path, npy_file))
+                    frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
+                    map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
+                    video.write(map_frame)
+            else:
+                height, width, channel = frame.shape
+                video = cv2.VideoWriter(path, fourcc, fps, (width, height),  isColor=True)
 
-                    for idx, npy_file in enumerate(npy_files):
-                        frame = np.load(os.path.join(subfolder_path, npy_file))
-                        frame = cv2.normalize(frame, None, 0, 255, cv2.NORM_MINMAX, cv2.CV_8U)
-                        map_frame = cv2.applyColorMap(frame, cv2.COLORMAP_JET)
-                        video.write(map_frame)
-                else:
-                    height, width, channel = frame.shape
-                    video = cv2.VideoWriter(path, fourcc, fps, (width, height),  isColor=True)
+                for idx, npy_file in enumerate(npy_files):
+                    frame = np.load(os.path.join(subfolder_path, npy_file))
+                    video.write(frame)
 
-                    for idx, npy_file in enumerate(npy_files):
-                        frame = np.load(os.path.join(subfolder_path, npy_file))
-                        video.write(frame)
-
-                video.release()
-                print("Video conversions complete.")
-            except EOFError:
-                pass
+            video.release()
+            print("Video conversions complete.")
+        except EOFError:
+            pass
+    
+    return True
 
 
 
@@ -83,94 +83,13 @@ def convert_individual_videos(day, person):
         bool: True if the conversion was successful, False otherwise.
     """
     input_path = str(os.path.join(env.main_path, env.temp_path, day, person))
-    input_files = []
 
 
     # Create videos before conversion
-    convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), "depth", True)
-    convert_npy_files_to_video(os.path.join(input_path, "rgb_frames"), "rgb", False)
-
-    ## Output files
-    metadata = read_participant_metadata(day, person)
-
-    ## Input files
-    # Collect all video material files
-    for root, dirs, files in os.walk(input_path):
-        for file in files:
-            _, ext = os.path.splitext(file)
-            if ext == ".mp4":
-                name = os.path.join(root, file)
-                input_files.append(name)
-
-                # Save normpaths
-                base, _ = os.path.splitext(name)
-
-                # Create output folder
-                if os.path.exists(base):
-                    shutil.rmtree(base)
-                os.makedirs(base, exist_ok=True)
-                logging.debug("Prepared output folder for converted files.")
-
-    logging.debug("All input files have been collected.")
-
-    # Convert all files
-    for input_file in input_files:
-        for idx, time_window in enumerate(metadata.timestamps.time_windows):
-            output_folder = os.path.splitext(os.path.basename(input_file))[0]
-            destination_path = os.path.join(input_path, output_folder)
-            output_file = os.path.join(destination_path, f"{env.conversion_file_prefix}_{idx}.mp4")
-            yield convert_videos(input_file=input_file, output_file=output_file,
-                                 time_start=metadata.timestamps.camera_start, time_window=time_window)
-    logging.debug("All files have been converted.")
-
-
-def convert_videos(input_file: str, output_file: str, time_start: datetime, time_window: TimeWindow = None) -> bool:
-    """
-    Converts a video file based on the specified time window.
-
-    Args:
-        input_file (str): The path to the input video file.
-        output_file (str): The path to the output video file.
-        time_start (datetime): The start time of the video.
-        time_window (TimeWindow, optional): The time window for the video conversion. Defaults to None.
-
-    Returns:
-        bool: True if the conversion was successful, False otherwise.
-    """
-    start_time = (time_window.start - time_start) + datetime.combine(datetime.min, env.video_delta_start) - datetime.min
-    end_time = (time_window.end - time_window.start) + datetime.combine(datetime.min,
-                                                                        env.video_delta_end) - datetime.min
-
-    logging.info(f"Conversion start time: {start_time}; Conversion end time: {end_time}")
-    command = [
-        "ffmpeg",
-        "-i", input_file,
-        "-ss", __format_timedelta(start_time),
-        "-t", __format_timedelta(end_time),
-        "-c:v", "libx264",
-        output_file
-    ]
-    subprocess.run(command)
-    logging.debug(f"Completed conversion for: {input_file}")
-    return True
-
-
-def __format_timedelta(time_difference: timedelta) -> str:
-    """
-    Helper function to format a timedelta object into a string.
-
-    Args:
-        time_difference (timedelta): The time difference to format.
-
-    Returns:
-        str: The formatted string in HH:MM:SS.mmm format.
-    """
-    total_seconds = int(time_difference.total_seconds())
-    hours, remainder = divmod(total_seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    milliseconds = int(time_difference.microseconds / 1000)
-
-    return f"{hours:02}:{minutes:02}:{seconds:02}.{milliseconds:03}"
+    for subfolder in os.listdir(os.path.join(input_path, "depth_frames")):
+        yield convert_npy_files_to_video(os.path.join(input_path, "depth_frames"), subfolder, "depth", True)
+    for subfolder in os.listdir(os.path.join(input_path, "rgb_frames")):
+        yield convert_npy_files_to_video(os.path.join(input_path, "rgb_frames"), subfolder, "rgb", False)
 
 
 if "__main__" == __name__:
