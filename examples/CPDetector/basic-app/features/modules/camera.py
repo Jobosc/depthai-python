@@ -243,12 +243,13 @@ class Camera(object):
         depth_args = [(frame, depth_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(depth_frames, depth_timestamps)]
         rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
 
-        #with Pool(processes=cpu_count()) as pool:
-        #    pool.map(_save_single_frame, depth_args + rgb_args)
+        pool = Pool(processes=cpu_count())
+        for _ in pool.imap(_save_single_frame, depth_args + rgb_args):
+            pass
 
-        with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
-            for args in depth_args + rgb_args:
-                executor.submit(_save_single_frame, *args)
+        #with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
+        #    for args in depth_args + rgb_args:
+        #        executor.submit(_save_single_frame, *args)
 
         logging.info(f"Frames saved at: {timestamp}")
 
@@ -294,7 +295,8 @@ class Camera(object):
         """
         self._mode = value
 
-def _save_single_frame(frame, path, frame_type):
+def _save_single_frame(args):
+    frame, path, frame_type = args
     np.save(os.path.join(path, f"{frame_type}.npy"), frame)
     logging.debug(f"Frame {frame_type}.npy saved at: {datetime.now()}")
 
