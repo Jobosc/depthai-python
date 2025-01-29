@@ -47,13 +47,19 @@ def move_data_from_temp_to_main_storage(folder_id: str, participant: Participant
     files_to_move = []
     for root, directory, files in os.walk(os.path.join(temporary_path, day)):
         for dir in directory:
-            os.makedirs(os.path.join(destination_path, dir), exist_ok=True)
+            files = os.listdir(os.path.join(root, dir))
+            if any([os.path.isfile(os.path.join(root, dir, f)) for f in files]):
+                folder = os.sep.join(root.split(os.sep)[-1:])
+                os.makedirs(os.path.join(destination_path, folder, dir), exist_ok=True)
         for file in files:
-            norm_path = os.path.normpath(root)
-            folder = os.path.basename(norm_path)
-            src_file = os.path.join(root, file)
-            dest_file = os.path.join(destination_path, folder, file)
-            files_to_move.append((src_file, dest_file))
+            if os.path.isfile(os.path.join(root, file)):
+                folder = os.sep.join(root.split(os.sep)[-2:])     
+                src_file = os.path.join(root, file)
+
+                dest_file = os.path.join(destination_path, folder, file)
+                if dest_file.endswith(".npy"):
+                    files_to_move.append((src_file, dest_file))
+            
 
     with Pool(processes=cpu_count()) as pool:
         for _ in pool.imap(__move_file, files_to_move):
