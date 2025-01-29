@@ -11,6 +11,8 @@ Functions:
 
 import os
 from datetime import datetime
+import logging
+import subprocess
 
 import cv2
 import numpy as np
@@ -57,10 +59,28 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name:
                     video.write(frame)
 
             video.release()
+            convert_videos(path, path)
             print("Video conversions complete.")
         except EOFError:
             pass
 
+    return True
+
+def convert_videos(input_file: str, output_file: str) -> bool:
+    """
+    Converts a video file based on the specified time window.
+
+    Args:
+        input_file (str): The path to the input video file.
+        output_file (str): The path to the output video file.
+
+    Returns:
+        bool: True if the conversion was successful, False otherwise.
+    """
+
+    command = ["ffmpeg", "-i", input_file, "-c:v", "libx264", output_file]
+    subprocess.run(command)
+    logging.debug(f"Completed conversion for: {input_file}")
     return True
 
 
