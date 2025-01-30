@@ -12,7 +12,7 @@ Methods:
 import logging
 import os
 from datetime import datetime, timedelta
-from multiprocessing import Pool, cpu_count
+from multiprocessing import cpu_count
 
 import cv2
 import depthai as dai
@@ -78,7 +78,7 @@ class Camera(object):
         # Define sources and outputs
         color = pipeline.create(dai.node.ColorCamera)
         color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-        color.initialControl.setAutoExposureLimit(4000)
+        color.initialControl.setAutoExposureLimit(2000)
         color.setFps(self.fps)
         color.setCamera("color")
 
@@ -199,6 +199,7 @@ class Camera(object):
                             rgb_frames.append(rgb_frame.getCvFrame())
                             depth_timestamps.append(datetime.now() - (dai.Clock.now() - depth_frame.getTimestamp()))
                             rgb_timestamps.append(datetime.now() - (dai.Clock.now() - rgb_frame.getTimestamp()))
+                      
                         elif len(depth_frames) > 0:
                             print("Saving frames...")
                             self._storing_data = True
@@ -244,11 +245,6 @@ class Camera(object):
         rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
 
         start = datetime.now()
-        #pool = Pool(processes=cpu_count())
-        #for _ in pool.imap_unordered(_save_single_frame, depth_args + rgb_args):
-        #    pass
-        
-
         with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
             for args in depth_args + rgb_args:
                 executor.submit(_save_single_frame, args)
