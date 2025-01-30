@@ -22,8 +22,7 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-import utils.fastnumpyio as fnp
-#from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 
 
 
@@ -79,7 +78,7 @@ class Camera(object):
         # Define sources and outputs
         color = pipeline.create(dai.node.ColorCamera)
         color.setResolution(dai.ColorCameraProperties.SensorResolution.THE_1080_P)
-        #color.initialControl.setAutoExposureLimit(500)
+        color.initialControl.setAutoExposureLimit(4000)
         color.setFps(self.fps)
         color.setCamera("color")
 
@@ -245,14 +244,15 @@ class Camera(object):
         rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
 
         start = datetime.now()
-        pool = Pool(processes=cpu_count())
-        for _ in pool.imap(_save_single_frame, depth_args + rgb_args):
-            pass
-        print(datetime.now() - start)
+        #pool = Pool(processes=cpu_count())
+        #for _ in pool.imap_unordered(_save_single_frame, depth_args + rgb_args):
+        #    pass
+        
 
-        #with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
-        #    for args in depth_args + rgb_args:
-        #        executor.submit(_save_single_frame, *args)
+        with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
+            for args in depth_args + rgb_args:
+                executor.submit(_save_single_frame, args)
+        print(datetime.now() - start)
 
         logging.info(f"Frames saved at: {timestamp}")
 
@@ -300,7 +300,7 @@ class Camera(object):
 
 def _save_single_frame(args):
     frame, path, frame_type = args
-    fnp.save(os.path.join(path, f"{frame_type}.npy"), frame)
+    np.save(os.path.join(path, f"{frame_type}.npy"), frame)
     logging.debug(f"Frame {frame_type}.npy saved at: {datetime.now()}")
 
 if __name__ == "__main__":
