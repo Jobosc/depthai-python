@@ -22,7 +22,8 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-from concurrent.futures import ThreadPoolExecutor
+import utils.fastnumpyio as fnp
+#from concurrent.futures import ThreadPoolExecutor
 
 
 
@@ -243,9 +244,11 @@ class Camera(object):
         depth_args = [(frame, depth_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(depth_frames, depth_timestamps)]
         rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
 
+        start = datetime.now()
         pool = Pool(processes=cpu_count())
         for _ in pool.imap(_save_single_frame, depth_args + rgb_args):
             pass
+        print(datetime.now() - start)
 
         #with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
         #    for args in depth_args + rgb_args:
@@ -297,7 +300,7 @@ class Camera(object):
 
 def _save_single_frame(args):
     frame, path, frame_type = args
-    np.save(os.path.join(path, f"{frame_type}.npy"), frame)
+    fnp.save(os.path.join(path, f"{frame_type}.npy"), frame)
     logging.debug(f"Frame {frame_type}.npy saved at: {datetime.now()}")
 
 if __name__ == "__main__":
