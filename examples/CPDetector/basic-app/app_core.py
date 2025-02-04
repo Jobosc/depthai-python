@@ -9,7 +9,7 @@ Usage:
 """
 
 import os
-import threading
+from concurrent.futures import ThreadPoolExecutor
 
 from shiny import ui, App, Inputs, Outputs, Session
 
@@ -76,8 +76,8 @@ def server(input: Inputs, output: Outputs, session: Session):
     SessionManager(input)
 
     # Setup Threading
-    thread = threading.Thread(target=camera_handler)
-    thread.start()
+    with ThreadPoolExecutor(max_workers=1) as executor: #TODO: Maybe use ProcessPoolExecuter")
+        executor.submit(camera_handler)
 
 
 app = App(app_ui, server, static_assets={f"/{env.temp_path}": os.path.join(env.main_path, env.temp_path)})

@@ -11,8 +11,8 @@ Methods:
 """
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta
-from multiprocessing import cpu_count
 
 import cv2
 import depthai as dai
@@ -22,8 +22,6 @@ from features.modules.light_barrier import LightBarrier
 from features.modules.time_window import TimeWindow
 from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
-from concurrent.futures import ThreadPoolExecutor
-
 
 
 class Camera(object):
@@ -94,12 +92,12 @@ class Camera(object):
         stereo.setDefaultProfilePreset(dai.node.StereoDepth.PresetMode.HIGH_DENSITY)
         stereo.initialConfig.setMedianFilter(dai.MedianFilter.MEDIAN_OFF)
         dai.RawStereoDepthConfig.PostProcessing.SpeckleFilter()
-        #stereo.initialConfig.setDisparityShift(10)
+        # stereo.initialConfig.setDisparityShift(10)
         stereo.setLeftRightCheck(False)  # This is required to align Depth with Color. Otherwise set to False
         stereo.setExtendedDisparity(
             False)  # This needs to be set to False. Otherwise the number of frames differ for depth and color
         stereo.setSubpixel(False)
-        #stereo.setSubpixelFractionalBits(5)
+        # stereo.setSubpixelFractionalBits(5)
         # stereo.setDepthAlign(dai.CameraBoardSocket.CAM_A) #TODO: Check if required
 
         monoLeft.out.link(stereo.left)
@@ -134,14 +132,14 @@ class Camera(object):
             logging.info("View video without recording.")
 
         with dai.Device(pipeline) as device:
-            #timestamps.camera_start = datetime.now()
-            #logging.info(f"Camera started recording at: {datetime.now()}")
-            device.setIrLaserDotProjectorIntensity(1)   # Enhancement of depth perception
-            device.setIrFloodLightIntensity(0)          # Enhancement of low light performance
+            # timestamps.camera_start = datetime.now()
+            # logging.info(f"Camera started recording at: {datetime.now()}")
+            device.setIrLaserDotProjectorIntensity(1)  # Enhancement of depth perception
+            device.setIrFloodLightIntensity(0)  # Enhancement of low light performance
             logging.info("Set camera parameters for recording with OAK camera.")
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
-            
+
             if self.mode:  # Recording mode
                 current_state = 0
                 startpoint = None
@@ -241,11 +239,12 @@ class Camera(object):
         os.makedirs(depth_path, exist_ok=True)
         rgb_path = os.path.join(self.rgb_frames_path, timestamp)
         os.makedirs(rgb_path, exist_ok=True)
-        depth_args = [(frame, depth_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(depth_frames, depth_timestamps)]
+        depth_args = [(frame, depth_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in
+                      zip(depth_frames, depth_timestamps)]
         rgb_args = [(frame, rgb_path, ts.strftime("%Y%m%d_%H%M%S%f")) for frame, ts in zip(rgb_frames, rgb_timestamps)]
 
         start = datetime.now()
-        with ThreadPoolExecutor(max_workers=cpu_count()) as executor:
+        with ThreadPoolExecutor() as executor:
             for args in depth_args + rgb_args:
                 executor.submit(_save_single_frame, args)
         print(datetime.now() - start)
@@ -294,10 +293,12 @@ class Camera(object):
         """
         self._mode = value
 
+
 def _save_single_frame(args):
     frame, path, frame_type = args
     np.save(os.path.join(path, f"{frame_type}.npy"), frame)
     logging.debug(f"Frame {frame_type}.npy saved at: {datetime.now()}")
+
 
 if __name__ == "__main__":
     from features.file_operations.video_processing import convert_npy_files_to_video
