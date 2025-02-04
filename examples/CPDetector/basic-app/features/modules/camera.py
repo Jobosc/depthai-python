@@ -207,6 +207,8 @@ class Camera(object):
 
                             depth_frames = []
                             rgb_frames = []
+                            depth_timestamps = []
+                            rgb_timestamps = []
 
                     except:
                         logging.warning("There was an issue storing a time point.")

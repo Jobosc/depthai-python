@@ -32,6 +32,7 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name:
         time_diffs = [(timestamps[i] - timestamps[i - 1]).total_seconds() for i in range(1, len(timestamps))]
         avg_time_diff = sum(time_diffs) / len(time_diffs)
         fps = 1 / avg_time_diff if avg_time_diff > 0 else 30  # Default to 30 FPS if avg_time_diff is 0
+        # fps = 30
 
         print(f"Number of FPS: {fps}")
 
