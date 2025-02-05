@@ -97,7 +97,7 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
     Returns:
         List[str]: A list of recorded sessions for the specified person on the specified day.
     """
-    result = [None]
+    result = []
     hard_drive_folder = os.path.join(storage_path, day, person_name)
     logging.debug(f"Collect recordings for {person_name}.")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
@@ -108,7 +108,8 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
                     folder = os.path.join(root, file)
                     temp_result = os.path.relpath(folder, env.main_path)
                     result.append(temp_result)
-
+    result.sort()
+    result = [None] + result
     return result
 
 
