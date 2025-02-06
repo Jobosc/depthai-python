@@ -151,7 +151,7 @@ class Camera(object):
 
                 print("Recording started...")
                 logging.info(f"Camera started recording at: {datetime.now()}")
-                while True:
+                while self.ready:
                     try:
                         if current_state != state.activated:
                             logging.info(
