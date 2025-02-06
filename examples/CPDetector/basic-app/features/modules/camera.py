@@ -137,12 +137,9 @@ class Camera(object):
 
             if self.mode:  # Recording mode
                 current_state = 0
-                disparity_queue = device.getOutputQueue(name="disparity", maxSize=300, blocking=block)
-                video_queue = device.getOutputQueue(name="video", maxSize=300, blocking=block)
-                depth_frames = []
-                rgb_frames = []
-                depth_timestamps = []
-                rgb_timestamps = []
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=1, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=1, blocking=block)
+                depth_frames, rgb_frames, depth_timestamps, rgb_timestamps = [], [], [], []
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
@@ -169,16 +166,13 @@ class Camera(object):
                             depth_timestamps.append(datetime.now() - (dai.Clock.now() - depth_frame.getTimestamp()))
                             rgb_timestamps.append(datetime.now() - (dai.Clock.now() - rgb_frame.getTimestamp()))
 
-                        elif len(depth_frames) > 30:
+                        elif len(depth_frames) > self.fps:
                             print("Saving frames...")
                             self._storing_data = True
                             self.__save_frames(depth_frames, rgb_frames, depth_timestamps, rgb_timestamps)
                             self._storing_data = False
                             print("Frames saved.")
 
-                            depth_frames, rgb_frames, depth_timestamps, rgb_timestamps = [], [], [], []
-
-                        else:
                             depth_frames, rgb_frames, depth_timestamps, rgb_timestamps = [], [], [], []
 
                     except:
