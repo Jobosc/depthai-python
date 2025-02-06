@@ -11,7 +11,7 @@ import logging
 from shiny import ui, reactive
 
 from features.file_operations.delete import delete_person_on_day_folder
-from features.file_operations.read import list_people_for_a_specific_day
+from features.file_operations.read import list_people_for_a_specific_day, get_amount_of_sessions_for_a_specific_person
 from features.file_operations.video_processing import convert_individual_videos
 from features.modules.participant import read_participant_metadata
 from features.modules.ui_state import UIState
@@ -101,15 +101,9 @@ class StorageController:
         @reactive.Effect
         @reactive.event(self.input.convert_yes)
         async def _():
-            amount_of_conversions = 0
             i = 0
-
             for person in self.input.people_selector.get():
-                metadata = read_participant_metadata(self.input.date_selector.get(), person)
-                amount_of_conversions += len(metadata.timestamps.time_windows) * 2
-
-            for person in self.input.people_selector.get():
-                with ui.Progress(min=0, max=amount_of_conversions) as p:
+                with ui.Progress(min=0, max=get_amount_of_sessions_for_a_specific_person()) as p:
                     p.set(i,
                           message="Converting videos in progress",
                           detail="This will take a while...",
