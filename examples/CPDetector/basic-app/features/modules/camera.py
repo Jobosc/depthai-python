@@ -176,10 +176,10 @@ class Camera(object):
                             self._storing_data = False
                             print("Frames saved.")
 
-                            depth_frames = [], rgb_frames = [], depth_timestamps = [], rgb_timestamps = []
+                            depth_frames, rgb_frames, depth_timestamps, rgb_timestamps = [], [], [], []
 
                         else:
-                            depth_frames = [], rgb_frames = [], depth_timestamps = [], rgb_timestamps = []
+                            depth_frames, rgb_frames, depth_timestamps, rgb_timestamps = [], [], [], []
 
                     except:
                         logging.warning("There was an issue storing a time point.")
