@@ -51,7 +51,7 @@ class _AnsiColorizer(object):
             except:
                 return False
 
-    def write(self, text: str, color:str):
+    def write(self, text: str, color: str):
         """
         Write the given text to the stream in the given color.
 
@@ -70,6 +70,7 @@ class ColorHandler(logging.StreamHandler):
     Attributes:
         stream (io.TextIOWrapper): The stream to which the colorized log messages are written.
     """
+
     def __init__(self, stream=sys.stderr):
         super(ColorHandler, self).__init__(_AnsiColorizer(stream))
 
@@ -96,7 +97,7 @@ class ColorHandler(logging.StreamHandler):
             color)
 
 
-def __delete_oldest_logs(folder: str , logs_to_keep: int=10):
+def __delete_oldest_logs(folder: str, logs_to_keep: int = 10):
     """
     Delete the oldest log files in the specified folder, keeping only the most recent ones.
 

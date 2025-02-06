@@ -30,6 +30,7 @@ class ModalRemover:
 
         Removes the modal when the save confirmation buttons are clicked.
         """
+
         @reactive.Effect
         @reactive.event(self.input.save_yes, self.input.save_no)
         def _():
@@ -41,6 +42,7 @@ class ModalRemover:
 
         Removes the modal when the conversion confirmation buttons are clicked.
         """
+
         @reactive.Effect
         @reactive.event(self.input.convert_yes, self.input.convert_no)
         def _():
@@ -52,6 +54,7 @@ class ModalRemover:
 
         Removes the modal when the delete confirmation buttons are clicked.
         """
+
         @reactive.Effect
         @reactive.event(self.input.delete_session_yes, self.input.delete_session_no)
         def _():
@@ -63,6 +66,7 @@ class ModalRemover:
 
         Removes the modal when the delete current session confirmation buttons are clicked.
         """
+
         @reactive.Effect
         @reactive.event(self.input.delete_current_session_yes, self.input.delete_current_session_no)
         def _():

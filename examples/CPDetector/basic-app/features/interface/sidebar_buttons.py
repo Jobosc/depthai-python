@@ -30,6 +30,7 @@ class SidebarButtons:
         Returns:
             ui: The UI element for the save button.
         """
+
         @render.ui
         def save_button_choice():
             if not self.ui_state.save_view_state:
@@ -53,6 +54,7 @@ class SidebarButtons:
         Returns:
             ui: The UI element for the delete current session button.
         """
+
         @render.ui
         def delete_current_session_button_choice():
             if self.ui_state.unsaved_days:
@@ -73,6 +75,7 @@ class SidebarButtons:
         Returns:
             ui: The UI element for the cancel edit metadata button.
         """
+
         @render.ui
         def cancel_edit_metadata_button_choice():
             if self.ui_state.save_view_state:

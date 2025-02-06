@@ -37,6 +37,7 @@ class CardValues:
         Returns:
             str: The total number of recorded users.
         """
+
         @render.text
         def recorded_user() -> str:
             logging.debug("Render text: Collect text field for: all users.")
@@ -49,6 +50,7 @@ class CardValues:
         Returns:
             str: The number of recorded users for today.
         """
+
         @render.text
         def recorded_user_today() -> str:
             logging.debug("Render text: Collect text field for: users today.")
@@ -61,6 +63,7 @@ class CardValues:
         Returns:
             str: The total number of recorded sessions.
         """
+
         @render.text
         def recorded_session() -> str:
             logging.debug("Render text: Collect text field for: all sessions.")
@@ -73,6 +76,7 @@ class CardValues:
         Returns:
             str: The total number of recorded days.
         """
+
         @render.text
         def recorded_days() -> str:
             logging.debug("Render text: Collect text field for: all recorded days.")
@@ -85,6 +89,7 @@ class CardValues:
         Returns:
             str: The current time in HH:MM:SS format.
         """
+
         @render.text
         def current_time() -> str:
             reactive.invalidate_later(1)
@@ -97,6 +102,7 @@ class CardValues:
         Returns:
             str: The current day in DD-MM-YYYY format.
         """
+
         @render.text
         def current_day() -> str:
             logging.debug("Render text: Collect text field for: current day.")

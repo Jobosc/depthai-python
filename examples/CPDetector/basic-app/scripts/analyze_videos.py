@@ -6,6 +6,7 @@ disparity_video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecord
 rgb_video_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241218/rgb.mp4'
 npy_path = '/Users/johnuroko/Documents/Repos/Private/OakDVideoRecorder/Videorecording/20241218/disparity.npy'
 
+
 def count_frames(video_path):
     # Open the video file
     cap = cv2.VideoCapture(video_path)
@@ -23,12 +24,12 @@ def count_frames(video_path):
 
     return total_frames
 
+
 # Count the number of frames in the videos
 frame_count = count_frames(disparity_video_path)
 print(f"Total number of disparity frames: {frame_count}")
 frame_count = count_frames(rgb_video_path)
 print(f"Total number of color frames: {frame_count}")
-
 
 # Load the .npy file
 depth_array = np.load(npy_path)
@@ -47,6 +48,7 @@ if not disparity_cap.isOpened() or not rgb_cap.isOpened():
 # Get the total number of frames in the videos
 total_frames = int(disparity_cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
+
 # Function to display the frames and handle mouse events
 def show_frames(frame_number):
     # Set the frame position
@@ -64,7 +66,6 @@ def show_frames(frame_number):
     cv2.imshow('RGB Video', rgb_frame)
     cv2.imshow('Disparity Video', disparity_frame)
 
-
     # Mouse callback function to print pixel values
     def mouse_callback(event, x, y, flags, param):
         if event == cv2.EVENT_MOUSEMOVE:
@@ -73,12 +74,14 @@ def show_frames(frame_number):
     # Set the mouse callback function
     cv2.setMouseCallback('Disparity Video', mouse_callback)
 
+
 # Display a specific frame (e.g., frame number 100)
 frame_number = 0
 if frame_number < total_frames:
     show_frames(frame_number)
 else:
     print(f"Error: Frame number {frame_number} exceeds total frames {total_frames}.")
+
 
 # Function to handle key events
 def handle_key_events():
@@ -101,6 +104,7 @@ def handle_key_events():
                 frame_number = 0
         elif key == ord('q'):  # Quit when 'q' is pressed
             break
+
 
 # Handle key events
 handle_key_events()

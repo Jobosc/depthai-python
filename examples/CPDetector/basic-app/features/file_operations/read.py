@@ -112,16 +112,16 @@ def list_sessions_for_a_specific_person(day: str = today, person_name: str = "")
     result = [None] + result
     return result
 
+
 def get_amount_of_sessions_for_a_specific_person(day: str = today, person_name: str = "") -> int:
     counter = 0
     hard_drive_folder = os.path.join(storage_path, day, person_name)
     logging.debug(f"Collect recordings for {person_name}.")
     if os.path.exists(hard_drive_folder) and os.path.isdir(hard_drive_folder):
         for _, _, files in os.walk(hard_drive_folder):
-            if any([x.endswith(".npy") for x in files ]):
+            if any([x.endswith(".npy") for x in files]):
                 counter += 1
     return counter
-
 
 
 def list_people_in_total() -> List[str]:

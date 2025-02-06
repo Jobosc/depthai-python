@@ -53,13 +53,12 @@ def move_data_from_temp_to_main_storage(folder_id: str, participant: Participant
                 os.makedirs(os.path.join(destination_path, folder, dir), exist_ok=True)
         for file in files:
             if os.path.isfile(os.path.join(root, file)):
-                folder = os.sep.join(root.split(os.sep)[-2:])     
+                folder = os.sep.join(root.split(os.sep)[-2:])
                 src_file = os.path.join(root, file)
 
                 dest_file = os.path.join(destination_path, folder, file)
                 if dest_file.endswith(".npy"):
                     files_to_move.append((src_file, dest_file))
-            
 
     with Pool(processes=cpu_count()) as pool:
         for _ in pool.imap(__move_file, files_to_move):

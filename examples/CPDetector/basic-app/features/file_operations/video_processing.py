@@ -9,10 +9,10 @@ Functions:
     __format_timedelta: Helper function to format a timedelta object into a string.
 """
 
-import os
-from datetime import datetime
 import logging
+import os
 import subprocess
+from datetime import datetime
 
 import cv2
 import numpy as np
@@ -67,6 +67,7 @@ def convert_npy_files_to_video(path_of_frames: str, subfolder: str, output_name:
             pass
 
     return True
+
 
 def convert_videos(input_file: str, output_file: str) -> bool:
     """
