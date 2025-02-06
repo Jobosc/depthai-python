@@ -19,8 +19,6 @@ import depthai as dai
 import numpy as np
 
 from features.modules.light_barrier import LightBarrier
-from features.modules.time_window import TimeWindow
-from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
 
 
@@ -54,12 +52,11 @@ class Camera(object):
             cls.fps = 30
         return cls._instance
 
-    def run(self, timestamps: Timestamps, block=False) -> int:
+    def run(self, block=False) -> int:
         """
         Starts the camera recording process.
 
         Args:
-            timestamps (Timestamps): The timestamps object to store recording times.
             block (bool): Whether to block the execution until recording is finished. Defaults to False.
 
         Returns:
@@ -67,7 +64,6 @@ class Camera(object):
         """
         logging.info("Start process to record with camera.")
         env = ENVParser()
-        self.running = True
         state = LightBarrier()
 
         # Create Pipeline
@@ -132,19 +128,21 @@ class Camera(object):
             logging.info("View video without recording.")
 
         with dai.Device(pipeline) as device:
-            # timestamps.camera_start = datetime.now()
-            # logging.info(f"Camera started recording at: {datetime.now()}")
             device.setIrLaserDotProjectorIntensity(1)  # Enhancement of depth perception
             device.setIrFloodLightIntensity(0)  # Enhancement of low light performance
             logging.info("Set camera parameters for recording with OAK camera.")
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_B, 127)
             device.readCalibration().setFov(dai.CameraBoardSocket.CAM_C, 127)
+            self.running = True
 
             if self.mode:  # Recording mode
                 current_state = 0
-                startpoint = None
-                disparity_queue = device.getOutputQueue(name="disparity", maxSize=2, blocking=block)
-                video_queue = device.getOutputQueue(name="video", maxSize=2, blocking=block)
+                disparity_queue = device.getOutputQueue(name="disparity", maxSize=300, blocking=block)
+                video_queue = device.getOutputQueue(name="video", maxSize=300, blocking=block)
+                depth_frames = []
+                rgb_frames = []
+                depth_timestamps = []
+                rgb_timestamps = []
 
                 # Open a file to save encoded video
                 day = datetime.now().strftime(env.date_format)
@@ -154,40 +152,13 @@ class Camera(object):
                 self.rgb_frames_path = os.path.join(env.temp_path, day, "rgb_frames")
                 os.makedirs(self.rgb_frames_path, exist_ok=True)
 
-                depth_frames = []
-                rgb_frames = []
-                depth_timestamps = []
-                rgb_timestamps = []
-
                 print("Recording started...")
                 logging.info(f"Camera started recording at: {datetime.now()}")
-                timestamps.camera_start = datetime.now()
                 while True:
                     try:
-                        """if len(depth_frames) == self.fps * 10:
-                            self.__save_frames(depth_frames, rgb_frames)
-                            depth_frames = []
-                            rgb_frames = []"""
-
-                        if not self.ready:
-                            if startpoint is not None:
-                                endpoint = datetime.now()
-                                logging.info(f"Light barrier triggered to end at: {endpoint}")
-                                if endpoint - startpoint > timedelta(seconds=2):
-                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                            break
-
                         if current_state != state.activated:
-                            if state.activated:
-                                startpoint = datetime.now()
-                                logging.info(f"Light barrier triggered to start at: {startpoint}")
-                            else:
-                                endpoint = datetime.now()
-                                logging.info(f"Light barrier triggered to end at: {endpoint}")
-                                if endpoint - startpoint > timedelta(seconds=2):
-                                    timestamps.time_windows.append(TimeWindow(start=startpoint, end=endpoint))
-                                startpoint = None
-                                endpoint = None
+                            logging.info(
+                                f"Light barrier triggered to {'start' if state.activated else 'end'} at: {datetime.now()}")
                             current_state = state.activated
 
                         if current_state == 1 and len(depth_frames) < self.fps * 10:
@@ -197,18 +168,18 @@ class Camera(object):
                             rgb_frames.append(rgb_frame.getCvFrame())
                             depth_timestamps.append(datetime.now() - (dai.Clock.now() - depth_frame.getTimestamp()))
                             rgb_timestamps.append(datetime.now() - (dai.Clock.now() - rgb_frame.getTimestamp()))
-                      
-                        elif len(depth_frames) > 0:
+
+                        elif len(depth_frames) > 30:
                             print("Saving frames...")
                             self._storing_data = True
                             self.__save_frames(depth_frames, rgb_frames, depth_timestamps, rgb_timestamps)
                             self._storing_data = False
                             print("Frames saved.")
 
-                            depth_frames = []
-                            rgb_frames = []
-                            depth_timestamps = []
-                            rgb_timestamps = []
+                            depth_frames = [], rgb_frames = [], depth_timestamps = [], rgb_timestamps = []
+
+                        else:
+                            depth_frames = [], rgb_frames = [], depth_timestamps = [], rgb_timestamps = []
 
                     except:
                         logging.warning("There was an issue storing a time point.")
@@ -247,8 +218,7 @@ class Camera(object):
 
         start = datetime.now()
         with ThreadPoolExecutor() as executor:
-            for args in depth_args + rgb_args:
-                executor.submit(_save_single_frame, args)
+            executor.map(_save_single_frame, depth_args + rgb_args)
         print(datetime.now() - start)
 
         logging.info(f"Frames saved at: {timestamp}")
@@ -311,7 +281,7 @@ if __name__ == "__main__":
     cam = Camera()
     cam.ready = True
     cam.mode = True
-    cam.run(timestamps=Timestamps())
+    cam.run()
 
     if cam.mode:
         env = ENVParser()

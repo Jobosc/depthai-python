@@ -12,30 +12,26 @@ from shiny import ui, reactive
 
 from features.file_operations.delete import delete_temporary_recordings
 from features.modules.camera import Camera
-from features.modules.timestamps import Timestamps
 from features.modules.ui_state import UIState
 from utils.parser import ENVParser
 
 
 class ButtonsController:
     """
-    Initializes the Buttons with the given input, camera, and timestamps.
+    Initializes the Buttons with the given input, camera.
 
     Args:
         input: The input object for the server.
         camera (Camera): The camera object for the session.
-        timestamps (Timestamps): The timestamps object for the session.
     """
     input = None
     camera = None
-    timestamps = None
     ui_state = UIState()
     record_button_state = reactive.Value(False)
 
-    def __init__(self, input, camera: Camera, timestamps: Timestamps):
+    def __init__(self, input, camera: Camera):
         self.input = input
         self.camera = camera
-        self.timestamps = timestamps
         self.ui_state = UIState()
         self.update_record_button()
         self.initiate_save()
@@ -80,7 +76,6 @@ class ButtonsController:
                     self.ui_state.update_ui()
                 else:
                     logging.info("Record Button: Recording has been started.")
-                    self.timestamps.start_recording()
                     self.record_button_state.set(True)
                     self.camera.ready = True
                     ui.update_action_button("record_button", label="Deactivate recording")

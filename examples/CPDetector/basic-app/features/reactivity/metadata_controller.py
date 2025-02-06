@@ -14,7 +14,6 @@ from shiny import ui, reactive, render
 from features.file_operations.move import list_files_to_move, move_data_from_temp_to_main_storage
 from features.file_operations.read import check_if_folder_already_exists
 from features.modules.participant import Participant, read_participant_metadata
-from features.modules.timestamps import Timestamps
 from features.modules.ui_state import UIState
 from utils.parser import ENVParser
 
@@ -27,14 +26,11 @@ class MetadataController:
 
     Args:
         input: The input object for the server.
-        timestamps (Timestamps): The timestamps object for the session.
     """
     input = None
-    timestamps = None
 
-    def __init__(self, input, timestamps: Timestamps):
+    def __init__(self, input):
         self.input = input
-        self.timestamps = timestamps
         self.reset_metadata()
         self.edit_metadata()
         self.store_metadata()
@@ -78,8 +74,7 @@ class MetadataController:
 
             person = Participant(
                 id=self.input.id(),
-                comments=self.input.comments(),
-                timestamps=old_person.timestamps
+                comments=self.input.comments()
             )
 
             path = os.path.join(
@@ -124,7 +119,7 @@ class MetadataController:
             env = ENVParser()
             i = 0
             day = datetime.datetime.now().strftime(env.date_format)
-            person = Participant(id=self.input.id(), comments=self.input.comments(), timestamps=self.timestamps)
+            person = Participant(id=self.input.id(), comments=self.input.comments())
 
             amount_of_files = len(list_files_to_move())
             if self.input.rb_unsaved_days.is_set():

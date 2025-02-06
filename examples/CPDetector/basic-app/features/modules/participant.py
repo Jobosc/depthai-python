@@ -17,7 +17,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from features.modules.timestamps import Timestamps
 from utils.parser import ENVParser
 
 env = ENVParser()
@@ -30,11 +29,9 @@ class Participant(BaseModel):
     Attributes:
         id (str): The ID of the participant.
         comments (Optional[str]): Additional comments about the participant.
-        timestamps (Optional[Timestamps]): The timestamps associated with the participant.
     """
     id: str
     comments: Optional[str] = None
-    timestamps: Optional[Timestamps] = None
 
     def store_participant_metadata(self, path: str) -> None:
         """

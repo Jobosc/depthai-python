@@ -20,7 +20,6 @@ from features.interface.sidebar_buttons import SidebarButtons
 from features.modules.camera import Camera
 from features.modules.camera_led import CameraLed
 from features.modules.recording_led import RecordLed
-from features.modules.timestamps import Timestamps
 from features.reactivity.buttons_controller import ButtonsController
 from features.reactivity.metadata_controller import MetadataController
 from features.reactivity.storage_controller import StorageController
@@ -30,7 +29,6 @@ from utils.parser import ENVParser
 
 # Light Barrier code
 camera = Camera()
-timestamps = Timestamps()
 env = ENVParser()
 
 app_ui = ui.page_sidebar(
@@ -50,7 +48,7 @@ def camera_handler():
     """
     while True:
         if camera.ready and not camera.running:
-            camera.run(timestamps=timestamps)
+            camera.run()
 
 
 def server(input: Inputs, output: Outputs, session: Session):
@@ -70,13 +68,13 @@ def server(input: Inputs, output: Outputs, session: Session):
     SidebarButtons()
     CardValues()
     ModalRemover(input)
-    MetadataController(input, timestamps)
-    ButtonsController(input, camera, timestamps)
+    MetadataController(input)
+    ButtonsController(input, camera)
     StorageController(input)
     SessionManager(input)
 
     # Setup Threading
-    executor = ThreadPoolExecutor(max_workers=1)#TODO: Maybe use ProcessPoolExecuter")
+    executor = ThreadPoolExecutor(max_workers=1)
     executor.submit(camera_handler)
 
 
