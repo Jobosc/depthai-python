@@ -45,3 +45,21 @@ venv.bak/
 
 # PyCharm
 .idea/
+
+# Data
+*.h265
+*.h264
+*.mp4
+*.json
+
+.DS_Store
+*.hevc
+*.webm
+*.ogg
+*.log
+
+*site/
+*reference/
+*.npy
+
+*.png

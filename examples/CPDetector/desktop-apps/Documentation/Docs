@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Docs
+Exec=/home/pi/Desktop/luxonis/depthai-python/.venv/bin/mkdocs serve --dev-addr "127.0.0.1:8000" -f /home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/basic-app/mkdocs.yml
+Icon=/home/pi/Desktop/luxonis/depthai-python/examples/CPDetector/desktop-apps/Documentation/book-solid.svg
+Terminal=true
+Categories=Utility;Application;
